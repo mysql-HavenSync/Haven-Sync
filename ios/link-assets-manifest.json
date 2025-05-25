@@ -1,0 +1,17 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/Conthrax-SemiBold.otf",
+      "sha1": "1346b714a963019e96fca6ddd5abcf5724c69357"
+    },
+    {
+      "path": "src/assets/fonts/HoryzenDigital-24.ttf",
+      "sha1": "c38458853eea56c578b05ebd491695c08aae0b48"
+    },
+    {
+      "path": "src/assets/fonts/HoryzenMono-24.ttf",
+      "sha1": "c25d32ab5f9104f608d70597075ec2aa8eafd2b7"
+    }
+  ]
+}
