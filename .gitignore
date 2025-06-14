@@ -6,3 +6,4 @@ android/.gradle/
 
 # Ignore all build outputs
 android/app/build/
+node_modules
