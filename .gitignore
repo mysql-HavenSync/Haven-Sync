@@ -1,1 +1,8 @@
-node_modules
+# Ignore APKs
+*.apk
+
+# Ignore Gradle build cache
+android/.gradle/
+
+# Ignore all build outputs
+android/app/build/
