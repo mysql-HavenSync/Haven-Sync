@@ -6,10 +6,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   Animated,
+  Dimensions,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FastImage from 'react-native-fast-image';
+
+const { width, height } = Dimensions.get('window');
 
 export default function HexaLoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -18,20 +21,30 @@ export default function HexaLoginScreen({ navigation }) {
   const [focusedInput, setFocusedInput] = useState(null);
   const [loginStatus, setLoginStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showGif, setShowGif] = useState(false);
 
   const [emailAnim] = useState(new Animated.Value(email ? 1 : 0));
   const [passAnim] = useState(new Animated.Value(password ? 1 : 0));
-  const buttonColorAnim = useRef(new Animated.Value(0)).current;
   const buttonScaleAnim = useRef(new Animated.Value(1)).current;
 
   const [titleOpacity] = useState(new Animated.Value(0));
   const [titleTranslateY] = useState(new Animated.Value(-30));
 
-  const buttonBackgroundColor = buttonColorAnim.interpolate({
-    inputRange: [0, 1, 2],
-    outputRange: ['#6ec1e4', '#34c759', '#ff3b30'],
-  });
+  // Enhanced animation values for visual feedback
+  const [feedbackScale] = useState(new Animated.Value(0));
+  const [feedbackOpacity] = useState(new Animated.Value(0));
+  const [pulseAnim] = useState(new Animated.Value(1));
+  const [cardShakeAnim] = useState(new Animated.Value(0));
+
+  // Function to get gradient colors based on login status
+  const getGradientColors = () => {
+    if (loginStatus === 'success') {
+      return ['#4CAF50', '#8BC34A']; // Green gradient for success
+    } else if (loginStatus === 'failed') {
+      return ['#F44336', '#FF5722']; // Red gradient for error
+    } else {
+      return ['#00C9FF', '#92FE9D']; // Default blue-green gradient
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -58,16 +71,91 @@ export default function HexaLoginScreen({ navigation }) {
   useEffect(() => {
     let timer;
     if (loginStatus === 'failed' || loginStatus === 'success') {
-      setShowGif(true);
-      const timeoutDuration = 2000;
-
-      timer = setTimeout(() => {
-        setShowGif(false);
+      // Enhanced visual feedback animations
+      if (loginStatus === 'success') {
+        // Success animation - scale up with pulse
+        Animated.sequence([
+          Animated.parallel([
+            Animated.spring(feedbackScale, {
+              toValue: 1,
+              tension: 50,
+              friction: 3,
+              useNativeDriver: true,
+            }),
+            Animated.timing(feedbackOpacity, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]),
+          Animated.loop(
+            Animated.sequence([
+              Animated.timing(pulseAnim, {
+                toValue: 1.1,
+                duration: 600,
+                useNativeDriver: true,
+              }),
+              Animated.timing(pulseAnim, {
+                toValue: 1,
+                duration: 600,
+                useNativeDriver: true,
+              }),
+            ]),
+            { iterations: 2 }
+          ),
+        ]).start();
+      } else {
+        // Error animation - shake and show feedback
         Animated.parallel([
-          Animated.timing(buttonColorAnim, {
+          Animated.spring(feedbackScale, {
+            toValue: 1,
+            tension: 50,
+            friction: 3,
+            useNativeDriver: true,
+          }),
+          Animated.timing(feedbackOpacity, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.sequence([
+            Animated.timing(cardShakeAnim, {
+              toValue: -10,
+              duration: 100,
+              useNativeDriver: true,
+            }),
+            Animated.timing(cardShakeAnim, {
+              toValue: 10,
+              duration: 100,
+              useNativeDriver: true,
+            }),
+            Animated.timing(cardShakeAnim, {
+              toValue: -10,
+              duration: 100,
+              useNativeDriver: true,
+            }),
+            Animated.timing(cardShakeAnim, {
+              toValue: 0,
+              duration: 100,
+              useNativeDriver: true,
+            }),
+          ]),
+        ]).start();
+      }
+
+      const timeoutDuration = 2500;
+      timer = setTimeout(() => {
+        // Fade out feedback
+        Animated.parallel([
+          Animated.timing(feedbackOpacity, {
             toValue: 0,
             duration: 300,
-            useNativeDriver: false,
+            useNativeDriver: true,
+          }),
+          Animated.timing(feedbackScale, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
           }),
           Animated.timing(buttonScaleAnim, {
             toValue: 1,
@@ -77,6 +165,7 @@ export default function HexaLoginScreen({ navigation }) {
         ]).start(() => {
           setLoginStatus(null);
           setIsLoading(false);
+          pulseAnim.setValue(1);
         });
       }, timeoutDuration);
     }
@@ -84,7 +173,7 @@ export default function HexaLoginScreen({ navigation }) {
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [loginStatus, buttonColorAnim, buttonScaleAnim]);
+  }, [loginStatus, buttonScaleAnim, feedbackScale, feedbackOpacity, pulseAnim, cardShakeAnim]);
 
   const handleFocus = input => {
     setFocusedInput(input);
@@ -116,29 +205,22 @@ export default function HexaLoginScreen({ navigation }) {
         setIsLoading(false);
       }, 1000);
       setLoginStatus('failed');
-      Animated.parallel([
-        Animated.timing(buttonColorAnim, {
-          toValue: 2,
-          duration: 300,
-          useNativeDriver: false,
+      Animated.sequence([
+        Animated.timing(buttonScaleAnim, {
+          toValue: 0.95,
+          duration: 100,
+          useNativeDriver: true,
         }),
-        Animated.sequence([
-          Animated.timing(buttonScaleAnim, {
-            toValue: 0.95,
-            duration: 100,
-            useNativeDriver: true,
-          }),
-          Animated.timing(buttonScaleAnim, {
-            toValue: 1.05,
-            duration: 100,
-            useNativeDriver: true,
-          }),
-          Animated.timing(buttonScaleAnim, {
-            toValue: 1,
-            duration: 100,
-            useNativeDriver: true,
-          }),
-        ]),
+        Animated.timing(buttonScaleAnim, {
+          toValue: 1.05,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(buttonScaleAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
       ]).start();
       return;
     }
@@ -147,36 +229,27 @@ export default function HexaLoginScreen({ navigation }) {
     setTimeout(() => {
       const isSuccess = Date.now() % 2 === 0;
       setLoginStatus(isSuccess ? 'success' : 'failed');
-      Animated.parallel([
-        Animated.timing(buttonColorAnim, {
-          toValue: isSuccess ? 1 : 2,
-          duration: 300,
-          useNativeDriver: false,
+      Animated.sequence([
+        Animated.timing(buttonScaleAnim, {
+          toValue: 0.95,
+          duration: 100,
+          useNativeDriver: true,
         }),
-        Animated.sequence([
-          Animated.timing(buttonScaleAnim, {
-            toValue: 0.95,
-            duration: 100,
-            useNativeDriver: true,
-          }),
-          Animated.timing(buttonScaleAnim, {
-            toValue: 1.05,
-            duration: 100,
-            useNativeDriver: true,
-          }),
-          Animated.timing(buttonScaleAnim, {
-            toValue: 1,
-            duration: 100,
-            useNativeDriver: true,
-          }),
-        ]),
+        Animated.timing(buttonScaleAnim, {
+          toValue: 1.05,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(buttonScaleAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
       ]).start();
       if (isSuccess) {
         setTimeout(() => {
-          // navigation.navigate('HexaDashboard');
           navigation.replace('DashboardDrawer');
-
-        }, 1000);
+        }, 1500);
       }
     }, 1000);
   };
@@ -187,6 +260,27 @@ export default function HexaLoginScreen({ navigation }) {
     if (loginStatus === 'failed') return 'Retry';
     return 'Login';
   };
+
+  const getFeedbackContent = () => {
+    if (loginStatus === 'success') {
+      return {
+        icon: 'checkmark-circle',
+        text: 'Login Successful!',
+        color: '#4CAF50',
+        gif: require('../assets/gif/login.gif')
+      };
+    } else if (loginStatus === 'failed') {
+      return {
+        icon: 'close-circle',
+        text: 'Login Failed',
+        color: '#F44336',
+        gif: require('../assets/gif/fail.gif')
+      };
+    }
+    return null;
+  };
+
+  const feedbackContent = getFeedbackContent();
 
   return (
     <LinearGradient colors={['#c4d3d2', '#c4d3d2']} style={styles.container}>
@@ -202,7 +296,14 @@ export default function HexaLoginScreen({ navigation }) {
         Ready To Sync
       </Animated.Text>
 
-      <View style={styles.card}>
+      <Animated.View 
+        style={[
+          styles.card,
+          {
+            transform: [{ translateX: cardShakeAnim }],
+          },
+        ]}
+      >
         <View style={[styles.inputWrapper, getInputStyle('email')]}>
           <Animated.Text
             style={[
@@ -234,6 +335,7 @@ export default function HexaLoginScreen({ navigation }) {
             autoCapitalize="none"
             keyboardType="email-address"
             editable={!isLoading}
+            returnKeyType="next"
           />
         </View>
 
@@ -267,6 +369,7 @@ export default function HexaLoginScreen({ navigation }) {
             onBlur={() => handleBlur('password')}
             secureTextEntry={!showPassword}
             editable={!isLoading}
+            returnKeyType="done"
           />
           <TouchableOpacity
             style={styles.eyeIcon}
@@ -293,7 +396,7 @@ export default function HexaLoginScreen({ navigation }) {
             style={{ overflow: 'hidden', borderRadius: 20 }}
           >
             <LinearGradient
-              colors={['#00C9FF', '#92FE9D']}
+              colors={getGradientColors()}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.gradientButton}
@@ -309,18 +412,6 @@ export default function HexaLoginScreen({ navigation }) {
           </TouchableOpacity>
         </Animated.View>
 
-        {showGif && (
-          <FastImage
-            source={
-              loginStatus === 'success'
-                ? require('../assets/gif/login.gif')
-                : require('../assets/gif/fail.gif')
-            }
-            style={styles.inlineGif}
-            resizeMode={FastImage.resizeMode.contain}
-          />
-        )}
-
         <Text style={[styles.switchText, isLoading && styles.disabledText]}>
           Don't have an account?{' '}
           <Text
@@ -330,7 +421,42 @@ export default function HexaLoginScreen({ navigation }) {
             Sign Up
           </Text>
         </Text>
-      </View>
+      </Animated.View>
+
+      {/* Enhanced Feedback Overlay */}
+      {feedbackContent && (
+        <Animated.View
+          style={[
+            styles.feedbackOverlay,
+            {
+              opacity: feedbackOpacity,
+              transform: [
+                { scale: feedbackScale },
+                { scale: pulseAnim },
+              ],
+            },
+          ]}
+        >
+          <View style={[styles.feedbackContainer, { borderColor: feedbackContent.color }]}>
+            <FastImage
+              source={feedbackContent.gif}
+              style={styles.feedbackGif}
+              resizeMode={FastImage.resizeMode.contain}
+            />
+            <View style={styles.feedbackContent}>
+              <Icon 
+                name={feedbackContent.icon} 
+                size={40} 
+                color={feedbackContent.color} 
+                style={styles.feedbackIcon}
+              />
+              <Text style={[styles.feedbackText, { color: feedbackContent.color }]}>
+                {feedbackContent.text}
+              </Text>
+            </View>
+          </View>
+        </Animated.View>
+      )}
     </LinearGradient>
   );
 }
@@ -363,6 +489,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Kiona-Regular',
     paddingVertical: 4,
+    paddingHorizontal: 4,
     color: '#333',
   },
   floatingLabel: {
@@ -391,38 +518,70 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 10,
     borderRadius: 30,
-    alignItems: 'center',
+    flexDirection: 'row',
     justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 5, height: 10 },
-    shadowOpacity: 30,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 3,
-    flexDirection: 'row',
   },
   buttonText: {
-    fontSize: 18,
-    fontFamily: 'Kiona-Regular',
     color: '#fff',
-    fontWeight: 'bold',
-    textShadowColor: 'rgba(0, 0, 0, 0.4)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
+    fontWeight: '700',
+    fontFamily: 'Kiona-Regular',
+    fontSize: 18,
+    textAlign: 'center',
   },
   buttonIcon: {
     marginLeft: 8,
   },
   switchText: {
-    marginTop: 24,
     fontSize: 14,
-    textAlign: 'center',
-    color: '#333',
     fontFamily: 'Kiona-Regular',
+    textAlign: 'center',
+    marginTop: 22,
   },
-  inlineGif: {
-    width: 120,
-    height: 120,
-    alignSelf: 'center',
-    marginTop: 20,
+  // Enhanced feedback styles
+  feedbackOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  feedbackContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 20,
+    padding: 30,
+    alignItems: 'center',
+    borderWidth: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 15,
+    minWidth: 200,
+  },
+  feedbackGif: {
+    width: 80,
+    height: 80,
+    marginBottom: 15,
+  },
+  feedbackContent: {
+    alignItems: 'center',
+  },
+  feedbackIcon: {
+    marginBottom: 10,
+  },
+  feedbackText: {
+    fontSize: 18,
+    fontWeight: '700',
+    fontFamily: 'Kiona-Regular',
+    textAlign: 'center',
   },
 });

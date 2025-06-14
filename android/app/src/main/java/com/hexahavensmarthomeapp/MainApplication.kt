@@ -1,4 +1,4 @@
-package com.hexahavensmarthomeapp
+package com.HavenSync
 
 import android.app.Application
 import com.facebook.react.PackageList

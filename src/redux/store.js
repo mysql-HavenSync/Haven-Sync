@@ -8,6 +8,7 @@ const store = configureStore({
     switches: switchReducer,
     profile: profileReducer,
     auth: authReducer,
+    
   },
 });
 

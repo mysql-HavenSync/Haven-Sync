@@ -1,11 +1,11 @@
 import {createSlice} from '@reduxjs/toolkit';
 
 const initialState = {
-  avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-  name: 'John Monroe',
-  email: 'john@figma.com',
+  avatar: 'https://cdn-icons-gif.flaticon.com/17644/17644526.gif',
+  name: 'HavenSync User',
+  email: 'User@HavenSync.com',
   phone: '9874563210',
-  dob: '1995-08-16',
+  dob: 'DD/MM/YYYY',
   darkMode: false,
   newPassword: '',
   confirmPassword: '',

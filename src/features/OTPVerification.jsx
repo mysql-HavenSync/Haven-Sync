@@ -10,9 +10,16 @@ const OTPVerification = ({ navigation }) => {
   const subtitleAnimation = new Animated.Value(0);
   const inputAnimation = new Animated.Value(0);
   const buttonAnimation = new Animated.Value(0);
+  const panelAnimation = new Animated.Value(0);
 
   // Trigger animations on component mount
   useEffect(() => {
+    Animated.timing(panelAnimation, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+
     Animated.timing(titleAnimation, {
       toValue: 1,
       duration: 1000,
@@ -49,42 +56,47 @@ const OTPVerification = ({ navigation }) => {
         Verify OTP
       </Animated.Text>
 
-      <Animated.Text
-        style={[styles.subtitle, { opacity: subtitleAnimation }]} // Apply animation to subtitle
-      >
-        Enter the OTP sent to your email
-      </Animated.Text>
-
+      {/* White Panel Background */}
       <Animated.View
-        style={[styles.inputWrapper, { opacity: inputAnimation }]} // Apply animation to input field
+        style={[styles.panel, { opacity: panelAnimation }]}
       >
-        <TextInput
-          style={styles.input}
-          placeholder="6-digit OTP"
-          placeholderTextColor="#aaa"
-          keyboardType="numeric"
-          maxLength={6}
-          value={otp}
-          onChangeText={setOtp}
-        />
-      </Animated.View>
-
-      <Animated.View
-        style={{ opacity: buttonAnimation }} // Apply animation to button
-      >
-        <TouchableOpacity
-          onPress={() => navigation.navigate('ResetPassword')}
-          style={styles.buttonContainer}
+        <Animated.Text
+          style={[styles.subtitle, { opacity: subtitleAnimation }]} // Apply animation to subtitle
         >
-          <LinearGradient
-            colors={['#00C9FF', '#92FE9D']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.button}
+          Enter the OTP sent to your email
+        </Animated.Text>
+
+        <Animated.View
+          style={[styles.inputWrapper, { opacity: inputAnimation }]} // Apply animation to input field
+        >
+          <TextInput
+            style={styles.input}
+            placeholder="6-digit OTP"
+            placeholderTextColor="#aaa"
+            keyboardType="numeric"
+            maxLength={6}
+            value={otp}
+            onChangeText={setOtp}
+          />
+        </Animated.View>
+
+        <Animated.View
+          style={{ opacity: buttonAnimation }} // Apply animation to button
+        >
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ResetPassword')}
+            style={styles.buttonContainer}
           >
-            <Text style={styles.buttonText}>Verify</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            <LinearGradient
+              colors={['#00C9FF', '#92FE9D']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Verify</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
       </Animated.View>
     </KeyboardAvoidingView>
   );
@@ -99,12 +111,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
+  panel: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
   title: {
     fontSize: 25,
     fontFamily: 'HoryzenDigital-24',
     color: '#222',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 24,
   },
   subtitle: {
     fontSize: 16,
@@ -121,7 +143,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#f8f9fa',
     fontSize: 16,
   },
   buttonContainer: {

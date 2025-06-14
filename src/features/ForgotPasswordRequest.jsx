@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Animated,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 const ForgotPasswordRequest = ({ navigation }) => {
@@ -39,50 +46,62 @@ const ForgotPasswordRequest = ({ navigation }) => {
           styles.pageTitle,
           {
             opacity: titleAnimation,
-            transform: [{ scale: titleAnimation.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }],
+            transform: [
+              {
+                scale: titleAnimation.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.8, 1],
+                }),
+              },
+            ],
           },
         ]}
       >
         Reclaim Entry
       </Animated.Text>
 
-      <Animated.View
-        style={[
-          { opacity: inputAnimation },
-          styles.inputWrapper,
-        ]}
-      >
-        <Text style={styles.subtitle}>Enter your registered email to receive an OTP</Text>
+      {/* White Panel */}
+      <View style={styles.panelContainer}>
+        <Animated.View style={[{ opacity: inputAnimation }, styles.inputWrapper]}>
+          <Text style={styles.subtitle}>
+            Enter your registered email to receive an OTP
+          </Text>
 
-        {/* Email Input with White Card Background */}
-        <View style={[styles.emailInputWrapper, isFocused && styles.focusedInput]}>
-          <TextInput
-            placeholder="Email Address"
-            placeholderTextColor="#aaa"
-            style={styles.textInput}
-            value={email}
-            onChangeText={setEmail}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-          />
-        </View>
-
-        <Animated.View style={{ opacity: buttonAnimation }}>
-          <TouchableOpacity
-            style={styles.buttonContainer}
-            onPress={() => navigation.navigate('OTPVerification')}
+          {/* Email Input */}
+          <View
+            style={[
+              styles.emailInputWrapper,
+              isFocused && styles.focusedInput,
+            ]}
           >
-            <LinearGradient
-              colors={['#00C9FF', '#92FE9D']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.button}
+            <TextInput
+              placeholder="Email Address"
+              placeholderTextColor="#aaa"
+              style={styles.textInput}
+              value={email}
+              onChangeText={setEmail}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+            />
+          </View>
+
+          <Animated.View style={{ opacity: buttonAnimation }}>
+            <TouchableOpacity
+              style={styles.buttonContainer}
+              onPress={() => navigation.navigate('OTPVerification')}
             >
-              <Text style={styles.buttonText}>Send OTP</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+              <LinearGradient
+                colors={['#00C9FF', '#92FE9D']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.button}
+              >
+                <Text style={styles.buttonText}>Send OTP</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </Animated.View>
         </Animated.View>
-      </Animated.View>
+      </View>
     </LinearGradient>
   );
 };
@@ -109,13 +128,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
   },
+  panelContainer: {
+    backgroundColor: '#fff',
+    padding: 24,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 6,
+    width: '100%',
+    maxWidth: 400,
+  },
   inputWrapper: {
-    marginBottom: 24,
     width: '100%',
   },
   emailInputWrapper: {
     marginBottom: 24,
-    backgroundColor: '#fff', // White background for the email input box
+    backgroundColor: '#fff',
     paddingHorizontal: 16,
     borderRadius: 8,
     shadowColor: '#000',
@@ -159,6 +189,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: 18,
   },
 });

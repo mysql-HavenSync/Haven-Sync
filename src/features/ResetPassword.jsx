@@ -14,9 +14,16 @@ const ResetPassword = ({ navigation }) => {
   const subtitleAnimation = new Animated.Value(0);
   const inputAnimation = new Animated.Value(0);
   const buttonAnimation = new Animated.Value(0);
+  const panelAnimation = new Animated.Value(0);
 
   // Trigger animations on component mount
   useEffect(() => {
+    Animated.timing(panelAnimation, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+
     Animated.timing(titleAnimation, {
       toValue: 1,
       duration: 1000,
@@ -53,71 +60,76 @@ const ResetPassword = ({ navigation }) => {
         Reset Password
       </Animated.Text>
 
-      <Animated.Text
-        style={[styles.subtitle, { opacity: subtitleAnimation }]} // Apply animation to subtitle
-      >
-        Enter your new password below
-      </Animated.Text>
-
-      {/* Password Input */}
+      {/* White Panel Background */}
       <Animated.View
-        style={[styles.inputWrapper, { opacity: inputAnimation }]} // Apply animation to password input
+        style={[styles.panel, { opacity: panelAnimation }]}
       >
-        <TextInput
-          style={styles.input}
-          placeholder="New Password"
-          placeholderTextColor="#aaa"
-          secureTextEntry={!showPassword}
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TouchableOpacity
-          style={styles.eyeIcon}
-          onPress={() => setShowPassword(prev => !prev)}
+        <Animated.Text
+          style={[styles.subtitle, { opacity: subtitleAnimation }]} // Apply animation to subtitle
         >
-          <Icon name={showPassword ? 'eye-off' : 'eye'} size={22} color="#888" />
-        </TouchableOpacity>
-      </Animated.View>
+          Enter your new password below
+        </Animated.Text>
 
-      {/* Confirm Password Input */}
-      <Animated.View
-        style={[styles.inputWrapper, { opacity: inputAnimation }]} // Apply animation to confirm password input
-      >
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm Password"
-          placeholderTextColor="#aaa"
-          secureTextEntry={!showConfirmPassword}
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
-        <TouchableOpacity
-          style={styles.eyeIcon}
-          onPress={() => setShowConfirmPassword(prev => !prev)}
+        {/* Password Input */}
+        <Animated.View
+          style={[styles.inputWrapper, { opacity: inputAnimation }]} // Apply animation to password input
         >
-          <Icon name={showConfirmPassword ? 'eye-off' : 'eye'} size={22} color="#888" />
-        </TouchableOpacity>
-      </Animated.View>
-
-      <Animated.View
-        style={{ opacity: buttonAnimation }} // Apply animation to button
-      >
-        <TouchableOpacity
-          onPress={() => {
-            alert('Password reset successfully!');
-            navigation.navigate('HexaLoginScreen');
-          }}
-          style={styles.buttonContainer}
-        >
-          <LinearGradient
-            colors={['#00C9FF', '#92FE9D']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.button}
+          <TextInput
+            style={styles.input}
+            placeholder="New Password"
+            placeholderTextColor="#aaa"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowPassword(prev => !prev)}
           >
-            <Text style={styles.buttonText}>Reset Password</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            <Icon name={showPassword ? 'eye-off' : 'eye'} size={22} color="#888" />
+          </TouchableOpacity>
+        </Animated.View>
+
+        {/* Confirm Password Input */}
+        <Animated.View
+          style={[styles.inputWrapper, { opacity: inputAnimation }]} // Apply animation to confirm password input
+        >
+          <TextInput
+            style={styles.input}
+            placeholder="Confirm Password"
+            placeholderTextColor="#aaa"
+            secureTextEntry={!showConfirmPassword}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowConfirmPassword(prev => !prev)}
+          >
+            <Icon name={showConfirmPassword ? 'eye-off' : 'eye'} size={22} color="#888" />
+          </TouchableOpacity>
+        </Animated.View>
+
+        <Animated.View
+          style={{ opacity: buttonAnimation }} // Apply animation to button
+        >
+          <TouchableOpacity
+            onPress={() => {
+              alert('Password reset successfully!');
+              navigation.navigate('HexaLoginScreen');
+            }}
+            style={styles.buttonContainer}
+          >
+            <LinearGradient
+              colors={['#00C9FF', '#92FE9D']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Reset Password</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
       </Animated.View>
     </KeyboardAvoidingView>
   );
@@ -132,12 +144,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
+  panel: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+  },
   title: {
     fontSize: 28,
     fontFamily: 'HoryzenDigital-24',
     color: '#222',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 24,
   },
   subtitle: {
     fontSize: 16,
@@ -150,7 +172,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     borderBottomWidth: 1.2,
     borderColor: '#ccc',
-    backgroundColor: '#fff',
+    backgroundColor: '#f8f9fa',
     borderRadius: 8,
     paddingHorizontal: 8,
   },

@@ -1,3 +1,4 @@
+// Same imports as before...
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -5,8 +6,9 @@ import {
   StyleSheet,
   Animated,
   Dimensions,
-  PanResponder,
-  Vibration,
+  TouchableWithoutFeedback,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
 import Video from 'react-native-video';
 import LinearGradient from 'react-native-linear-gradient';
@@ -14,23 +16,48 @@ import LinearGradient from 'react-native-linear-gradient';
 const { height, width } = Dimensions.get('window');
 
 export default function HexaWelcomeScreen({ navigation }) {
-  // State for the circular indicator
-  const [progress, setProgress] = useState(0);
   const [showEntry, setShowEntry] = useState(false);
+  const [permissionGranted, setPermissionGranted] = useState(false);
+
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  // For the swipe indicator
-  const swipePosition = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
-  const swipeOpacity = useRef(new Animated.Value(0)).current;
-
-  // For the hexagon pattern
+  const glowAnim = useRef(new Animated.Value(0)).current;
   const hexPatternOpacity = useRef(new Animated.Value(0)).current;
+  const rippleScale = useRef(new Animated.Value(0.1)).current;
+  const rippleOpacity = useRef(new Animated.Value(0)).current;
+  const pressAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Show the entry mechanism after video plays for a bit
+    const checkVibrationPermission = async () => {
+      if (Platform.OS === 'android') {
+        try {
+          const granted = await PermissionsAndroid.request(
+            'android.permission.VIBRATE',
+            {
+              title: 'Vibration Permission',
+              message: 'Haven needs vibration permission for haptic feedback.',
+              buttonPositive: 'Allow',
+              buttonNegative: 'Deny',
+            }
+          );
+          setPermissionGranted(granted === PermissionsAndroid.RESULTS.GRANTED);
+        } catch (err) {
+          console.warn(err);
+          setPermissionGranted(true);
+        }
+      } else {
+        setPermissionGranted(true);
+      }
+    };
+    checkVibrationPermission();
+  }, []);
+
+  useEffect(() => {
+    // Reset animations when component mounts/focuses
+    setShowEntry(false);
+    fadeAnim.setValue(0);
+    hexPatternOpacity.setValue(0);
+    
     const timer = setTimeout(() => {
       setShowEntry(true);
       Animated.parallel([
@@ -39,31 +66,51 @@ export default function HexaWelcomeScreen({ navigation }) {
           duration: 1200,
           useNativeDriver: true,
         }),
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
         Animated.timing(hexPatternOpacity, {
-          toValue: 0.6,
+          toValue: 0.4,
           duration: 2000,
           useNativeDriver: true,
         }),
       ]).start();
-
-      // Start the pulse animation
       startPulseAnimation();
     }, 5000);
-
     return () => clearTimeout(timer);
   }, []);
 
-  // Create the pulse effect
+  // Add focus listener to reset when navigating back
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      // Reset state when screen comes into focus
+      setShowEntry(false);
+      fadeAnim.setValue(0);
+      hexPatternOpacity.setValue(0);
+      
+      const timer = setTimeout(() => {
+        setShowEntry(true);
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 1200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(hexPatternOpacity, {
+            toValue: 0.4,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+        ]).start();
+        startPulseAnimation();
+      }, 5000);
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
   const startPulseAnimation = () => {
     Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
-          toValue: 1.1,
+          toValue: 1.05,
           duration: 1500,
           useNativeDriver: true,
         }),
@@ -75,82 +122,73 @@ export default function HexaWelcomeScreen({ navigation }) {
       ])
     ).start();
 
-    // Start the hint animation after a delay
-    setTimeout(() => {
-      showSwipeHint();
-    }, 3000);
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 0.5,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0.3,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
   };
 
-  // Show a hint about how to enter
-  const showSwipeHint = () => {
-    swipePosition.setValue({ x: -width * 0.15, y: 0 });
-    Animated.sequence([
-      Animated.timing(swipeOpacity, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-      Animated.timing(swipePosition, {
-        toValue: { x: width * 0.15, y: 0 },
-        duration: 1800,
-        useNativeDriver: true,
-      }),
-      Animated.timing(swipeOpacity, {
+  const handleTap = () => {
+    rippleScale.setValue(0.1);
+    rippleOpacity.setValue(0.8);
+
+    Animated.parallel([
+      Animated.sequence([
+        Animated.timing(pressAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pressAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.2,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 0.9,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 400,
+        duration: 800,
+        delay: 300,
         useNativeDriver: true,
       }),
+      Animated.sequence([
+        Animated.timing(rippleScale, {
+          toValue: 3,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(rippleOpacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]),
     ]).start(() => {
-      // Repeat the hint after a delay
-      setTimeout(showSwipeHint, 6000);
+      navigation.navigate('HexaLoginScreen');
     });
   };
-
-  // Create the pan responder for the circular interaction
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderMove: (evt, gestureState) => {
-        const dx = gestureState.moveX - width / 2;
-        const dy = gestureState.moveY - height / 2;
-        const angle = Math.atan2(dy, dx);
-
-        // Clamp angle to range
-        const clampedAngle = Math.max(-Math.PI, Math.min(Math.PI, angle));
-        rotateAnim.setValue(clampedAngle); // important!
-
-        const normalizedAngle = (angle + Math.PI) / (2 * Math.PI);
-        const newProgress = Math.min(1, Math.max(0, gestureState.moveX / width));
-        setProgress(newProgress);
-
-        if (newProgress >= 0.8) {
-          Vibration.vibrate(50);
-          navigation.navigate('HexaLoginScreen');
-        }
-      },
-
-      onPanResponderRelease: () => {
-        // Reset progress when released before completion
-        if (progress < 0.8) {
-          setProgress(0);
-        }
-      },
-    })
-  ).current;
-
-  // Interpolate the progress to visual properties
-  const circleColor = progress > 0.7
-    ? ['#6ec1e4', '#3ba7cc', '#2294b8']
-    : ['#3ba7cc', '#2294b8', '#1a7a9c'];
-
-  const progressInterpolate = progress * 100;
-
-  // Calculate rotation for visual effect
-  const spin = rotateAnim.interpolate({
-    inputRange: [-Math.PI, Math.PI],
-    outputRange: ['-180deg', '180deg'],
-  });
 
   return (
     <View style={styles.container}>
@@ -160,59 +198,78 @@ export default function HexaWelcomeScreen({ navigation }) {
         resizeMode="cover"
         repeat
       />
-
-      {/* Hexagon Pattern Overlay */}
-      <Animated.View style={[styles.hexPattern, { opacity: hexPatternOpacity }]}>
-        {/* This would be an SVG or image with hexagon pattern */}
-      </Animated.View>
+      <Animated.View style={[styles.hexPattern, { opacity: hexPatternOpacity }]} />
 
       {showEntry && (
-        <Animated.View
-          style={[
-            styles.entryContainer,
-            {
-              opacity: fadeAnim,
-              transform: [
-                { scale: scaleAnim },
-                { scale: pulseAnim },
-              ],
-            }
-          ]}
-          {...panResponder.panHandlers}
-        >
-          <Text style={styles.instructionText}>Slide to enter Haven</Text>
-
-          <LinearGradient
-            colors={circleColor}
-            style={[styles.circleGradient, { transform: [{ rotate:  '0deg' }] }]}
-          >
-            <View style={styles.innerCircle}>
-              <LinearGradient
-                colors={['#1e1e1e', '#2a2a2a']}
-                style={styles.progressCircle}
-              >
-                <Text style={styles.percentText}>{Math.round(progressInterpolate)}%</Text>
-              </LinearGradient>
-            </View>
-          </LinearGradient>
-
-          {/* Swipe Hint Animation */}
+        <Animated.View style={[styles.entryContainer, { opacity: fadeAnim }]}>
           <Animated.View
             style={[
-              styles.swipeHint,
+              styles.rippleEffect,
               {
-                opacity: swipeOpacity,
-                transform: [{ translateX: swipePosition.x }],
-              }
+                opacity: rippleOpacity,
+                transform: [{ scale: rippleScale }],
+              },
             ]}
-          >
-            <LinearGradient
-              colors={['transparent', 'rgba(255,255,255,0.7)', 'transparent']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.swipeGradient}
-            />
-          </Animated.View>
+          />
+          <Animated.View style={[styles.glowEffect, { opacity: glowAnim }]} />
+          
+          {/* 3D Button Shadow */}
+          <Animated.View 
+            style={[
+              styles.buttonShadow, 
+              { 
+                transform: [
+                  { scale: pulseAnim },
+                  { 
+                    translateY: pressAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, 2]
+                    })
+                  }
+                ] 
+              }
+            ]} 
+          />
+          
+          <TouchableWithoutFeedback onPress={handleTap}>
+            <Animated.View
+              style={[
+                styles.hexagonContainer, 
+                { 
+                  transform: [
+                    { scale: pulseAnim },
+                    { 
+                      translateY: pressAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 4]
+                      })
+                    }
+                  ] 
+                }
+              ]}
+            >
+              {/* Bottom/Shadow Layer */}
+              <View style={styles.hexagonShadowLayer} />
+              
+              {/* Main Top Face */}
+              <View style={styles.hexagon3D}>
+                <LinearGradient
+                  colors={['#B0E0E6', '#87CEEB', '#4682B4']}
+                  style={styles.hexagonTopFace}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <View style={styles.innerBevel}>
+                    <View style={styles.innerHighlight} />
+                    <View style={styles.textContainer}>
+                      <Text style={styles.hexagonText}>ENTER</Text>
+                      <Text style={styles.hexagonTextSmall}>HAVEN</Text>
+                    </View>
+                  </View>
+                </LinearGradient>
+              </View>
+            </Animated.View>
+          </TouchableWithoutFeedback>
         </Animated.View>
       )}
     </View>
@@ -239,72 +296,135 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'transparent',
-    // You would add a background image with hexagons here
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   entryContainer: {
     position: 'absolute',
-    bottom: height * 0.15,
+    bottom: height * 0.12,
     alignItems: 'center',
-    width: width * 0.8,
+    justifyContent: 'center',
   },
-  instructionText: {
-    fontFamily: 'HoryzenDigital24',
-    fontSize: 20,
-    color: '#ffffff',
-    marginBottom: 30,
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.6)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
-  },
-  circleGradient: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
+ 
+  hexagonContainer: {
+    width: 130,
+    height: 130,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  hexagonShadowLayer: {
+    position: 'absolute',
+    width: 80,
+    height: 80,
+    borderRadius: 26,
+    backgroundColor: '#3B4F5A',
+    transform: [{ rotate: '45deg' }, { translateX: 2 }, { translateY: 2 }],
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
+    shadowOffset: { width: 10, height: -20 },
+    shadowOpacity:100,
+    shadowRadius: 50,
+    elevation: 10,
+  },
+  
+  hexagon3D: {
+    position: 'absolute',
+    width: 80,
+    height: 80,
+    borderRadius: 26,
+    transform: [{ rotate: '45deg' }],
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 100,
     shadowRadius: 12,
     elevation: 15,
   },
-  innerCircle: {
-    width: 130,
-    height: 130,
-    borderRadius: 65,
+  hexagonTopFace: {
+    flex: 1,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(30, 30, 30, 0.6)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 2,
+    borderTopColor: 'rgba(135, 206, 235, 0.4)',
+    borderLeftColor: 'rgba(135, 206, 235, 0.3)',
+    borderRightColor: 'rgba(0, 0, 0, 0.2)',
+    borderBottomColor: 'rgba(0, 0, 0, 0.3)',
   },
-  progressCircle: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
+  innerBevel: {
+    width: '80%',
+    height: '80%',
+    backgroundColor: '#102935',
+    borderRadius: 20,
+    transform: [{ rotate: '-45deg' }],
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#88e1f2',
+    shadowOffset: { width: -2, height: -2 },
+    shadowOpacity: 50,
+    shadowRadius: 8,
+    borderWidth: 1.5,
+    borderTopColor: '#1a4a5c',
+    borderLeftColor: '#1a4a5c',
+    borderRightColor: '#0a1f28',
+    borderBottomColor: '#0a1f28',
     overflow: 'hidden',
   },
-  percentText: {
-    fontFamily: 'HoryzenDigital24',
-    fontSize: 28,
-    color: '#6ec1e4',
-    fontWeight: '700',
-  },
-  swipeHint: {
+  innerHighlight: {
     position: 'absolute',
-    width: width * 0.3,
-    height: 150,
-    borderRadius: 75,
-    overflow: 'hidden',
+    top: 3,
+    left: 3,
+    right: 15,
+    height: '45%',
+    backgroundColor: 'rgba(136, 225, 242, 0.15)',
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
   },
-  swipeGradient: {
-    width: '100%',
-    height: '100%',
+  textContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hexagonText: {
+    fontFamily: 'Horyzen Digital 24',
+    fontSize: 14,
+    color: '#ffffff',
+    fontWeight: 'bold',
+    letterSpacing: 2,
+    textShadowColor: 'rgba(136, 225, 242, 0.9)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 10,
+  },
+  hexagonTextSmall: {
+    fontFamily: 'Horyzen Digital 24',
+    fontSize: 9,
+    color: '#c1f5ff',
+    fontWeight: '600',
+    letterSpacing: 4,
+    marginTop: 2,
+    textShadowColor: 'rgba(136, 225, 242, 0.6)',
+    textShadowOffset: { width: 0, height: 0.5 },
+    textShadowRadius: 3,
+  },
+  glowEffect: {
+    position: 'absolute',
+    width: 200,
+    height: 200,
+    borderRadius: 110,
+    backgroundColor: 'transparent',
+    shadowColor: '#88e1f2',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 100,
+    shadowRadius: 35,
+    elevation: 20,
+  },
+  rippleEffect: {
+    position: 'absolute',
+    width: 150,
+    height: 150,
+    borderRadius: 100,
+    borderWidth: 2,
+    borderColor: 'rgba(136, 225, 242, 0.7)',
+    shadowColor: '#88e1f2',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 80,
+    shadowRadius: 15,
+    elevation: 12,
   },
 });
