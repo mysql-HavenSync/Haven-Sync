@@ -61,12 +61,12 @@
 32-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:15:1-66
 32-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:15:15-63
 33
-34    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-34-->[:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:10:5-79
-34-->[:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:10:22-76
-35    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-35-->[:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:11:5-79
-35-->[:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:11:22-76
+34    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+34-->[:react-native-community_netinfo] C:\Users\Sathish\App\node_modules\@react-native-community\netinfo\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:7:5-79
+34-->[:react-native-community_netinfo] C:\Users\Sathish\App\node_modules\@react-native-community\netinfo\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:7:22-76
+35    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+35-->[:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:10:5-79
+35-->[:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:10:22-76
 36    <!--
 37    This manifest file is used only by Gradle to configure debug-only capabilities
 38    for React Native Apps.

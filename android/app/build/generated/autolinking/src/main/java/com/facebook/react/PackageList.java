@@ -16,12 +16,16 @@ import com.reactnativecommunity.blurview.BlurViewPackage;
 import com.reactcommunity.rndatetimepicker.RNDateTimePickerPackage;
 // @react-native-community/geolocation
 import com.reactnativecommunity.geolocation.GeolocationPackage;
+// @react-native-community/netinfo
+import com.reactnativecommunity.netinfo.NetInfoPackage;
 // @react-native-community/slider
 import com.reactnativecommunity.slider.ReactSliderPackage;
 // @react-native-picker/picker
 import com.reactnativecommunity.picker.RNCPickerPackage;
 // react-native-ble-plx
 import com.bleplx.BlePlxPackage;
+// react-native-bluetooth-status
+import com.solinor.bluetoothstatus.RNBluetoothManagerPackage;
 // react-native-date-picker
 import com.henninghall.date_picker.DatePickerPackage;
 // react-native-fast-image
@@ -100,9 +104,11 @@ public class PackageList {
       new BlurViewPackage(),
       new RNDateTimePickerPackage(),
       new GeolocationPackage(),
+      new NetInfoPackage(),
       new ReactSliderPackage(),
       new RNCPickerPackage(),
       new BlePlxPackage(),
+      new RNBluetoothManagerPackage(),
       new DatePickerPackage(),
       new FastImageViewPackage(),
       new RNFusedLocationPackage(),

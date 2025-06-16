@@ -14,9 +14,11 @@ MERGED from [:react-native-video] C:\Users\Sathish\App\node_modules\react-native
 MERGED from [:react-native-vision-camera] C:\Users\Sathish\App\node_modules\react-native-vision-camera\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-community_blur] C:\Users\Sathish\App\node_modules\@react-native-community\blur\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-community_geolocation] C:\Users\Sathish\App\node_modules\@react-native-community\geolocation\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
+MERGED from [:react-native-community_netinfo] C:\Users\Sathish\App\node_modules\@react-native-community\netinfo\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-10:12
 MERGED from [:react-native-community_slider] C:\Users\Sathish\App\node_modules\@react-native-community\slider\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-picker_picker] C:\Users\Sathish\App\node_modules\@react-native-picker\picker\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-ble-plx] C:\Users\Sathish\App\node_modules\react-native-ble-plx\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
+MERGED from [:react-native-bluetooth-status] C:\Users\Sathish\App\node_modules\react-native-bluetooth-status\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-10:12
 MERGED from [:react-native-date-picker] C:\Users\Sathish\App\node_modules\react-native-date-picker\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-fast-image] C:\Users\Sathish\App\node_modules\react-native-fast-image\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-geolocation-service] C:\Users\Sathish\App\node_modules\react-native-geolocation-service\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
@@ -170,6 +172,8 @@ ADDED from C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:5:5-81
 		ADDED from C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:5:22-78
 uses-permission#android.permission.BLUETOOTH
 ADDED from C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:6:5-68
+MERGED from [:react-native-bluetooth-status] C:\Users\Sathish\App\node_modules\react-native-bluetooth-status\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:7:5-68
+MERGED from [:react-native-bluetooth-status] C:\Users\Sathish\App\node_modules\react-native-bluetooth-status\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:7:5-68
 MERGED from [com.polidea.rxandroidble2:rxandroidble:1.17.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\065a72c032b14c2574fbeaf3a56b01f8\transformed\rxandroidble-1.17.2\AndroidManifest.xml:10:5-12:38
 MERGED from [com.polidea.rxandroidble2:rxandroidble:1.17.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\065a72c032b14c2574fbeaf3a56b01f8\transformed\rxandroidble-1.17.2\AndroidManifest.xml:10:5-12:38
 	android:maxSdkVersion
@@ -178,6 +182,8 @@ MERGED from [com.polidea.rxandroidble2:rxandroidble:1.17.2] C:\Users\Sathish\.gr
 		ADDED from C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:6:22-65
 uses-permission#android.permission.BLUETOOTH_ADMIN
 ADDED from C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:7:5-74
+MERGED from [:react-native-bluetooth-status] C:\Users\Sathish\App\node_modules\react-native-bluetooth-status\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:8:5-74
+MERGED from [:react-native-bluetooth-status] C:\Users\Sathish\App\node_modules\react-native-bluetooth-status\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:8:5-74
 MERGED from [com.polidea.rxandroidble2:rxandroidble:1.17.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\065a72c032b14c2574fbeaf3a56b01f8\transformed\rxandroidble-1.17.2\AndroidManifest.xml:13:5-15:38
 MERGED from [com.polidea.rxandroidble2:rxandroidble:1.17.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\065a72c032b14c2574fbeaf3a56b01f8\transformed\rxandroidble-1.17.2\AndroidManifest.xml:13:5-15:38
 	android:maxSdkVersion
@@ -202,6 +208,8 @@ MERGED from [com.polidea.rxandroidble2:rxandroidble:1.17.2] C:\Users\Sathish\.gr
 		ADDED from C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:9:22-73
 uses-permission#android.permission.ACCESS_WIFI_STATE
 ADDED from C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:10:5-76
+MERGED from [:react-native-community_netinfo] C:\Users\Sathish\App\node_modules\@react-native-community\netinfo\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:8:5-76
+MERGED from [:react-native-community_netinfo] C:\Users\Sathish\App\node_modules\@react-native-community\netinfo\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:8:5-76
 MERGED from [:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:9:5-76
 MERGED from [:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:9:5-76
 MERGED from [io.github.thanosfisherman.wifiutils:wifiutils:1.6.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\98a3011a5ba5012f129cc2fd6aac15d6\transformed\wifiutils-1.6.6\AndroidManifest.xml:12:5-76
@@ -378,12 +386,16 @@ MERGED from [:react-native-community_blur] C:\Users\Sathish\App\node_modules\@re
 MERGED from [:react-native-community_blur] C:\Users\Sathish\App\node_modules\@react-native-community\blur\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-community_geolocation] C:\Users\Sathish\App\node_modules\@react-native-community\geolocation\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-community_geolocation] C:\Users\Sathish\App\node_modules\@react-native-community\geolocation\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-community_netinfo] C:\Users\Sathish\App\node_modules\@react-native-community\netinfo\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-community_netinfo] C:\Users\Sathish\App\node_modules\@react-native-community\netinfo\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-community_slider] C:\Users\Sathish\App\node_modules\@react-native-community\slider\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-community_slider] C:\Users\Sathish\App\node_modules\@react-native-community\slider\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-picker_picker] C:\Users\Sathish\App\node_modules\@react-native-picker\picker\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-picker_picker] C:\Users\Sathish\App\node_modules\@react-native-picker\picker\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-ble-plx] C:\Users\Sathish\App\node_modules\react-native-ble-plx\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-ble-plx] C:\Users\Sathish\App\node_modules\react-native-ble-plx\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-bluetooth-status] C:\Users\Sathish\App\node_modules\react-native-bluetooth-status\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-bluetooth-status] C:\Users\Sathish\App\node_modules\react-native-bluetooth-status\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-date-picker] C:\Users\Sathish\App\node_modules\react-native-date-picker\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-date-picker] C:\Users\Sathish\App\node_modules\react-native-date-picker\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-fast-image] C:\Users\Sathish\App\node_modules\react-native-fast-image\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
@@ -634,6 +646,22 @@ MERGED from [com.google.android.odml:image:1.0.0-beta1] C:\Users\Sathish\.gradle
 		INJECTED from C:\Users\Sathish\App\android\app\src\debug\AndroidManifest.xml
 	android:minSdkVersion
 		INJECTED from C:\Users\Sathish\App\android\app\src\debug\AndroidManifest.xml
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from [:react-native-community_netinfo] C:\Users\Sathish\App\node_modules\@react-native-community\netinfo\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:7:5-79
+MERGED from [:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:11:5-79
+MERGED from [:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:11:5-79
+MERGED from [androidx.media3:media3-common:1.4.1] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\34acd3b04e7470b31e74c8fd70f5e59a\transformed\media3-common-1.4.1\AndroidManifest.xml:22:5-79
+MERGED from [androidx.media3:media3-common:1.4.1] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\34acd3b04e7470b31e74c8fd70f5e59a\transformed\media3-common-1.4.1\AndroidManifest.xml:22:5-79
+MERGED from [androidx.media3:media3-exoplayer:1.4.1] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\ff968d94b7ff80c1bf1aeed6ee1f9b85\transformed\media3-exoplayer-1.4.1\AndroidManifest.xml:22:5-79
+MERGED from [androidx.media3:media3-exoplayer:1.4.1] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\ff968d94b7ff80c1bf1aeed6ee1f9b85\transformed\media3-exoplayer-1.4.1\AndroidManifest.xml:22:5-79
+MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\577943e2bf9b6488099df6b380731bfa\transformed\transport-backend-cct-2.3.3\AndroidManifest.xml:25:5-79
+MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\577943e2bf9b6488099df6b380731bfa\transformed\transport-backend-cct-2.3.3\AndroidManifest.xml:25:5-79
+MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\3ac24861f3c2991d1a712093c02c7f6b\transformed\transport-runtime-2.2.6\AndroidManifest.xml:22:5-79
+MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\3ac24861f3c2991d1a712093c02c7f6b\transformed\transport-runtime-2.2.6\AndroidManifest.xml:22:5-79
+MERGED from [io.github.thanosfisherman.wifiutils:wifiutils:1.6.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\98a3011a5ba5012f129cc2fd6aac15d6\transformed\wifiutils-1.6.6\AndroidManifest.xml:10:5-79
+MERGED from [io.github.thanosfisherman.wifiutils:wifiutils:1.6.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\98a3011a5ba5012f129cc2fd6aac15d6\transformed\wifiutils-1.6.6\AndroidManifest.xml:10:5-79
+	android:name
+		ADDED from [:react-native-community_netinfo] C:\Users\Sathish\App\node_modules\@react-native-community\netinfo\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:7:22-76
 provider#com.imagepicker.ImagePickerProvider
 ADDED from [:react-native-image-picker] C:\Users\Sathish\App\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:8:9-16:20
 	android:grantUriPermissions
@@ -656,20 +684,6 @@ MERGED from [io.github.thanosfisherman.wifiutils:wifiutils:1.6.6] C:\Users\Sathi
 MERGED from [io.github.thanosfisherman.wifiutils:wifiutils:1.6.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\98a3011a5ba5012f129cc2fd6aac15d6\transformed\wifiutils-1.6.6\AndroidManifest.xml:11:5-79
 	android:name
 		ADDED from [:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:10:22-76
-uses-permission#android.permission.ACCESS_NETWORK_STATE
-ADDED from [:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:11:5-79
-MERGED from [androidx.media3:media3-common:1.4.1] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\34acd3b04e7470b31e74c8fd70f5e59a\transformed\media3-common-1.4.1\AndroidManifest.xml:22:5-79
-MERGED from [androidx.media3:media3-common:1.4.1] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\34acd3b04e7470b31e74c8fd70f5e59a\transformed\media3-common-1.4.1\AndroidManifest.xml:22:5-79
-MERGED from [androidx.media3:media3-exoplayer:1.4.1] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\ff968d94b7ff80c1bf1aeed6ee1f9b85\transformed\media3-exoplayer-1.4.1\AndroidManifest.xml:22:5-79
-MERGED from [androidx.media3:media3-exoplayer:1.4.1] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\ff968d94b7ff80c1bf1aeed6ee1f9b85\transformed\media3-exoplayer-1.4.1\AndroidManifest.xml:22:5-79
-MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\577943e2bf9b6488099df6b380731bfa\transformed\transport-backend-cct-2.3.3\AndroidManifest.xml:25:5-79
-MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\577943e2bf9b6488099df6b380731bfa\transformed\transport-backend-cct-2.3.3\AndroidManifest.xml:25:5-79
-MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\3ac24861f3c2991d1a712093c02c7f6b\transformed\transport-runtime-2.2.6\AndroidManifest.xml:22:5-79
-MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\3ac24861f3c2991d1a712093c02c7f6b\transformed\transport-runtime-2.2.6\AndroidManifest.xml:22:5-79
-MERGED from [io.github.thanosfisherman.wifiutils:wifiutils:1.6.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\98a3011a5ba5012f129cc2fd6aac15d6\transformed\wifiutils-1.6.6\AndroidManifest.xml:10:5-79
-MERGED from [io.github.thanosfisherman.wifiutils:wifiutils:1.6.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\98a3011a5ba5012f129cc2fd6aac15d6\transformed\wifiutils-1.6.6\AndroidManifest.xml:10:5-79
-	android:name
-		ADDED from [:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:11:22-76
 uses-permission#android.permission.SYSTEM_ALERT_WINDOW
 ADDED from [com.facebook.react:react-android:0.76.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\e1725c6eca62f7b272bec9fef692a344\transformed\react-android-0.76.6-debug\AndroidManifest.xml:16:5-78
 	android:name

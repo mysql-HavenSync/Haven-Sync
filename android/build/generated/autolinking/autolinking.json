@@ -82,6 +82,30 @@
         }
       }
     },
+    "@react-native-community/netinfo": {
+      "root": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\netinfo",
+      "name": "@react-native-community/netinfo",
+      "platforms": {
+        "ios": {
+          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\netinfo\\react-native-netinfo.podspec",
+          "version": "11.4.1",
+          "configurations": [],
+          "scriptPhases": []
+        },
+        "android": {
+          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\netinfo\\android",
+          "packageImportPath": "import com.reactnativecommunity.netinfo.NetInfoPackage;",
+          "packageInstance": "new NetInfoPackage()",
+          "buildTypes": [],
+          "componentDescriptors": [],
+          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/@react-native-community/netinfo/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cxxModuleCMakeListsModuleName": null,
+          "cxxModuleCMakeListsPath": null,
+          "cxxModuleHeaderName": null,
+          "isPureCxxDependency": false
+        }
+      }
+    },
     "@react-native-community/slider": {
       "root": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\slider",
       "name": "@react-native-community/slider",
@@ -155,6 +179,30 @@
           "libraryName": "BlePlx",
           "componentDescriptors": [],
           "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-ble-plx/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cxxModuleCMakeListsModuleName": null,
+          "cxxModuleCMakeListsPath": null,
+          "cxxModuleHeaderName": null,
+          "isPureCxxDependency": false
+        }
+      }
+    },
+    "react-native-bluetooth-status": {
+      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-bluetooth-status",
+      "name": "react-native-bluetooth-status",
+      "platforms": {
+        "ios": {
+          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-bluetooth-status\\react-native-bluetooth-status.podspec",
+          "version": "1.5.1",
+          "configurations": [],
+          "scriptPhases": []
+        },
+        "android": {
+          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-bluetooth-status\\android",
+          "packageImportPath": "import com.solinor.bluetoothstatus.RNBluetoothManagerPackage;",
+          "packageInstance": "new RNBluetoothManagerPackage()",
+          "buildTypes": [],
+          "componentDescriptors": [],
+          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-bluetooth-status/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -1030,7 +1078,7 @@
     "ios": {
       "sourceDir": "C:\\Users\\Sathish\\App\\ios",
       "xcodeProject": {
-        "name": "HavenSync.xcodeproj",
+        "name": "HexaHavenSmartHomeApp.xcodeproj",
         "path": ".",
         "isWorkspace": false
       },
