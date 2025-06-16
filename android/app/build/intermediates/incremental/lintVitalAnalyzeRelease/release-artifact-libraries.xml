@@ -602,6 +602,20 @@
       externalAnnotations="annotations.zip"
       proguardRules="proguard.txt"/>
   <library
+      name=":@@:react-native-community_netinfo::release"
+      jars="C:\Users\Sathish\.gradle\caches\8.10.2\transforms\4a27a628b058e961557943b20cfb9357\transformed\out\jars\classes.jar;C:\Users\Sathish\.gradle\caches\8.10.2\transforms\4a27a628b058e961557943b20cfb9357\transformed\out\jars\libs\R.jar"
+      resolved="HavenSync:react-native-community_netinfo:unspecified"
+      partialResultsDir="C:\Users\Sathish\App\node_modules\@react-native-community\netinfo\android\build\intermediates\lint_vital_partial_results\release\lintVitalAnalyzeRelease\out"
+      folder="C:\Users\Sathish\.gradle\caches\8.10.2\transforms\4a27a628b058e961557943b20cfb9357\transformed\out"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
       name=":@@:react-native-picker_picker::release"
       jars="C:\Users\Sathish\.gradle\caches\8.10.2\transforms\07a8bf93be57e2c893db5348074582dc\transformed\out\jars\classes.jar;C:\Users\Sathish\.gradle\caches\8.10.2\transforms\07a8bf93be57e2c893db5348074582dc\transformed\out\jars\libs\R.jar"
       resolved="HavenSync:react-native-picker_picker:unspecified"
@@ -621,6 +635,20 @@
       resolved="HavenSync:react-native-ble-plx:unspecified"
       partialResultsDir="C:\Users\Sathish\App\node_modules\react-native-ble-plx\android\build\intermediates\lint_vital_partial_results\release\lintVitalAnalyzeRelease\out"
       folder="C:\Users\Sathish\.gradle\caches\8.10.2\transforms\423e098752594f480ce2cffa629ff19a\transformed\out"
+      manifest="AndroidManifest.xml"
+      resFolder="res"
+      assetsFolder="assets"
+      lintJar="lint.jar"
+      publicResources="public.txt"
+      symbolFile="R.txt"
+      externalAnnotations="annotations.zip"
+      proguardRules="proguard.txt"/>
+  <library
+      name=":@@:react-native-bluetooth-status::release"
+      jars="C:\Users\Sathish\.gradle\caches\8.10.2\transforms\82baa28ab9406ccd0bce1881cd242815\transformed\out\jars\classes.jar;C:\Users\Sathish\.gradle\caches\8.10.2\transforms\82baa28ab9406ccd0bce1881cd242815\transformed\out\jars\libs\R.jar"
+      resolved="HavenSync:react-native-bluetooth-status:unspecified"
+      partialResultsDir="C:\Users\Sathish\App\node_modules\react-native-bluetooth-status\android\build\intermediates\lint_vital_partial_results\release\lintVitalAnalyzeRelease\out"
+      folder="C:\Users\Sathish\.gradle\caches\8.10.2\transforms\82baa28ab9406ccd0bce1881cd242815\transformed\out"
       manifest="AndroidManifest.xml"
       resFolder="res"
       assetsFolder="assets"

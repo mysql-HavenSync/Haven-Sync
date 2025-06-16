@@ -514,11 +514,17 @@
       name=":@@:react-native-community_geolocation::release"
       project=":react-native-community_geolocation"/>
   <library
+      name=":@@:react-native-community_netinfo::release"
+      project=":react-native-community_netinfo"/>
+  <library
       name=":@@:react-native-picker_picker::release"
       project=":react-native-picker_picker"/>
   <library
       name=":@@:react-native-ble-plx::release"
       project=":react-native-ble-plx"/>
+  <library
+      name=":@@:react-native-bluetooth-status::release"
+      project=":react-native-bluetooth-status"/>
   <library
       name=":@@:react-native-date-picker::release"
       project=":react-native-date-picker"/>
