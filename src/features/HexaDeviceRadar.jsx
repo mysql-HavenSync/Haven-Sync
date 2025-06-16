@@ -1,6 +1,9 @@
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import React, { useState, useEffect, useRef } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
+import NetInfo from '@react-native-community/netinfo';
+import BluetoothStateManager from 'react-native-bluetooth-status';
+import { PermissionsAndroid } from 'react-native';
 import {
   View,
   Text,
@@ -122,6 +125,45 @@ const goToDashboard = () => {
   resetForm();
   navigation.navigate('HexaDashboard');
 };
+useEffect(() => {
+  const checkConnectivity = async () => {
+    const netInfo = await NetInfo.fetch();
+    const bluetoothEnabled = await BluetoothStateManager.getState();
+
+    if (!netInfo.isConnected || netInfo.type !== 'wifi') {
+      Alert.alert(
+        'WiFi Required',
+        'Please turn on WiFi to continue device setup.',
+        [{ text: 'OK' }]
+      );
+    }
+
+    if (bluetoothEnabled !== 'on') {
+      Alert.alert(
+        'Bluetooth Required',
+        'Please turn on Bluetooth to connect to your device.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
+  // Ask for necessary permissions on Android
+  const requestPermissions = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+        ]);
+      } catch (err) {
+        console.warn('Permission error', err);
+      }
+    }
+  };
+
+  requestPermissions().then(checkConnectivity);
+}, []);
 
 const addAnotherDevice = () => {
   setShowSuccessPopup(false);
