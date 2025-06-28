@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.HavenSync.app-mergeDebugResources-57:/values-ta/values-ta.xml",
+            "outputFile": "com.HavenSync.app-mergeDebugResources-80:/values-ta/values-ta.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Sathish\\.gradle\\caches\\8.10.2\\transforms\\d6757bc0b38a6f8eb423304ca67afbfb\\transformed\\play-services-base-18.5.0\\res\\values-ta\\values.xml",

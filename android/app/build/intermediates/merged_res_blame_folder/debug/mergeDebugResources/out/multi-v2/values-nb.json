@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.HavenSync.app-mergeDebugResources-57:/values-nb/values-nb.xml",
+            "outputFile": "com.HavenSync.app-mergeDebugResources-80:/values-nb/values-nb.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Sathish\\.gradle\\caches\\8.10.2\\transforms\\d695aa439ccbb127d45b1a43171f757a\\transformed\\media3-ui-1.4.1\\res\\values-nb\\values-nb.xml",
@@ -40,7 +40,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Sathish\\App\\node_modules\\react-native-date-picker\\android\\build\\intermediates\\packaged_res\\debug\\packageDebugResources\\values-nb\\values-nb.xml",
+                    "source": "C:\\Users\\Sathish\\App-Final\\node_modules\\react-native-date-picker\\android\\build\\intermediates\\packaged_res\\debug\\packageDebugResources\\values-nb\\values-nb.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4",

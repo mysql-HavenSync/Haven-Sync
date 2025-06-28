@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.HavenSync.app-mergeDebugResources-57:/values-mk/values-mk.xml",
+            "outputFile": "com.HavenSync.app-mergeDebugResources-80:/values-mk/values-mk.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Sathish\\.gradle\\caches\\8.10.2\\transforms\\ff968d94b7ff80c1bf1aeed6ee1f9b85\\transformed\\media3-exoplayer-1.4.1\\res\\values-mk\\values-mk.xml",
