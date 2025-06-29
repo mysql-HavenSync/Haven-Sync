@@ -26,29 +26,30 @@ export default function HexaSignUpScreen({ navigation }) {
   };
 
   const handleSignUp = () => {
-    if (!name.trim() || !email.trim() || !password || !confirmPassword) {
-      alert('Please fill in all fields');
-      return;
-    }
+  if (!name.trim() || !email.trim() || !password || !confirmPassword) {
+    alert('Please fill in all fields');
+    return;
+  }
 
-    if (!validateEmail(email)) {
-      alert('Please enter a valid email address');
-      return;
-    }
+  if (!validateEmail(email)) {
+    alert('Please enter a valid email address');
+    return;
+  }
 
-    if (password.length < 6) {
-      alert('Password must be at least 6 characters');
-      return;
-    }
+  if (password.length < 6) {
+    alert('Password must be at least 6 characters');
+    return;
+  }
 
-    if (password !== confirmPassword) {
-      alert('Passwords do not match!');
-      return;
-    }
+  if (password !== confirmPassword) {
+    alert('Passwords do not match!');
+    return;
+  }
 
-    // Proceed to dashboard or your signup API call
-    navigation.navigate('HexaDashboard');
-  };
+  alert('Account created successfully!');
+  navigation.replace('HexaLoginScreen'); // ✅ Go to Login screen
+};
+
 
   return (
     <LinearGradient colors={['#c4d3d2', '#c4d3d2']} style={styles.container}>

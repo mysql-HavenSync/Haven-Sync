@@ -9,64 +9,64 @@
 9        android:targetSdkVersion="34" />
 10
 11    <uses-permission android:name="android.permission.INTERNET" />
-11-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:3:5-67
-11-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:3:22-64
+11-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:3:5-67
+11-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:3:22-64
 12    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-12-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:4:5-79
-12-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:4:22-76
+12-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:4:5-79
+12-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:4:22-76
 13    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-13-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:5:5-81
-13-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:5:22-78
+13-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:5:5-81
+13-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:5:22-78
 14    <uses-permission
-14-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:6:5-68
+14-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:6:5-68
 15        android:name="android.permission.BLUETOOTH"
-15-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:6:22-65
+15-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:6:22-65
 16        android:maxSdkVersion="30" />
 16-->[com.polidea.rxandroidble2:rxandroidble:1.17.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\065a72c032b14c2574fbeaf3a56b01f8\transformed\rxandroidble-1.17.2\AndroidManifest.xml:12:9-35
 17    <uses-permission
-17-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:7:5-74
+17-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:7:5-74
 18        android:name="android.permission.BLUETOOTH_ADMIN"
-18-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:7:22-71
+18-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:7:22-71
 19        android:maxSdkVersion="30" />
 19-->[com.polidea.rxandroidble2:rxandroidble:1.17.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\065a72c032b14c2574fbeaf3a56b01f8\transformed\rxandroidble-1.17.2\AndroidManifest.xml:15:9-35
 20    <uses-permission
-20-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:8:5-73
+20-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:8:5-73
 21        android:name="android.permission.BLUETOOTH_SCAN"
-21-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:8:22-70
+21-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:8:22-70
 22        android:usesPermissionFlags="neverForLocation" />
 22-->[com.polidea.rxandroidble2:rxandroidble:1.17.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\065a72c032b14c2574fbeaf3a56b01f8\transformed\rxandroidble-1.17.2\AndroidManifest.xml:24:9-55
 23    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-23-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:9:5-76
-23-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:9:22-73
+23-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:9:5-76
+23-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:9:22-73
 24    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-24-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:10:5-76
-24-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:10:22-73
+24-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:10:5-76
+24-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:10:22-73
 25    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-25-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:11:5-76
-25-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:11:22-73
+25-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:11:5-76
+25-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:11:22-73
 26    <uses-permission android:name="android.permission.CAMERA" />
-26-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:12:5-65
-26-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:12:22-62
+26-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:12:5-65
+26-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:12:22-62
 27    <uses-permission android:name="android.permission.VIBRATE" />
-27-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:13:5-66
-27-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:13:22-63
+27-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:13:5-66
+27-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:13:22-63
 28
 29    <uses-feature
-29-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:14:5-84
+29-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:14:5-84
 30        android:name="android.hardware.camera"
-30-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:14:19-57
+30-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:14:19-57
 31        android:required="true" />
-31-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:14:58-81
+31-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:14:58-81
 32    <uses-feature android:name="android.hardware.camera.autofocus" />
-32-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:15:1-66
-32-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:15:15-63
+32-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:15:1-66
+32-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:15:15-63
 33
 34    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-34-->[:react-native-community_netinfo] C:\Users\Sathish\App\node_modules\@react-native-community\netinfo\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:7:5-79
-34-->[:react-native-community_netinfo] C:\Users\Sathish\App\node_modules\@react-native-community\netinfo\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:7:22-76
+34-->[:react-native-community_netinfo] C:\Users\Sathish\Haven-Sync\node_modules\@react-native-community\netinfo\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:7:5-79
+34-->[:react-native-community_netinfo] C:\Users\Sathish\Haven-Sync\node_modules\@react-native-community\netinfo\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:7:22-76
 35    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
-35-->[:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:10:5-79
-35-->[:react-native-wifi-reborn] C:\Users\Sathish\App\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:10:22-76
+35-->[:react-native-wifi-reborn] C:\Users\Sathish\Haven-Sync\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:10:5-79
+35-->[:react-native-wifi-reborn] C:\Users\Sathish\Haven-Sync\node_modules\react-native-wifi-reborn\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:10:22-76
 36
 37    <queries>
 37-->[androidx.camera:camera-extensions:1.5.0-alpha03] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\48d23dac5e7293f854839b77b0067053\transformed\camera-extensions-1.5.0-alpha03\AndroidManifest.xml:22:5-26:15
@@ -97,66 +97,66 @@
 50-->[com.polidea.rxandroidble2:rxandroidble:1.17.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\065a72c032b14c2574fbeaf3a56b01f8\transformed\rxandroidble-1.17.2\AndroidManifest.xml:19:29-83
 51
 52    <application
-52-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:17:5-37:19
+52-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:17:5-37:19
 53        android:name="com.HavenSync.MainApplication"
-53-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:18:7-38
+53-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:18:7-38
 54        android:allowBackup="false"
-54-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:22:7-34
+54-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:22:7-34
 55        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
 55-->[androidx.core:core:1.13.1] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\68f4795e116e40cd25a5d63e0c2c845a\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
 56        android:extractNativeLibs="false"
 57        android:icon="@mipmap/ic_launcher"
-57-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:20:7-41
+57-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:20:7-41
 58        android:label="@string/app_name"
-58-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:19:7-39
+58-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:19:7-39
 59        android:roundIcon="@mipmap/ic_launcher_round"
-59-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:21:7-52
+59-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:21:7-52
 60        android:supportsRtl="true"
-60-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:24:7-33
+60-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:24:7-33
 61        android:theme="@style/AppTheme" >
-61-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:23:7-38
+61-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:23:7-38
 62        <activity
-62-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:25:7-36:18
+62-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:25:7-36:18
 63            android:name="com.HavenSync.MainActivity"
-63-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:26:9-37
+63-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:26:9-37
 64            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
-64-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:28:9-118
+64-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:28:9-118
 65            android:exported="true"
-65-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:31:9-32
+65-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:31:9-32
 66            android:label="@string/app_name"
-66-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:27:9-41
+66-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:27:9-41
 67            android:launchMode="singleTask"
-67-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:29:9-40
+67-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:29:9-40
 68            android:windowSoftInputMode="adjustResize" >
-68-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:30:9-51
+68-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:30:9-51
 69            <intent-filter>
-69-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:32:9-35:25
+69-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:32:9-35:25
 70                <action android:name="android.intent.action.MAIN" />
-70-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:33:13-65
-70-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:33:21-62
+70-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:33:13-65
+70-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:33:21-62
 71
 72                <category android:name="android.intent.category.LAUNCHER" />
-72-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:34:13-73
-72-->C:\Users\Sathish\App\android\app\src\main\AndroidManifest.xml:34:23-70
+72-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:34:13-73
+72-->C:\Users\Sathish\Haven-Sync\android\app\src\main\AndroidManifest.xml:34:23-70
 73            </intent-filter>
 74        </activity>
 75
 76        <provider
-76-->[:react-native-image-picker] C:\Users\Sathish\App\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:8:9-16:20
+76-->[:react-native-image-picker] C:\Users\Sathish\Haven-Sync\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:8:9-16:20
 77            android:name="com.imagepicker.ImagePickerProvider"
-77-->[:react-native-image-picker] C:\Users\Sathish\App\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:9:13-63
+77-->[:react-native-image-picker] C:\Users\Sathish\Haven-Sync\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:9:13-63
 78            android:authorities="com.HavenSync.imagepickerprovider"
-78-->[:react-native-image-picker] C:\Users\Sathish\App\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:10:13-71
+78-->[:react-native-image-picker] C:\Users\Sathish\Haven-Sync\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:10:13-71
 79            android:exported="false"
-79-->[:react-native-image-picker] C:\Users\Sathish\App\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:11:13-37
+79-->[:react-native-image-picker] C:\Users\Sathish\Haven-Sync\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:11:13-37
 80            android:grantUriPermissions="true" >
-80-->[:react-native-image-picker] C:\Users\Sathish\App\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:12:13-47
+80-->[:react-native-image-picker] C:\Users\Sathish\Haven-Sync\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:12:13-47
 81            <meta-data
-81-->[:react-native-image-picker] C:\Users\Sathish\App\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:13:13-15:70
+81-->[:react-native-image-picker] C:\Users\Sathish\Haven-Sync\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:13:13-15:70
 82                android:name="android.support.FILE_PROVIDER_PATHS"
-82-->[:react-native-image-picker] C:\Users\Sathish\App\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:14:17-67
+82-->[:react-native-image-picker] C:\Users\Sathish\Haven-Sync\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:14:17-67
 83                android:resource="@xml/imagepicker_provider_paths" />
-83-->[:react-native-image-picker] C:\Users\Sathish\App\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:15:17-67
+83-->[:react-native-image-picker] C:\Users\Sathish\Haven-Sync\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\release\processReleaseManifest\AndroidManifest.xml:15:17-67
 84        </provider>
 85
 86        <uses-library

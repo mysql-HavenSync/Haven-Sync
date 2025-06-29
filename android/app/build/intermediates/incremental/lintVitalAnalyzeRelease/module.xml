@@ -1,6 +1,6 @@
 <lint-module
     format="1"
-    dir="C:\Users\Sathish\App\android\app"
+    dir="C:\Users\Sathish\Haven-Sync\android\app"
     name=":app"
     type="APP"
     maven="HavenSync:app:unspecified"
