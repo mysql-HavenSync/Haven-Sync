@@ -226,19 +226,19 @@ export default function HexaLoginScreen({ navigation }) {
   // ✅ Check if it's a server error (like 400/401)
   if (err?.response) {
     console.log('🔴 Server error response:', err.response.status, err.response.data);
-    alert(err.response.data?.message || 'Login failed. Please try again.');
+    
   }
 
   // ✅ Check if request was made but no response (network issue)
   else if (err?.request) {
     console.log('🔌 No response from backend:', err.request);
-    alert('No response from server. Please check your connection.');
+    
   }
 
   // ✅ Completely unknown error (your current case)
   else {
     console.log('⚠️ Unknown login error object:', err);
-    alert('Something went wrong. Try again.');
+    // Handle unknown error
   }
 
   setLoginStatus('failed');
