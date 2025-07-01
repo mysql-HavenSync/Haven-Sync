@@ -2,9 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Animated } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
-const OTPVerification = ({ navigation }) => {
+const OTPVerification = ({ route, navigation }) => {
   const [otp, setOtp] = useState('');
+  const { email } = route.params; // ✅ get email from previous screen
 
+  const handleVerifyOTP = async () => {
+    if (!otp || otp.length !== 6) {
+      alert('Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    try {
+      const response = await api.post('/api/auth/verify-otp', { email, otp });
+      console.log('✅ OTP verified:', response.data);
+
+      alert('OTP verified successfully!');
+      navigation.navigate('ResetPassword', { email }); // ✅ Pass email to reset screen
+    } catch (error) {
+      console.error('❌ OTP verification error:', error?.response?.data || error.message);
+      alert(error?.response?.data?.message || 'Invalid or expired OTP');
+    }
+  };
   // Animated values
   const titleAnimation = new Animated.Value(0);
   const subtitleAnimation = new Animated.Value(0);
@@ -83,10 +101,7 @@ const OTPVerification = ({ navigation }) => {
         <Animated.View
           style={{ opacity: buttonAnimation }} // Apply animation to button
         >
-          <TouchableOpacity
-            onPress={() => navigation.navigate('ResetPassword')}
-            style={styles.buttonContainer}
-          >
+          <TouchableOpacity onPress={handleVerifyOTP} style={styles.buttonContainer}>
             <LinearGradient
               colors={['#00C9FF', '#92FE9D']}
               start={{ x: 0, y: 0 }}
