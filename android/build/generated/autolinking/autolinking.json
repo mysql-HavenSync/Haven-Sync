@@ -1,20 +1,20 @@
 {
-  "root": "C:\\Users\\Sathish\\App",
-  "reactNativePath": "C:\\Users\\Sathish\\App\\node_modules\\react-native",
+  "root": "C:\\Users\\Sathish\\Haven-Sync",
+  "reactNativePath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native",
   "reactNativeVersion": "0.76",
   "dependencies": {
     "@react-native-community/blur": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\blur",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\blur",
       "name": "@react-native-community/blur",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\blur\\react-native-blur.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\blur\\react-native-blur.podspec",
           "version": "4.4.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\blur\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\blur\\android",
           "packageImportPath": "import com.reactnativecommunity.blurview.BlurViewPackage;",
           "packageInstance": "new BlurViewPackage()",
           "buildTypes": [],
@@ -24,7 +24,7 @@
             "AndroidBlurViewComponentDescriptor",
             "VibrancyViewComponentDescriptor"
           ],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/@react-native-community/blur/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/@react-native-community/blur/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -33,23 +33,23 @@
       }
     },
     "@react-native-community/datetimepicker": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\datetimepicker",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\datetimepicker",
       "name": "@react-native-community/datetimepicker",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\datetimepicker\\RNDateTimePicker.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\datetimepicker\\RNDateTimePicker.podspec",
           "version": "8.4.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\datetimepicker\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\datetimepicker\\android",
           "packageImportPath": "import com.reactcommunity.rndatetimepicker.RNDateTimePickerPackage;",
           "packageInstance": "new RNDateTimePickerPackage()",
           "buildTypes": [],
           "libraryName": "RNDateTimePickerCGen",
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/@react-native-community/datetimepicker/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/@react-native-community/datetimepicker/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -58,23 +58,23 @@
       }
     },
     "@react-native-community/geolocation": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\geolocation",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\geolocation",
       "name": "@react-native-community/geolocation",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\geolocation\\react-native-geolocation.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\geolocation\\react-native-geolocation.podspec",
           "version": "3.4.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\geolocation\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\geolocation\\android",
           "packageImportPath": "import com.reactnativecommunity.geolocation.GeolocationPackage;",
           "packageInstance": "new GeolocationPackage()",
           "buildTypes": [],
           "libraryName": "RNCGeolocationSpec",
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/@react-native-community/geolocation/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/@react-native-community/geolocation/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -83,22 +83,22 @@
       }
     },
     "@react-native-community/netinfo": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\netinfo",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\netinfo",
       "name": "@react-native-community/netinfo",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\netinfo\\react-native-netinfo.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\netinfo\\react-native-netinfo.podspec",
           "version": "11.4.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\netinfo\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\netinfo\\android",
           "packageImportPath": "import com.reactnativecommunity.netinfo.NetInfoPackage;",
           "packageInstance": "new NetInfoPackage()",
           "buildTypes": [],
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/@react-native-community/netinfo/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/@react-native-community/netinfo/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -107,17 +107,17 @@
       }
     },
     "@react-native-community/slider": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\slider",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\slider",
       "name": "@react-native-community/slider",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\slider\\react-native-slider.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\slider\\react-native-slider.podspec",
           "version": "4.5.7",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-community\\slider\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\slider\\android",
           "packageImportPath": "import com.reactnativecommunity.slider.ReactSliderPackage;",
           "packageInstance": "new ReactSliderPackage()",
           "buildTypes": [],
@@ -125,7 +125,7 @@
           "componentDescriptors": [
             "RNCSliderComponentDescriptor"
           ],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/@react-native-community/slider/android/src/main/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/@react-native-community/slider/android/src/main/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -134,17 +134,17 @@
       }
     },
     "@react-native-picker/picker": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-picker\\picker",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-picker\\picker",
       "name": "@react-native-picker/picker",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-picker\\picker\\RNCPicker.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-picker\\picker\\RNCPicker.podspec",
           "version": "2.11.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\@react-native-picker\\picker\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-picker\\picker\\android",
           "packageImportPath": "import com.reactnativecommunity.picker.RNCPickerPackage;",
           "packageInstance": "new RNCPickerPackage()",
           "buildTypes": [],
@@ -153,7 +153,7 @@
             "RNCAndroidDialogPickerComponentDescriptor",
             "RNCAndroidDropdownPickerComponentDescriptor"
           ],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/@react-native-picker/picker/android/src/main/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/@react-native-picker/picker/android/src/main/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -162,23 +162,23 @@
       }
     },
     "react-native-ble-plx": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-ble-plx",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-ble-plx",
       "name": "react-native-ble-plx",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-ble-plx\\react-native-ble-plx.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-ble-plx\\react-native-ble-plx.podspec",
           "version": "3.5.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-ble-plx\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-ble-plx\\android",
           "packageImportPath": "import com.bleplx.BlePlxPackage;",
           "packageInstance": "new BlePlxPackage()",
           "buildTypes": [],
           "libraryName": "BlePlx",
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-ble-plx/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-ble-plx/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -187,22 +187,22 @@
       }
     },
     "react-native-bluetooth-status": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-bluetooth-status",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-bluetooth-status",
       "name": "react-native-bluetooth-status",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-bluetooth-status\\react-native-bluetooth-status.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-bluetooth-status\\react-native-bluetooth-status.podspec",
           "version": "1.5.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-bluetooth-status\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-bluetooth-status\\android",
           "packageImportPath": "import com.solinor.bluetoothstatus.RNBluetoothManagerPackage;",
           "packageInstance": "new RNBluetoothManagerPackage()",
           "buildTypes": [],
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-bluetooth-status/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-bluetooth-status/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -211,17 +211,17 @@
       }
     },
     "react-native-date-picker": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-date-picker",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-date-picker",
       "name": "react-native-date-picker",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-date-picker\\react-native-date-picker.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-date-picker\\react-native-date-picker.podspec",
           "version": "5.0.12",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-date-picker\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-date-picker\\android",
           "packageImportPath": "import com.henninghall.date_picker.DatePickerPackage;",
           "packageInstance": "new DatePickerPackage()",
           "buildTypes": [],
@@ -229,7 +229,7 @@
           "componentDescriptors": [
             "RNDatePickerComponentDescriptor"
           ],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-date-picker/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-date-picker/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -238,22 +238,22 @@
       }
     },
     "react-native-fast-image": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-fast-image",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-fast-image",
       "name": "react-native-fast-image",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-fast-image\\RNFastImage.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-fast-image\\RNFastImage.podspec",
           "version": "8.6.3",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-fast-image\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-fast-image\\android",
           "packageImportPath": "import com.dylanvann.fastimage.FastImageViewPackage;",
           "packageInstance": "new FastImageViewPackage()",
           "buildTypes": [],
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-fast-image/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-fast-image/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -262,22 +262,22 @@
       }
     },
     "react-native-geolocation-service": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-geolocation-service",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-geolocation-service",
       "name": "react-native-geolocation-service",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-geolocation-service\\react-native-geolocation-service.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-geolocation-service\\react-native-geolocation-service.podspec",
           "version": "5.3.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-geolocation-service\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-geolocation-service\\android",
           "packageImportPath": "import com.agontuk.RNFusedLocation.RNFusedLocationPackage;",
           "packageInstance": "new RNFusedLocationPackage()",
           "buildTypes": [],
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-geolocation-service/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-geolocation-service/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -286,17 +286,17 @@
       }
     },
     "react-native-gesture-handler": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-gesture-handler",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-gesture-handler",
       "name": "react-native-gesture-handler",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-gesture-handler\\RNGestureHandler.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-gesture-handler\\RNGestureHandler.podspec",
           "version": "2.25.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-gesture-handler\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-gesture-handler\\android",
           "packageImportPath": "import com.swmansion.gesturehandler.RNGestureHandlerPackage;",
           "packageInstance": "new RNGestureHandlerPackage()",
           "buildTypes": [],
@@ -305,7 +305,7 @@
             "RNGestureHandlerButtonComponentDescriptor",
             "RNGestureHandlerRootViewComponentDescriptor"
           ],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -314,23 +314,23 @@
       }
     },
     "react-native-image-picker": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-image-picker",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-image-picker",
       "name": "react-native-image-picker",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-image-picker\\react-native-image-picker.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-image-picker\\react-native-image-picker.podspec",
           "version": "8.2.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-image-picker\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-image-picker\\android",
           "packageImportPath": "import com.imagepicker.ImagePickerPackage;",
           "packageInstance": "new ImagePickerPackage()",
           "buildTypes": [],
           "libraryName": "RNImagePickerSpec",
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -339,22 +339,22 @@
       }
     },
     "react-native-linear-gradient": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-linear-gradient",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-linear-gradient",
       "name": "react-native-linear-gradient",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-linear-gradient\\BVLinearGradient.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-linear-gradient\\BVLinearGradient.podspec",
           "version": "2.8.3",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-linear-gradient\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-linear-gradient\\android",
           "packageImportPath": "import com.BV.LinearGradient.LinearGradientPackage;",
           "packageInstance": "new LinearGradientPackage()",
           "buildTypes": [],
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-linear-gradient/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-linear-gradient/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -363,23 +363,23 @@
       }
     },
     "react-native-permissions": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-permissions",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-permissions",
       "name": "react-native-permissions",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-permissions\\RNPermissions.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-permissions\\RNPermissions.podspec",
           "version": "5.4.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-permissions\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-permissions\\android",
           "packageImportPath": "import com.zoontek.rnpermissions.RNPermissionsPackage;",
           "packageInstance": "new RNPermissionsPackage()",
           "buildTypes": [],
           "libraryName": "RNPermissionsSpec",
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-permissions/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-permissions/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -388,23 +388,23 @@
       }
     },
     "react-native-reanimated": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-reanimated",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-reanimated",
       "name": "react-native-reanimated",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-reanimated\\RNReanimated.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-reanimated\\RNReanimated.podspec",
           "version": "3.18.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-reanimated\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-reanimated\\android",
           "packageImportPath": "import com.swmansion.reanimated.ReanimatedPackage;",
           "packageInstance": "new ReanimatedPackage()",
           "buildTypes": [],
           "libraryName": "rnreanimated",
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-reanimated/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-reanimated/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -413,17 +413,17 @@
       }
     },
     "react-native-safe-area-context": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-safe-area-context",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-safe-area-context",
       "name": "react-native-safe-area-context",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-safe-area-context\\react-native-safe-area-context.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-safe-area-context\\react-native-safe-area-context.podspec",
           "version": "5.4.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-safe-area-context\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-safe-area-context\\android",
           "packageImportPath": "import com.th3rdwave.safeareacontext.SafeAreaContextPackage;",
           "packageInstance": "new SafeAreaContextPackage()",
           "buildTypes": [],
@@ -432,7 +432,7 @@
             "RNCSafeAreaProviderComponentDescriptor",
             "RNCSafeAreaViewComponentDescriptor"
           ],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -441,17 +441,17 @@
       }
     },
     "react-native-screens": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-screens",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-screens",
       "name": "react-native-screens",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-screens\\RNScreens.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-screens\\RNScreens.podspec",
           "version": "4.11.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-screens\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-screens\\android",
           "packageImportPath": "import com.swmansion.rnscreens.RNScreensPackage;",
           "packageInstance": "new RNScreensPackage()",
           "buildTypes": [],
@@ -469,7 +469,7 @@
             "RNSScreenContentWrapperComponentDescriptor",
             "RNSModalScreenComponentDescriptor"
           ],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -478,17 +478,17 @@
       }
     },
     "react-native-svg": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-svg",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-svg",
       "name": "react-native-svg",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-svg\\RNSVG.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-svg\\RNSVG.podspec",
           "version": "15.12.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-svg\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-svg\\android",
           "packageImportPath": "import com.horcrux.svg.SvgPackage;",
           "packageInstance": "new SvgPackage()",
           "buildTypes": [],
@@ -524,7 +524,7 @@
             "RNSVGTSpanComponentDescriptor",
             "RNSVGUseComponentDescriptor"
           ],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-svg/android/src/main/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-svg/android/src/main/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -533,23 +533,23 @@
       }
     },
     "react-native-vector-icons": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-vector-icons",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-vector-icons",
       "name": "react-native-vector-icons",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-vector-icons\\RNVectorIcons.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-vector-icons\\RNVectorIcons.podspec",
           "version": "10.2.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-vector-icons\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-vector-icons\\android",
           "packageImportPath": "import com.oblador.vectoricons.VectorIconsPackage;",
           "packageInstance": "new VectorIconsPackage()",
           "buildTypes": [],
           "libraryName": "RNVectorIconsSpec",
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -558,22 +558,22 @@
       }
     },
     "react-native-video": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-video",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-video",
       "name": "react-native-video",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-video\\react-native-video.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-video\\react-native-video.podspec",
           "version": "6.14.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-video\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-video\\android",
           "packageImportPath": "import com.brentvatne.react.ReactVideoPackage;",
           "packageInstance": "new ReactVideoPackage()",
           "buildTypes": [],
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-video/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-video/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -582,22 +582,22 @@
       }
     },
     "react-native-vision-camera": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-vision-camera",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-vision-camera",
       "name": "react-native-vision-camera",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-vision-camera\\VisionCamera.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-vision-camera\\VisionCamera.podspec",
           "version": "4.6.4",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-vision-camera\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-vision-camera\\android",
           "packageImportPath": "import com.mrousavy.camera.react.CameraPackage;",
           "packageInstance": "new CameraPackage()",
           "buildTypes": [],
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-vision-camera/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-vision-camera/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -606,22 +606,22 @@
       }
     },
     "react-native-wifi-reborn": {
-      "root": "C:\\Users\\Sathish\\App\\node_modules\\react-native-wifi-reborn",
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-wifi-reborn",
       "name": "react-native-wifi-reborn",
       "platforms": {
         "ios": {
-          "podspecPath": "C:\\Users\\Sathish\\App\\node_modules\\react-native-wifi-reborn\\RNWifi.podspec",
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-wifi-reborn\\RNWifi.podspec",
           "version": "4.13.5",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "C:\\Users\\Sathish\\App\\node_modules\\react-native-wifi-reborn\\android",
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-wifi-reborn\\android",
           "packageImportPath": "import com.reactlibrary.rnwifi.RNWifiPackage;",
           "packageInstance": "new RNWifiPackage()",
           "buildTypes": [],
           "componentDescriptors": [],
-          "cmakeListsPath": "C:/Users/Sathish/App/node_modules/react-native-wifi-reborn/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/react-native-wifi-reborn/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -787,7 +787,7 @@
         {
           "name": "--path <path>",
           "description": "Path to the React Native project root.",
-          "default": "C:\\Users\\Sathish\\App"
+          "default": "C:\\Users\\Sathish\\Haven-Sync"
         },
         {
           "name": "--platform <string>",
@@ -1076,7 +1076,7 @@
   ],
   "project": {
     "ios": {
-      "sourceDir": "C:\\Users\\Sathish\\App\\ios",
+      "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\ios",
       "xcodeProject": {
         "name": "HexaHavenSmartHomeApp.xcodeproj",
         "path": ".",
@@ -1085,7 +1085,7 @@
       "assets": []
     },
     "android": {
-      "sourceDir": "C:\\Users\\Sathish\\App\\android",
+      "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\android",
       "appName": "app",
       "packageName": "com.HavenSync",
       "applicationId": "com.HavenSync",
