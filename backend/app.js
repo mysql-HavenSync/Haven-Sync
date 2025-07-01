@@ -1,12 +1,23 @@
 require('dotenv').config();
-require('./services/mqttClient'); // Import MQTT client at top
+require('./services/mqttClient');
 
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const db = require('./db');
+const pool = require('./db');
 
-const app = express(); // ✅ Initialize app before using it
+// ✅ Check MySQL DB connection
+pool.getConnection((err, conn) => {
+  if (err) {
+    console.error('❌ Failed to connect to MySQL DB:', err.code, err.message);
+  } else {
+    console.log('✅ MySQL DB connected successfully!');
+    conn.release();
+  }
+});
+
+const app = express();
 
 // ✅ Middleware
 app.use(cors());
@@ -35,8 +46,9 @@ app.get('/devices', async (req, res) => {
   }
 });
 
-// ✅ Start the server
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`✅ Backend running on http://localhost:${PORT}`);
+// ✅ Use PORT=3001 for local, or Railway's assigned port
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Server running on port ${PORT}`);
 });
