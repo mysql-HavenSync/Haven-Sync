@@ -8,6 +8,7 @@ import {
   Animated,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import api from '../api'; // Make sure this is present
 
 const ForgotPasswordRequest = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -38,6 +39,26 @@ const ForgotPasswordRequest = ({ navigation }) => {
       useNativeDriver: true,
     }).start();
   }, []);
+
+const handleSendOTP = async () => {
+  if (!email.trim()) {
+    alert('Please enter your email.');
+    return;
+  }
+
+  try {
+    const response = await api.post('/api/auth/forgot-password', { email });
+
+    console.log('✅ OTP sent:', response.data);
+    alert(response.data.message || 'OTP sent successfully!');
+
+    // Navigate to OTP screen and pass email
+    navigation.navigate('OTPVerification', { email });
+  } catch (error) {
+    console.error('❌ OTP error:', error?.response?.data || error.message);
+    alert(error?.response?.data?.message || 'Failed to send OTP. Try again.');
+  }
+};
 
   return (
     <LinearGradient colors={['#c4d3d2', '#e0e7e9']} style={styles.container}>

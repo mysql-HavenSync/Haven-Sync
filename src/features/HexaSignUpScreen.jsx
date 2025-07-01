@@ -1,3 +1,4 @@
+import api from '../api'; // ✅ adjust the path to api.js 
 import React, { useState } from 'react';
 import {
   View,
@@ -21,11 +22,11 @@ export default function HexaSignUpScreen({ navigation }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validateEmail = (email) => {
-    const regex = /^\S+@\S+\.\S+$/;
-    return regex.test(email);
-  };
+  const regex = /^\S+@\S+\.\S+$/;
+  return regex.test(email);
+};
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
   if (!name.trim() || !email.trim() || !password || !confirmPassword) {
     alert('Please fill in all fields');
     return;
@@ -46,8 +47,21 @@ export default function HexaSignUpScreen({ navigation }) {
     return;
   }
 
-  alert('Account created successfully!');
-  navigation.replace('HexaLoginScreen'); // ✅ Go to Login screen
+  try {
+    const response = await api.post('/api/auth/signup', {
+      name,
+      email,
+      password,
+      confirmPassword,
+    });
+    console.log('✅ Signup Response:', response.status, response.data); // <-- LOG THIS
+    
+    alert(response.data.message || 'Account created successfully!');
+    navigation.replace('HexaLoginScreen'); // ✅ Navigate on success
+  } catch (error) {
+    console.error('Signup error:', error.response?.data || error.message);
+    alert(error.response?.data?.message || 'Signup failed');
+  }
 };
 
 

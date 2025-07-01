@@ -11,6 +11,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FastImage from 'react-native-fast-image';
+import api from '../api'; // ✅ Live backend API instance
 
 const { width, height } = Dimensions.get('window');
 
@@ -29,22 +30,10 @@ export default function HexaLoginScreen({ navigation }) {
   const [titleOpacity] = useState(new Animated.Value(0));
   const [titleTranslateY] = useState(new Animated.Value(-30));
 
-  // Enhanced animation values for visual feedback
   const [feedbackScale] = useState(new Animated.Value(0));
   const [feedbackOpacity] = useState(new Animated.Value(0));
   const [pulseAnim] = useState(new Animated.Value(1));
   const [cardShakeAnim] = useState(new Animated.Value(0));
-
-  // Function to get gradient colors based on login status
-  const getGradientColors = () => {
-    if (loginStatus === 'success') {
-      return ['#4CAF50', '#8BC34A']; // Green gradient for success
-    } else if (loginStatus === 'failed') {
-      return ['#F44336', '#FF5722']; // Red gradient for error
-    } else {
-      return ['#00C9FF', '#92FE9D']; // Default blue-green gradient
-    }
-  };
 
   useEffect(() => {
     return () => {
@@ -71,9 +60,7 @@ export default function HexaLoginScreen({ navigation }) {
   useEffect(() => {
     let timer;
     if (loginStatus === 'failed' || loginStatus === 'success') {
-      // Enhanced visual feedback animations
       if (loginStatus === 'success') {
-        // Success animation - scale up with pulse
         Animated.sequence([
           Animated.parallel([
             Animated.spring(feedbackScale, {
@@ -105,7 +92,6 @@ export default function HexaLoginScreen({ navigation }) {
           ),
         ]).start();
       } else {
-        // Error animation - shake and show feedback
         Animated.parallel([
           Animated.spring(feedbackScale, {
             toValue: 1,
@@ -145,7 +131,6 @@ export default function HexaLoginScreen({ navigation }) {
 
       const timeoutDuration = 2500;
       timer = setTimeout(() => {
-        // Fade out feedback
         Animated.parallel([
           Animated.timing(feedbackOpacity, {
             toValue: 0,
@@ -173,7 +158,7 @@ export default function HexaLoginScreen({ navigation }) {
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [loginStatus, buttonScaleAnim, feedbackScale, feedbackOpacity, pulseAnim, cardShakeAnim]);
+  }, [loginStatus]);
 
   const handleFocus = input => {
     setFocusedInput(input);
@@ -195,63 +180,78 @@ export default function HexaLoginScreen({ navigation }) {
     }
   };
 
-  const getInputStyle = input =>
-    focusedInput === input ? styles.focusedInput : styles.defaultInput;
+  const shakeButton = () => {
+    Animated.sequence([
+      Animated.timing(buttonScaleAnim, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonScaleAnim, {
+        toValue: 1.05,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonScaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    console.log('📡 Sending login request with:', email, password);
+
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.trim() === '') {
-      setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 1000);
       setLoginStatus('failed');
-      Animated.sequence([
-        Animated.timing(buttonScaleAnim, {
-          toValue: 0.95,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonScaleAnim, {
-          toValue: 1.05,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonScaleAnim, {
-          toValue: 1,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      shakeButton();
       return;
     }
 
     setIsLoading(true);
-    setTimeout(() => {
-      const isSuccess = Date.now() % 2 === 0;
-      setLoginStatus(isSuccess ? 'success' : 'failed');
-      Animated.sequence([
-        Animated.timing(buttonScaleAnim, {
-          toValue: 0.95,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonScaleAnim, {
-          toValue: 1.05,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(buttonScaleAnim, {
-          toValue: 1,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-      ]).start();
-      if (isSuccess) {
-        setTimeout(() => {
-          navigation.replace('DashboardDrawer');
-        }, 1500);
-      }
-    }, 1000);
+    try {
+  const res = await api.post('/api/auth/login', { email, password }); // ✅ First await
+
+  console.log('✅ Login success:', res.data); // ✅ Now 'res' is defined
+
+      setLoginStatus('success');
+
+      setTimeout(() => {
+        navigation.replace('DashboardDrawer');
+      }, 1500);
+   } catch (err) {
+  console.error('❌ Login failed:', err?.message || err);
+
+  // ✅ Check if it's a server error (like 400/401)
+  if (err?.response) {
+    console.log('🔴 Server error response:', err.response.status, err.response.data);
+    alert(err.response.data?.message || 'Login failed. Please try again.');
+  }
+
+  // ✅ Check if request was made but no response (network issue)
+  else if (err?.request) {
+    console.log('🔌 No response from backend:', err.request);
+    alert('No response from server. Please check your connection.');
+  }
+
+  // ✅ Completely unknown error (your current case)
+  else {
+    console.log('⚠️ Unknown login error object:', err);
+    alert('Something went wrong. Try again.');
+  }
+
+  setLoginStatus('failed');
+  shakeButton();
+} finally {
+    setIsLoading(false);
+  }
+};
+
+  const getGradientColors = () => {
+    if (loginStatus === 'success') return ['#4CAF50', '#8BC34A'];
+    if (loginStatus === 'failed') return ['#F44336', '#FF5722'];
+    return ['#00C9FF', '#92FE9D'];
   };
 
   const getButtonText = () => {
@@ -267,14 +267,14 @@ export default function HexaLoginScreen({ navigation }) {
         icon: 'checkmark-circle',
         text: 'Login Successful!',
         color: '#4CAF50',
-        gif: require('../assets/gif/login.gif')
+        gif: require('../assets/gif/login.gif'),
       };
     } else if (loginStatus === 'failed') {
       return {
         icon: 'close-circle',
         text: 'Login Failed',
         color: '#F44336',
-        gif: require('../assets/gif/fail.gif')
+        gif: require('../assets/gif/fail.gif'),
       };
     }
     return null;
@@ -296,31 +296,15 @@ export default function HexaLoginScreen({ navigation }) {
         Ready To Sync
       </Animated.Text>
 
-      <Animated.View 
-        style={[
-          styles.card,
-          {
-            transform: [{ translateX: cardShakeAnim }],
-          },
-        ]}
-      >
-        <View style={[styles.inputWrapper, getInputStyle('email')]}>
+      <Animated.View style={[styles.card, { transform: [{ translateX: cardShakeAnim }] }]}>
+        <View style={[styles.inputWrapper, focusedInput === 'email' ? styles.focusedInput : styles.defaultInput]}>
           <Animated.Text
             style={[
               styles.floatingLabel,
               {
-                opacity: emailAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [1, 0],
-                }),
-                top: emailAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [14, -10],
-                }),
-                fontSize: emailAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [16, 12],
-                }),
+                opacity: emailAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
+                top: emailAnim.interpolate({ inputRange: [0, 1], outputRange: [14, -10] }),
+                fontSize: emailAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 12] }),
               },
             ]}
           >
@@ -339,23 +323,14 @@ export default function HexaLoginScreen({ navigation }) {
           />
         </View>
 
-        <View style={[styles.inputWrapper, getInputStyle('password')]}>
+        <View style={[styles.inputWrapper, focusedInput === 'password' ? styles.focusedInput : styles.defaultInput]}>
           <Animated.Text
             style={[
               styles.floatingLabel,
               {
-                opacity: passAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [1, 0],
-                }),
-                top: passAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [14, -10],
-                }),
-                fontSize: passAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [16, 12],
-                }),
+                opacity: passAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }),
+                top: passAnim.interpolate({ inputRange: [0, 1], outputRange: [14, -10] }),
+                fontSize: passAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 12] }),
               },
             ]}
           >
@@ -371,11 +346,7 @@ export default function HexaLoginScreen({ navigation }) {
             editable={!isLoading}
             returnKeyType="done"
           />
-          <TouchableOpacity
-            style={styles.eyeIcon}
-            onPress={() => setShowPassword(prev => !prev)}
-            disabled={isLoading}
-          >
+          <TouchableOpacity style={styles.eyeIcon} onPress={() => setShowPassword(p => !p)} disabled={isLoading}>
             <Icon name={showPassword ? 'eye-off' : 'eye'} size={22} color="#888" />
           </TouchableOpacity>
         </View>
@@ -395,12 +366,7 @@ export default function HexaLoginScreen({ navigation }) {
             onPress={handleLogin}
             style={{ overflow: 'hidden', borderRadius: 20 }}
           >
-            <LinearGradient
-              colors={getGradientColors()}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.gradientButton}
-            >
+            <LinearGradient colors={getGradientColors()} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.gradientButton}>
               <Text style={styles.buttonText}>{getButtonText()}</Text>
               {loginStatus === 'success' && (
                 <Icon name="checkmark-circle" size={20} color="#fff" style={styles.buttonIcon} />
@@ -414,42 +380,26 @@ export default function HexaLoginScreen({ navigation }) {
 
         <Text style={[styles.switchText, isLoading && styles.disabledText]}>
           Don't have an account?{' '}
-          <Text
-            onPress={() => !isLoading && navigation.navigate('HexaSignUpScreen')}
-            style={{ fontWeight: '700', color: isLoading ? '#999' : '#007BFF' }}
-          >
+          <Text onPress={() => !isLoading && navigation.navigate('HexaSignUpScreen')} style={{ fontWeight: '700', color: isLoading ? '#999' : '#007BFF' }}>
             Sign Up
           </Text>
         </Text>
       </Animated.View>
 
-      {/* Enhanced Feedback Overlay */}
       {feedbackContent && (
         <Animated.View
           style={[
             styles.feedbackOverlay,
             {
               opacity: feedbackOpacity,
-              transform: [
-                { scale: feedbackScale },
-                { scale: pulseAnim },
-              ],
+              transform: [{ scale: feedbackScale }, { scale: pulseAnim }],
             },
           ]}
         >
           <View style={[styles.feedbackContainer, { borderColor: feedbackContent.color }]}>
-            <FastImage
-              source={feedbackContent.gif}
-              style={styles.feedbackGif}
-              resizeMode={FastImage.resizeMode.contain}
-            />
+            <FastImage source={feedbackContent.gif} style={styles.feedbackGif} resizeMode={FastImage.resizeMode.contain} />
             <View style={styles.feedbackContent}>
-              <Icon 
-                name={feedbackContent.icon} 
-                size={40} 
-                color={feedbackContent.color} 
-                style={styles.feedbackIcon}
-              />
+              <Icon name={feedbackContent.icon} size={40} color={feedbackContent.color} style={styles.feedbackIcon} />
               <Text style={[styles.feedbackText, { color: feedbackContent.color }]}>
                 {feedbackContent.text}
               </Text>
@@ -460,6 +410,7 @@ export default function HexaLoginScreen({ navigation }) {
     </LinearGradient>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', alignItems: 'center' },

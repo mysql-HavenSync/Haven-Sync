@@ -1,8 +1,7 @@
 const nodemailer = require('nodemailer');
 
 module.exports = async function sendMail(to, message) {
-  if (process.env.NODE_ENV === 'production') {
-    // ✅ Real email sending
+  try {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -19,9 +18,7 @@ module.exports = async function sendMail(to, message) {
     });
 
     console.log(`✅ Email sent to ${to}`);
-  } else {
-    // 🧪 Development mode (mock only)
-    console.log(`📩 MOCK EMAIL → ${to}`);
-    console.log(`📝 Message: ${message}`);
+  } catch (err) {
+    console.error('❌ Failed to send email:', err.message);
   }
 };
