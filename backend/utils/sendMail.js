@@ -40,7 +40,7 @@ module.exports = async function sendMail(to, message) {
           <p style="font-size: 14px; color: #666;">⏰ This code expires in <strong>10 minutes</strong>.</p>
           <p style="font-size: 13px; color: #999;">If you didn’t request this, just ignore it.</p>
           <hr style="margin: 30px 0;">
-          <p style="font-size: 12px; color: #ccc; text-align: center;">© 2025 HavenSync • Powered by HexaHaven</p>
+          <p style="font-size: 12px; color: #ccc; text-align: center;">© 2025 HavenSync • Powered by HexaHaven Integrations</p>
         </div>
       `
     });
