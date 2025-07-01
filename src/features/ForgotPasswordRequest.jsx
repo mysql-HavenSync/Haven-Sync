@@ -40,25 +40,39 @@ const ForgotPasswordRequest = ({ navigation }) => {
     }).start();
   }, []);
 
-const handleSendOTP = async () => {
-  if (!email.trim()) {
-    alert('Please enter your email.');
-    return;
-  }
+  // 🔄 UPDATED FUNCTION - Replace your existing handleSendOTP with this
+  const handleSendOTP = async () => {
+    if (!email.trim()) {
+      alert('Please enter your email.');
+      return;
+    }
 
-  try {
-    const response = await api.post('/api/auth/forgot-password', { email });
+    try {
+      console.log('🚀 Sending OTP request for:', email);
+      
+      const response = await api.post('/api/auth/forgot-password', { email });
 
-    console.log('✅ OTP sent:', response.data);
-    alert(response.data.message || 'OTP sent successfully!');
+      console.log('✅ OTP Response:', response.data);
+      console.log('✅ Full Response:', response);
+      
+      // Show more detailed success message
+      const message = response.data.message || 'OTP sent successfully!';
+      alert(`${message}\n\nCheck your email (including spam folder) for the OTP code.`);
 
-    // Navigate to OTP screen and pass email
-    navigation.navigate('OTPVerification', { email });
-  } catch (error) {
-    console.error('❌ OTP error:', error?.response?.data || error.message);
-    alert(error?.response?.data?.message || 'Failed to send OTP. Try again.');
-  }
-};
+      // Navigate to OTP screen and pass email
+      navigation.navigate('OTPVerification', { email });
+    } catch (error) {
+      console.error('❌ Full Error Object:', error);
+      console.error('❌ Error Response:', error?.response);
+      console.error('❌ Error Data:', error?.response?.data);
+      console.error('❌ Error Status:', error?.response?.status);
+      
+      const errorMessage = error?.response?.data?.message || error.message || 'Failed to send OTP';
+      const errorDetails = error?.response?.data?.details || '';
+      
+      alert(`Error: ${errorMessage}${errorDetails ? '\nDetails: ' + errorDetails : ''}`);
+    }
+  };
 
   return (
     <LinearGradient colors={['#c4d3d2', '#e0e7e9']} style={styles.container}>
@@ -109,7 +123,7 @@ const handleSendOTP = async () => {
           <Animated.View style={{ opacity: buttonAnimation }}>
             <TouchableOpacity
               style={styles.buttonContainer}
-              onPress={() => navigation.navigate('OTPVerification')}
+              onPress={handleSendOTP} // ✅ this calls the updated function
             >
               <LinearGradient
                 colors={['#00C9FF', '#92FE9D']}

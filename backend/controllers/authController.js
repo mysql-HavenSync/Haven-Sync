@@ -61,39 +61,37 @@ exports.login = async (req, res) => {
 
 exports.requestOtp = async (req, res) => {
   const { email } = req.body;
-  console.log('📨 OTP requested for:', email); // Step 1
+  console.log('📨 OTP requested for:', email);
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins from now
 
   try {
-    // Check if user exists
     const [users] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
     if (users.length === 0) {
-      console.log('❌ No user found with email:', email); // Step 2
+      console.log('❌ No user found:', email);
       return res.status(404).json({ message: 'User not found' });
     }
 
     const userId = users[0].id;
-    console.log('✅ User found, ID:', userId); // Step 3
+    console.log('✅ Found user ID:', userId);
 
-    // Insert OTP
     await db.query(
       'INSERT INTO otps (user_id, otp_code, expires_at) VALUES (?, ?, ?)',
       [userId, otp, expiresAt]
     );
-    console.log('🧾 OTP stored in DB:', otp); // Step 4
+    console.log('🔐 OTP saved:', otp);
 
-    // Send email
     await sendMail(email, `Your HavenSync OTP is: ${otp}`);
-    console.log('✅ Email sent to:', email); // Step 5
+    console.log('✅ Email sent to:', email);
 
     res.json({ message: 'OTP sent to email' });
   } catch (err) {
-    console.error('❌ OTP request error:', err.message);
+    console.error('❌ Error in OTP:', err.message);
     res.status(500).json({ error: 'Failed to send OTP', details: err.message });
   }
 };
+
 
 
 exports.verifyOtp = async (req, res) => {
