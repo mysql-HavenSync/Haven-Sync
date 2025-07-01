@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Animated } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import api from '../api'; // Adjust the path if needed
+
 
 const OTPVerification = ({ route, navigation }) => {
   const [otp, setOtp] = useState('');
