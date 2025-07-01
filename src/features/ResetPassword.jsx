@@ -1,125 +1,124 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Animated } from 'react-native';
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  KeyboardAvoidingView, Platform, Animated, Alert
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
+import api from '../api'; // ✅ make sure this exists and is configured
 
-const ResetPassword = ({ navigation }) => {
+const ResetPassword = ({ navigation, route }) => {
+  const { email } = route.params || {};
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Animated values
   const titleAnimation = new Animated.Value(0);
   const subtitleAnimation = new Animated.Value(0);
   const inputAnimation = new Animated.Value(0);
   const buttonAnimation = new Animated.Value(0);
   const panelAnimation = new Animated.Value(0);
 
-  // Trigger animations on component mount
   useEffect(() => {
     Animated.timing(panelAnimation, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
+      toValue: 1, duration: 800, useNativeDriver: true,
     }).start();
 
     Animated.timing(titleAnimation, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
+      toValue: 1, duration: 1000, useNativeDriver: true,
     }).start();
 
     Animated.timing(subtitleAnimation, {
-      toValue: 1,
-      duration: 1200,
-      useNativeDriver: true,
+      toValue: 1, duration: 1200, useNativeDriver: true,
     }).start();
 
     Animated.timing(inputAnimation, {
-      toValue: 1,
-      duration: 1300,
-      useNativeDriver: true,
+      toValue: 1, duration: 1300, useNativeDriver: true,
     }).start();
 
     Animated.timing(buttonAnimation, {
-      toValue: 1,
-      duration: 1400,
-      useNativeDriver: true,
+      toValue: 1, duration: 1400, useNativeDriver: true,
     }).start();
   }, []);
+
+  const handleResetPassword = async () => {
+    if (!password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in both fields.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match.');
+      return;
+    }
+
+    try {
+      const res = await api.post(`/api/auth/reset-password?email=${email}`, {
+        newPassword: password,
+        confirmPassword: confirmPassword,
+      });
+
+      Alert.alert('Success', 'Password reset successful', [
+        { text: 'OK', onPress: () => navigation.navigate('HexaLoginScreen') },
+      ]);
+    } catch (err) {
+      console.error('❌ Reset password error:', err);
+      Alert.alert('Error', err?.response?.data?.message || 'Failed to reset password');
+    }
+  };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
-      <Animated.Text
-        style={[styles.title, { opacity: titleAnimation }]} // Apply animation to title
-      >
+      <Animated.Text style={[styles.title, { opacity: titleAnimation }]}>
         Reset Password
       </Animated.Text>
 
-      {/* White Panel Background */}
-      <Animated.View
-        style={[styles.panel, { opacity: panelAnimation }]}
-      >
-        <Animated.Text
-          style={[styles.subtitle, { opacity: subtitleAnimation }]} // Apply animation to subtitle
-        >
+      <Animated.View style={[styles.panel, { opacity: panelAnimation }]}>
+        <Animated.Text style={[styles.subtitle, { opacity: subtitleAnimation }]}>
           Enter your new password below
         </Animated.Text>
 
-        {/* Password Input */}
-        <Animated.View
-          style={[styles.inputWrapper, { opacity: inputAnimation }]} // Apply animation to password input
-        >
+        {/* New Password */}
+        <Animated.View style={[styles.inputWrapper, { opacity: inputAnimation }]}>
           <TextInput
-            style={styles.input}
             placeholder="New Password"
             placeholderTextColor="#aaa"
+            style={styles.input}
             secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
           />
           <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
             style={styles.eyeIcon}
-            onPress={() => setShowPassword(prev => !prev)}
           >
             <Icon name={showPassword ? 'eye-off' : 'eye'} size={22} color="#888" />
           </TouchableOpacity>
         </Animated.View>
 
-        {/* Confirm Password Input */}
-        <Animated.View
-          style={[styles.inputWrapper, { opacity: inputAnimation }]} // Apply animation to confirm password input
-        >
+        {/* Confirm Password */}
+        <Animated.View style={[styles.inputWrapper, { opacity: inputAnimation }]}>
           <TextInput
-            style={styles.input}
             placeholder="Confirm Password"
             placeholderTextColor="#aaa"
+            style={styles.input}
             secureTextEntry={!showConfirmPassword}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
           />
           <TouchableOpacity
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
             style={styles.eyeIcon}
-            onPress={() => setShowConfirmPassword(prev => !prev)}
           >
             <Icon name={showConfirmPassword ? 'eye-off' : 'eye'} size={22} color="#888" />
           </TouchableOpacity>
         </Animated.View>
 
-        <Animated.View
-          style={{ opacity: buttonAnimation }} // Apply animation to button
-        >
-          <TouchableOpacity
-            onPress={() => {
-              alert('Password reset successfully!');
-              navigation.navigate('HexaLoginScreen');
-            }}
-            style={styles.buttonContainer}
-          >
+        <Animated.View style={{ opacity: buttonAnimation }}>
+          <TouchableOpacity onPress={handleResetPassword} style={styles.buttonContainer}>
             <LinearGradient
               colors={['#00C9FF', '#92FE9D']}
               start={{ x: 0, y: 0 }}
@@ -144,28 +143,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
-  panel: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-  },
   title: {
     fontSize: 28,
     fontFamily: 'HoryzenDigital-24',
-    color: '#222',
     textAlign: 'center',
-    marginBottom: 24,
+    color: '#222',
+    marginBottom: 20,
   },
   subtitle: {
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
     marginBottom: 24,
+  },
+  panel: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 32,
+    elevation: 8,
   },
   inputWrapper: {
     marginBottom: 20,
@@ -190,22 +185,13 @@ const styles = StyleSheet.create({
   buttonContainer: {
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
     elevation: 10,
   },
   button: {
     paddingVertical: 10,
-    paddingHorizontal: 10,
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 5, height: 10 },
-    shadowOpacity: 30,
-    shadowRadius: 8,
     elevation: 3,
   },
   buttonText: {
@@ -213,8 +199,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 19,
     fontFamily: 'HoryzenDigital-24',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
   },
 });
