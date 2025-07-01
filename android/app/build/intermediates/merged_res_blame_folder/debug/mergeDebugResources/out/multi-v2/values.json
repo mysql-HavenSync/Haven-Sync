@@ -23,22 +23,22 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Sathish\\App-Final\\android\\app\\src\\main\\res\\values\\styles.xml",
+                    "source": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\datetimepicker\\android\\build\\intermediates\\packaged_res\\debug\\packageDebugResources\\values\\values.xml",
                     "from": {
-                        "startLines": "3",
-                        "startColumns": "4",
-                        "startOffsets": "57",
-                        "endLines": "6",
-                        "endColumns": "12",
-                        "endOffsets": "273"
+                        "startLines": "2,3,6,9,10,13",
+                        "startColumns": "4,4,4,4,4,4",
+                        "startOffsets": "100,181,389,572,653,861",
+                        "endLines": "2,5,8,9,12,15",
+                        "endColumns": "80,12,12,80,12,12",
+                        "endOffsets": "176,384,567,648,856,1039"
                     },
                     "to": {
-                        "startLines": "2554",
-                        "startColumns": "4",
-                        "startOffsets": "184093",
-                        "endLines": "2557",
-                        "endColumns": "12",
-                        "endOffsets": "184271"
+                        "startLines": "6594,6595,6598,6601,6602,6605",
+                        "startColumns": "4,4,4,4,4,4",
+                        "startOffsets": "462248,462329,462537,462720,462801,463009",
+                        "endLines": "6594,6597,6600,6601,6604,6607",
+                        "endColumns": "80,12,12,80,12,12",
+                        "endOffsets": "462324,462532,462715,462796,463004,463187"
                     }
                 },
                 {
@@ -116,6 +116,44 @@
                     }
                 },
                 {
+                    "source": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-date-picker\\android\\build\\intermediates\\packaged_res\\debug\\packageDebugResources\\values\\values.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,16,19,27,30,54",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "100,158,215,270,327,371,434,483,542,598,643,700,823,909,1276,1407,2235",
+                        "endLines": "2,3,4,5,6,7,8,9,10,11,12,15,18,26,29,53,57",
+                        "endColumns": "57,56,54,56,43,62,48,58,55,44,56,12,12,12,12,24,24",
+                        "endOffsets": "153,210,265,322,366,429,478,537,593,638,695,818,904,1271,1402,2230,2361"
+                    },
+                    "to": {
+                        "startLines": "2202,2268,2269,2356,2357,2412,2413,2414,2483,2515,2519,5949,5952,9955,9963,12624,13645",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "144522,152483,152540,159818,159875,166674,166737,166786,177309,181203,181679,420778,420901,690024,690391,803277,839932",
+                        "endLines": "2202,2268,2269,2356,2357,2412,2413,2414,2483,2515,2519,5951,5954,9962,9965,12647,13648",
+                        "endColumns": "57,56,54,56,43,62,48,58,55,44,56,12,12,12,12,24,24",
+                        "endOffsets": "144575,152535,152590,159870,159914,166732,166781,166840,177360,181243,181731,420896,420982,690386,690517,804100,840058"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\Sathish\\Haven-Sync\\android\\app\\src\\main\\res\\values\\styles.xml",
+                    "from": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "57",
+                        "endLines": "6",
+                        "endColumns": "12",
+                        "endOffsets": "273"
+                    },
+                    "to": {
+                        "startLines": "2554",
+                        "startColumns": "4",
+                        "startOffsets": "184093",
+                        "endLines": "2557",
+                        "endColumns": "12",
+                        "endOffsets": "184271"
+                    }
+                },
+                {
                     "source": "C:\\Users\\Sathish\\.gradle\\caches\\8.10.2\\transforms\\ecc0f8277b93e009ff567c29240cebca\\transformed\\savedstate-1.2.1\\res\\values\\values.xml",
                     "from": {
                         "startLines": "2",
@@ -152,23 +190,6 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Sathish\\App-Final\\android\\app\\build\\generated\\res\\resValues\\debug\\values\\gradleResValues.xml",
-                    "from": {
-                        "startLines": "6",
-                        "startColumns": "4",
-                        "startOffsets": "159",
-                        "endColumns": "63",
-                        "endOffsets": "218"
-                    },
-                    "to": {
-                        "startLines": "2159",
-                        "startColumns": "4",
-                        "startOffsets": "141461",
-                        "endColumns": "63",
-                        "endOffsets": "141520"
-                    }
-                },
-                {
                     "source": "C:\\Users\\Sathish\\.gradle\\caches\\8.10.2\\transforms\\d8d1aa9d892c703daa77e1eab3639a34\\transformed\\BlurView-version-2.0.4\\res\\values\\values.xml",
                     "from": {
                         "startLines": "2",
@@ -188,22 +209,22 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Sathish\\App-Final\\node_modules\\react-native-video\\android\\buildOutput_a15d4dee7fc4eda61b91308cbb6a2e72\\intermediates\\packaged_res\\debug\\packageDebugResources\\values\\values.xml",
+                    "source": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\blur\\android\\build\\intermediates\\packaged_res\\debug\\packageDebugResources\\values\\values.xml",
                     "from": {
-                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "150,207,245,293,333,394,443,491,546,613,672,727,773,830,937,1013,1123,1247,1370,1507,1591,1671,1748,1806,1878,1924,2004",
-                        "endLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,31",
-                        "endColumns": "56,37,47,39,60,48,47,54,66,58,54,45,56,106,75,109,123,122,136,83,79,76,57,71,45,79,12",
-                        "endOffsets": "202,240,288,328,389,438,486,541,608,667,722,768,825,932,1008,1118,1242,1365,1502,1586,1666,1743,1801,1873,1919,1999,2267"
+                        "startLines": "2,3,4,5",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,113,166,224",
+                        "endLines": "2,3,4,9",
+                        "endColumns": "57,52,57,24",
+                        "endOffsets": "108,161,219,447"
                     },
                     "to": {
-                        "startLines": "986,995,1002,1009,1104,1194,1195,1206,1845,1846,1847,1848,1849,2274,2275,2276,2278,2296,2297,2298,2407,2408,2489,2500,2501,2518,5972",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "57437,58082,58531,58986,65321,70949,70998,71880,122190,122257,122316,122371,122417,152829,152936,153012,153187,154733,154856,154993,166123,166203,178167,179264,179336,181599,421905",
-                        "endLines": "986,995,1002,1009,1104,1194,1195,1206,1845,1846,1847,1848,1849,2274,2275,2276,2278,2296,2297,2298,2407,2408,2489,2500,2501,2518,5975",
-                        "endColumns": "56,37,47,39,60,48,47,54,66,58,54,45,56,106,75,109,123,122,136,83,79,76,57,71,45,79,12",
-                        "endOffsets": "57489,58115,58574,59021,65377,70993,71041,71930,122252,122311,122366,122412,122469,152931,153007,153117,153306,154851,154988,155072,166198,166275,178220,179331,179377,181674,422168"
+                        "startLines": "693,2094,2095,10831",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "35667,137108,137161,720212",
+                        "endLines": "693,2094,2095,10835",
+                        "endColumns": "57,52,57,24",
+                        "endOffsets": "35720,137156,137214,720435"
                     }
                 },
                 {
@@ -315,22 +336,20 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Sathish\\App-Final\\node_modules\\@react-native-community\\datetimepicker\\android\\build\\intermediates\\packaged_res\\debug\\packageDebugResources\\values\\values.xml",
+                    "source": "C:\\Users\\Sathish\\Haven-Sync\\android\\app\\src\\main\\res\\values\\strings.xml",
                     "from": {
-                        "startLines": "2,3,6,9,10,13",
-                        "startColumns": "4,4,4,4,4,4",
-                        "startOffsets": "100,181,389,572,653,861",
-                        "endLines": "2,5,8,9,12,15",
-                        "endColumns": "80,12,12,80,12,12",
-                        "endOffsets": "176,384,567,648,856,1039"
+                        "startLines": "1",
+                        "startColumns": "4",
+                        "startOffsets": "17",
+                        "endColumns": "46",
+                        "endOffsets": "59"
                     },
                     "to": {
-                        "startLines": "6594,6595,6598,6601,6602,6605",
-                        "startColumns": "4,4,4,4,4,4",
-                        "startOffsets": "462248,462329,462537,462720,462801,463009",
-                        "endLines": "6594,6597,6600,6601,6604,6607",
-                        "endColumns": "80,12,12,80,12,12",
-                        "endOffsets": "462324,462532,462715,462796,463004,463187"
+                        "startLines": "2204",
+                        "startColumns": "4",
+                        "startOffsets": "144663",
+                        "endColumns": "46",
+                        "endOffsets": "144705"
                     }
                 },
                 {
@@ -389,41 +408,22 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\Sathish\\App-Final\\node_modules\\@react-native-community\\blur\\android\\build\\intermediates\\packaged_res\\debug\\packageDebugResources\\values\\values.xml",
+                    "source": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-video\\android\\buildOutput_a15d4dee7fc4eda61b91308cbb6a2e72\\intermediates\\packaged_res\\debug\\packageDebugResources\\values\\values.xml",
                     "from": {
-                        "startLines": "2,3,4,5",
-                        "startColumns": "4,4,4,4",
-                        "startOffsets": "55,113,166,224",
-                        "endLines": "2,3,4,9",
-                        "endColumns": "57,52,57,24",
-                        "endOffsets": "108,161,219,447"
+                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "150,207,245,293,333,394,443,491,546,613,672,727,773,830,937,1013,1123,1247,1370,1507,1591,1671,1748,1806,1878,1924,2004",
+                        "endLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,31",
+                        "endColumns": "56,37,47,39,60,48,47,54,66,58,54,45,56,106,75,109,123,122,136,83,79,76,57,71,45,79,12",
+                        "endOffsets": "202,240,288,328,389,438,486,541,608,667,722,768,825,932,1008,1118,1242,1365,1502,1586,1666,1743,1801,1873,1919,1999,2267"
                     },
                     "to": {
-                        "startLines": "693,2094,2095,10831",
-                        "startColumns": "4,4,4,4",
-                        "startOffsets": "35667,137108,137161,720212",
-                        "endLines": "693,2094,2095,10835",
-                        "endColumns": "57,52,57,24",
-                        "endOffsets": "35720,137156,137214,720435"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\Sathish\\App-Final\\node_modules\\react-native-date-picker\\android\\build\\intermediates\\packaged_res\\debug\\packageDebugResources\\values\\values.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,16,19,27,30,54",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "100,158,215,270,327,371,434,483,542,598,643,700,823,909,1276,1407,2235",
-                        "endLines": "2,3,4,5,6,7,8,9,10,11,12,15,18,26,29,53,57",
-                        "endColumns": "57,56,54,56,43,62,48,58,55,44,56,12,12,12,12,24,24",
-                        "endOffsets": "153,210,265,322,366,429,478,537,593,638,695,818,904,1271,1402,2230,2361"
-                    },
-                    "to": {
-                        "startLines": "2202,2268,2269,2356,2357,2412,2413,2414,2483,2515,2519,5949,5952,9955,9963,12624,13645",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "144522,152483,152540,159818,159875,166674,166737,166786,177309,181203,181679,420778,420901,690024,690391,803277,839932",
-                        "endLines": "2202,2268,2269,2356,2357,2412,2413,2414,2483,2515,2519,5951,5954,9962,9965,12647,13648",
-                        "endColumns": "57,56,54,56,43,62,48,58,55,44,56,12,12,12,12,24,24",
-                        "endOffsets": "144575,152535,152590,159870,159914,166732,166781,166840,177360,181243,181731,420896,420982,690386,690517,804100,840058"
+                        "startLines": "986,995,1002,1009,1104,1194,1195,1206,1845,1846,1847,1848,1849,2274,2275,2276,2278,2296,2297,2298,2407,2408,2489,2500,2501,2518,5972",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "57437,58082,58531,58986,65321,70949,70998,71880,122190,122257,122316,122371,122417,152829,152936,153012,153187,154733,154856,154993,166123,166203,178167,179264,179336,181599,421905",
+                        "endLines": "986,995,1002,1009,1104,1194,1195,1206,1845,1846,1847,1848,1849,2274,2275,2276,2278,2296,2297,2298,2407,2408,2489,2500,2501,2518,5975",
+                        "endColumns": "56,37,47,39,60,48,47,54,66,58,54,45,56,106,75,109,123,122,136,83,79,76,57,71,45,79,12",
+                        "endOffsets": "57489,58115,58574,59021,65377,70993,71041,71930,122252,122311,122366,122412,122469,152931,153007,153117,153306,154851,154988,155072,166198,166275,178220,179331,179377,181674,422168"
                     }
                 },
                 {
@@ -645,6 +645,23 @@
                     }
                 },
                 {
+                    "source": "C:\\Users\\Sathish\\Haven-Sync\\android\\app\\build\\generated\\res\\resValues\\debug\\values\\gradleResValues.xml",
+                    "from": {
+                        "startLines": "6",
+                        "startColumns": "4",
+                        "startOffsets": "159",
+                        "endColumns": "63",
+                        "endOffsets": "218"
+                    },
+                    "to": {
+                        "startLines": "2159",
+                        "startColumns": "4",
+                        "startOffsets": "141461",
+                        "endColumns": "63",
+                        "endOffsets": "141520"
+                    }
+                },
+                {
                     "source": "C:\\Users\\Sathish\\.gradle\\caches\\8.10.2\\transforms\\61813e17b933de5e558b7e675dfeb48a\\transformed\\recyclerview-1.3.0\\res\\values\\values.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10",
@@ -661,23 +678,6 @@
                         "endLines": "485,1191,1192,1193,1203,1204,1205,2007,12821",
                         "endColumns": "55,58,47,55,74,75,71,65,24",
                         "endOffsets": "24456,70840,70888,70944,71727,71803,71875,132632,811158"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\Sathish\\App-Final\\android\\app\\src\\main\\res\\values\\strings.xml",
-                    "from": {
-                        "startLines": "1",
-                        "startColumns": "4",
-                        "startOffsets": "17",
-                        "endColumns": "46",
-                        "endOffsets": "59"
-                    },
-                    "to": {
-                        "startLines": "2204",
-                        "startColumns": "4",
-                        "startOffsets": "144663",
-                        "endColumns": "46",
-                        "endOffsets": "144705"
                     }
                 }
             ]

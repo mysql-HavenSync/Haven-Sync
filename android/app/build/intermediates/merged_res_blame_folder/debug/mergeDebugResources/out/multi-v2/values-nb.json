@@ -23,6 +23,23 @@
                     }
                 },
                 {
+                    "source": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native-date-picker\\android\\build\\intermediates\\packaged_res\\debug\\packageDebugResources\\values-nb\\values-nb.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9,10,11,12",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,111,166,219,274,316,378,427,484,531,577",
+                        "endColumns": "55,54,52,54,41,61,48,56,46,45,52",
+                        "endOffsets": "106,161,214,269,311,373,422,479,526,572,625"
+                    },
+                    "to": {
+                        "startLines": "50,84,85,157,158,180,181,182,228,235,236",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "3560,7261,7316,12858,12913,14535,14597,14646,18246,18786,18832",
+                        "endColumns": "55,54,52,54,41,61,48,56,46,45,52",
+                        "endOffsets": "3611,7311,7364,12908,12950,14592,14641,14698,18288,18827,18880"
+                    }
+                },
+                {
                     "source": "C:\\Users\\Sathish\\.gradle\\caches\\8.10.2\\transforms\\ff968d94b7ff80c1bf1aeed6ee1f9b85\\transformed\\media3-exoplayer-1.4.1\\res\\values-nb\\values-nb.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10",
@@ -37,23 +54,6 @@
                         "startOffsets": "11014,11090,11152,11216,11287,11367,11445,11539,11636",
                         "endColumns": "75,61,63,70,79,77,93,96,70",
                         "endOffsets": "11085,11147,11211,11282,11362,11440,11534,11631,11702"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\Sathish\\App-Final\\node_modules\\react-native-date-picker\\android\\build\\intermediates\\packaged_res\\debug\\packageDebugResources\\values-nb\\values-nb.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9,10,11,12",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,111,166,219,274,316,378,427,484,531,577",
-                        "endColumns": "55,54,52,54,41,61,48,56,46,45,52",
-                        "endOffsets": "106,161,214,269,311,373,422,479,526,572,625"
-                    },
-                    "to": {
-                        "startLines": "50,84,85,157,158,180,181,182,228,235,236",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "3560,7261,7316,12858,12913,14535,14597,14646,18246,18786,18832",
-                        "endColumns": "55,54,52,54,41,61,48,56,46,45,52",
-                        "endOffsets": "3611,7311,7364,12908,12950,14592,14641,14698,18288,18827,18880"
                     }
                 },
                 {
