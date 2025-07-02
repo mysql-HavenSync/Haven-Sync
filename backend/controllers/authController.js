@@ -96,6 +96,7 @@ exports.signup = async (req, res) => {
   }
 };
 
+// ✅ FIXED: Include user_id in JWT token
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -107,8 +108,19 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: 'Incorrect password' });
 
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+    // ✅ FIXED: Include user_id in JWT payload
+    const token = jwt.sign({ 
+      id: user.id, 
+      user_id: user.user_id,  // ← This was missing!
+      email: user.email 
+    }, process.env.JWT_SECRET, {
       expiresIn: '1d',
+    });
+
+    console.log('🔍 JWT payload created:', { 
+      id: user.id, 
+      user_id: user.user_id, 
+      email: user.email 
     });
 
     // ✅ Return full user info including parent_user_id
@@ -125,6 +137,7 @@ exports.login = async (req, res) => {
       },
     });
   } catch (err) {
+    console.error('❌ Login error:', err);
     res.status(500).json({ error: 'Login failed', details: err.message });
   }
 };
