@@ -7,6 +7,10 @@ const cors = require('cors');
 const morgan = require('morgan');
 const db = require('./db');
 const pool = require('./db');
+
+// ✅ Routes
+const authRoutes = require('./routes/authRoutes');
+const mqttRoutes = require('./routes/mqttRoutes');
 const userRoutes = require('./routes/userRoutes'); // 👈 new line
 
 // ✅ Check MySQL DB connection
@@ -26,10 +30,8 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-// ✅ Routes
-const authRoutes = require('./routes/authRoutes');
-const mqttRoutes = require('./routes/mqttRoutes');
-const userRoutes = require('./routes/userRoutes');
+
+
 
 app.use('/api/auth', authRoutes);
 app.use('/api/mqtt', mqttRoutes);
