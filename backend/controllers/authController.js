@@ -3,6 +3,22 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sendMail = require('../utils/sendMail');
 
+function generateUserId(name, email) {
+  const firstName = name.trim().split(' ')[0].toUpperCase();
+  const emailPrefix = email.trim().split('@')[0].slice(0, 3).toUpperCase();
+
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(2);
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const hh = String(now.getHours()).padStart(2, '0');
+  const min = String(now.getMinutes()).padStart(2, '0');
+
+  const dateCode = `${yy}${mm}${dd}${hh}${min}`;
+  return `HS-${firstName}-${emailPrefix}-${dateCode}`;
+}
+
+
 // controllers/authController.js (signup)
 exports.signup = async (req, res) => {
   const { name, email, password, confirmPassword } = req.body;
@@ -23,11 +39,12 @@ exports.signup = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ Insert with user_id = NULL for main user
-    await db.query(
-      'INSERT INTO users (name, email, password, user_id) VALUES (?, ?, ?, ?)',
-      [name, email, hashedPassword, null]
-    );
+   const user_id = generateUserId(name, email); // ✅ custom ID
+
+await db.query(
+  'INSERT INTO users (name, email, password, user_id) VALUES (?, ?, ?, ?)',
+  [name, email, hashedPassword, user_id]
+);
 
     res.json({ message: 'User registered successfully' });
   } catch (err) {
