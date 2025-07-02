@@ -18,6 +18,23 @@ function generateUserId(name, email) {
   return `HS-${firstName}-${emailPrefix}-${dateCode}`;
 }
 
+// ✅ Generate unique Parent ID
+function generateParentId(email) {
+  const emailPrefix = email.trim().split('@')[0].slice(0, 4).toUpperCase();
+  const emailDomain = email.trim().split('@')[1].slice(0, 3).toUpperCase();
+  
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(2);
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const hh = String(now.getHours()).padStart(2, '0');
+  const min = String(now.getMinutes()).padStart(2, '0');
+  const sec = String(now.getSeconds()).padStart(2, '0');
+
+  const dateCode = `${yy}${mm}${dd}${hh}${min}${sec}`;
+  return `PAR-${emailPrefix}-${emailDomain}-${dateCode}`;
+}
+
 exports.signup = async (req, res) => {
   const { name, email, password, confirmPassword } = req.body;
 
@@ -36,16 +53,46 @@ exports.signup = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user_id = generateUserId(name, email); // ✅
+    const user_id = generateUserId(name, email);
+    const parent_user_id = generateParentId(email);
 
-    await db.query(
-      'INSERT INTO users (name, email, password, user_id) VALUES (?, ?, ?, ?)',
-      [name, email, hashedPassword, user_id]
-    );
+    // 🔍 DEBUG: Log generated values
+    console.log('🔍 DEBUG - Generated user_id:', user_id);
+    console.log('🔍 DEBUG - Generated parent_user_id:', parent_user_id);
+    console.log('🔍 DEBUG - About to insert:', { name, email, user_id, parent_user_id });
 
-    res.json({ message: 'User registered successfully' });
+    // First, let's check what columns exist in the users table
+    console.log('🔍 DEBUG - Checking table structure...');
+    const [columns] = await db.query('DESCRIBE users');
+    console.log('🔍 DEBUG - Users table columns:', columns.map(col => col.Field));
+
+    // Try inserting with explicit column names
+    const insertQuery = 'INSERT INTO users (name, email, password, user_id, parent_user_id) VALUES (?, ?, ?, ?, ?)';
+    console.log('🔍 DEBUG - Insert query:', insertQuery);
+    console.log('🔍 DEBUG - Insert values:', [name, email, '[HIDDEN]', user_id, parent_user_id]);
+
+    const result = await db.query(insertQuery, [name, email, hashedPassword, user_id, parent_user_id]);
+    
+    console.log('🔍 DEBUG - Insert result:', result);
+
+    // Verify the insertion
+    const [insertedUser] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+    console.log('🔍 DEBUG - Inserted user data:', insertedUser[0]);
+
+    res.json({ 
+      message: 'User registered successfully',
+      user_id: user_id,
+      parent_user_id: parent_user_id,
+      debug: {
+        generated_user_id: user_id,
+        generated_parent_user_id: parent_user_id,
+        inserted_data: insertedUser[0]
+      }
+    });
   } catch (err) {
-    res.status(500).json({ error: 'Signup failed', details: err.message });
+    console.error('❌ Signup error:', err);
+    console.error('❌ Error stack:', err.stack);
+    res.status(500).json({ error: 'Signup failed', details: err.message, stack: err.stack });
   }
 };
 
@@ -64,13 +111,14 @@ exports.login = async (req, res) => {
       expiresIn: '1d',
     });
 
-    // ✅ Return full user info
+    // ✅ Return full user info including parent_user_id
     res.json({
       message: 'Login successful',
       token,
       user: {
         id: user.id,
-        user_id: user.user_id, // ✅ important!
+        user_id: user.user_id,
+        parent_user_id: user.parent_user_id,
         name: user.name,
         email: user.email,
         role: user.role || 'User',
@@ -80,7 +128,6 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: 'Login failed', details: err.message });
   }
 };
-
 
 exports.requestOtp = async (req, res) => {
   const { email } = req.body;
@@ -114,8 +161,6 @@ exports.requestOtp = async (req, res) => {
     res.status(500).json({ error: 'Failed to send OTP', details: err.message });
   }
 };
-
-
 
 exports.verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
@@ -155,8 +200,6 @@ exports.verifyOtp = async (req, res) => {
     res.status(500).json({ error: 'OTP verification failed', details: err.message });
   }
 };
-
-
 
 exports.resetPassword = async (req, res) => {
   const { newPassword, confirmPassword } = req.body;
