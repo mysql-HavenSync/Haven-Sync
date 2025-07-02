@@ -54,8 +54,18 @@ exports.addsub_user = async (req, res) => {
       return res.status(400).json({ message: 'Main user not found' });
     }
 
-    console.log('✅ Main user found:', mainUser[0]);
-    const parentUserId = mainUser[0].parent_user_id;
+    // ✅ Main user found:
+console.log('✅ Main user found:', mainUser[0]);
+
+// 🔧 Get parent_user_id, fallback to main user's own user_id if null
+let parentUserId = mainUser[0].parent_user_id;
+if (!parentUserId) {
+  console.warn('⚠️ parent_user_id is null, falling back to main user_id');
+  parentUserId = mainUser[0].user_id;
+}
+
+console.log('🧾 Using parent_user_id:', parentUserId, 'for subuser insert');
+
 
     // Generate unique user_id for sub-user
     const subUserUserId = generateSubUserId(name, email);
@@ -150,8 +160,11 @@ exports.getsub_users = async (req, res) => {
       return res.status(404).json({ message: 'Main user not found' });
     }
 
-    const parentUserId = mainUser[0].parent_user_id;
-    console.log('🔍 Parent user ID:', parentUserId);
+    let parentUserId = mainUser[0].parent_user_id;
+
+if (!parentUserId) {
+  console.warn('⚠️ parent_user_id is null, falling back to main user_id');
+  parentUserId = mainUser[0].user_id;
 
     // ✅ FIXED: Query sub-users with better error handling
     const [subUsers] = await db.query(`
