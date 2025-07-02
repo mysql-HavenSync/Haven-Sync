@@ -1,4 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { setUser, setToken } from '../../redux/slices/authSlice'; // ✅ This too
+import { useDispatch } from 'react-redux'; // ✅ MISSING
+
 import {
   View,
   Text,
@@ -34,6 +37,7 @@ export default function HexaLoginScreen({ navigation }) {
   const [feedbackOpacity] = useState(new Animated.Value(0));
   const [pulseAnim] = useState(new Animated.Value(1));
   const [cardShakeAnim] = useState(new Animated.Value(0));
+  const dispatch = useDispatch(); 
 
   useEffect(() => {
     return () => {
