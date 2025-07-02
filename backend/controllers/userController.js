@@ -1,29 +1,23 @@
 const db = require('../db');
 const sendMail = require('../utils/sendMail');
-
-// controllers/usersController.js
-exports.addSubUser = async (req, res) => {
-  const mainUserId = req.user.id; // from JWT middleware
-  const { name, email, role } = req.body;
+// ✅ Add sub_user under main user
+exports.addsub_user = async (req, res) => {
+  const { name, email, mainUserId, role } = req.body;
 
   try {
     const [existing] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
     if (existing.length > 0) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: 'Email already exists' });
     }
 
-    const password = await bcrypt.hash('default123', 10); // or generate temp pass
-
-    // ✅ Insert with user_id set to main user's ID
     await db.query(
-      'INSERT INTO users (name, email, password, role, user_id) VALUES (?, ?, ?, ?, ?)',
-      [name, email, password, role || 'User', mainUserId]
+      'INSERT INTO users (name, email, user_id, role) VALUES (?, ?, ?, ?)',
+      [name, email, mainUserId, role || 'User']
     );
 
-    res.json({ message: 'Sub-user created successfully' });
+    res.json({ message: 'sub_user added successfully' });
   } catch (err) {
-    console.error('❌ Error creating sub-user:', err);
-    res.status(500).json({ message: 'Failed to create sub-user' });
+    res.status(500).json({ message: 'Failed to add sub_user', error: err.message });
   }
 };
 
