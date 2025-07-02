@@ -160,11 +160,12 @@ exports.getsub_users = async (req, res) => {
       return res.status(404).json({ message: 'Main user not found' });
     }
 
-    let parentUserId = mainUser[0].parent_user_id;
+let parentUserId = mainUser[0].parent_user_id;
 
 if (!parentUserId) {
   console.warn('⚠️ parent_user_id is null, falling back to main user_id');
-  parentUserId = mainUser[0].user_id;
+  parentUserId = mainUserId;
+}
 
     // ✅ FIXED: Query sub-users with better error handling
     const [subUsers] = await db.query(`
