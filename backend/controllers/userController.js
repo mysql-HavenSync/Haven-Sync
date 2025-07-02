@@ -18,7 +18,7 @@ function generateSubUserId(name, email) {
   return `HS-SUB-${firstName}-${emailPrefix}-${dateCode}`;
 }
 
-// ✅ FIXED: Add sub_user under main user
+// ✅ FIXED: Add sub_user using the correct table structure
 exports.addsub_user = async (req, res) => {
   const { name, email, mainUserId, role } = req.body;
 
@@ -31,7 +31,7 @@ exports.addsub_user = async (req, res) => {
       return res.status(400).json({ message: 'Name, email, and mainUserId are required' });
     }
 
-    // ✅ FIXED: Get the user_id from JWT token properly
+    // ✅ FIXED: Get the parent_user_id from JWT token properly
     const jwtUserId = req.user.user_id || req.user.id;
     console.log('🔍 JWT user_id:', jwtUserId);
     console.log('🔍 mainUserId from request:', mainUserId);
@@ -42,60 +42,43 @@ exports.addsub_user = async (req, res) => {
       return res.status(403).json({ message: 'You can only add sub-users for your own account' });
     }
 
-    // Check if email already exists
-    const [existing] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (existing.length > 0) {
+    // Check if email already exists in users table
+    const [existingUser] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+    if (existingUser.length > 0) {
       return res.status(400).json({ message: 'Email already exists' });
     }
 
-    // Verify that the main user exists
+    // Verify that the main user exists and get their parent_user_id
     const [mainUser] = await db.query('SELECT * FROM users WHERE user_id = ?', [mainUserId]);
     if (mainUser.length === 0) {
       return res.status(400).json({ message: 'Main user not found' });
     }
 
     console.log('✅ Main user found:', mainUser[0]);
+    const parentUserId = mainUser[0].parent_user_id; // This is what we'll use as main_user_id
 
     // Generate unique user_id for sub-user
     const subUserUserId = generateSubUserId(name, email);
     console.log('🔧 Generated sub-user ID:', subUserUserId);
     
-    // ✅ FIXED: Insert the sub-user with proper column mapping
-    const insertResult = await db.query(
-      'INSERT INTO users (name, email, user_id, role, password, parent_user_id) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, email, subUserUserId, role || 'User', null, mainUserId] // Use mainUserId as parent_user_id
-    );
-
-    console.log('✅ Sub-user inserted successfully:', insertResult);
-
-    // Create a record in user_relationships table to track parent-child relationship
-    // ✅ First, check if table exists, if not create it
+    // ✅ OPTION 1: If you want to store sub-users in the separate subuser table
     try {
-      await db.query(`
-        CREATE TABLE IF NOT EXISTS user_relationships (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          parent_user_id VARCHAR(255) NOT NULL,
-          child_user_id VARCHAR(255) NOT NULL,
-          relationship_type VARCHAR(50) NOT NULL DEFAULT 'sub_user',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          UNIQUE KEY unique_relationship (parent_user_id, child_user_id)
-        )
-      `);
-      console.log('✅ user_relationships table ready');
-    } catch (tableError) {
-      console.log('⚠️ Table might already exist or creation failed:', tableError.message);
-    }
-
-    // Insert relationship record
-    try {
+      // First, create the sub-user record in the users table (without password since they can't login independently)
       await db.query(
-        'INSERT INTO user_relationships (parent_user_id, child_user_id, relationship_type) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP',
-        [mainUserId, subUserUserId, 'sub_user']
+        'INSERT INTO users (name, email, user_id, role, password, parent_user_id) VALUES (?, ?, ?, ?, ?, ?)',
+        [name, email, subUserUserId, role || 'User', null, mainUserId]
       );
-      console.log('✅ Relationship record created');
-    } catch (relError) {
-      console.log('⚠️ Relationship record creation failed (non-critical):', relError.message);
+
+      // Then, create the relationship in the subuser table
+      await db.query(
+        'INSERT INTO subuser (main_user_id, sub_user_id, role) VALUES (?, ?, ?)',
+        [parentUserId, subUserUserId, role || 'User']
+      );
+
+      console.log('✅ Sub-user added to both users and subuser tables');
+    } catch (insertError) {
+      console.error('❌ Insert error:', insertError);
+      throw insertError;
     }
 
     console.log('✅ Sub-user added successfully');
@@ -115,7 +98,7 @@ exports.addsub_user = async (req, res) => {
   }
 };
 
-// ✅ FIXED: Get sub_users for the logged-in user only
+// ✅ FIXED: Get sub_users using the correct table structure
 exports.getsub_users = async (req, res) => {
   console.log('🔍 Request user from JWT:', req.user);
   
@@ -130,61 +113,34 @@ exports.getsub_users = async (req, res) => {
   console.log('🔍 Fetching sub-users for main user:', mainUserId);
 
   try {
-    // ✅ First, try to get sub-users using the parent_user_id column
-    let sub_users = [];
+    // First, get the parent_user_id for this user
+    const [mainUser] = await db.query('SELECT parent_user_id FROM users WHERE user_id = ?', [mainUserId]);
+    if (mainUser.length === 0) {
+      return res.status(404).json({ message: 'Main user not found' });
+    }
+
+    const parentUserId = mainUser[0].parent_user_id;
+    console.log('🔍 Parent user ID:', parentUserId);
+
+    // ✅ Query sub-users using the correct table structure
+    const [subUsers] = await db.query(`
+      SELECT 
+        u.id,
+        u.name,
+        u.email,
+        u.user_id,
+        u.role,
+        s.created_at as added_date
+      FROM subuser s
+      INNER JOIN users u ON s.sub_user_id = u.user_id
+      WHERE s.main_user_id = ?
+      ORDER BY s.created_at DESC
+    `, [parentUserId]);
     
-    try {
-      // Method 1: Using parent_user_id column (most reliable)
-      const [directUsers] = await db.query(`
-        SELECT id, name, email, user_id, role, created_at as added_date
-        FROM users 
-        WHERE parent_user_id = ? AND user_id != ?
-        ORDER BY created_at DESC
-      `, [mainUserId, mainUserId]);
-      
-      sub_users = directUsers;
-      console.log('✅ Found sub-users via parent_user_id:', sub_users.length);
-    } catch (directError) {
-      console.log('⚠️ Direct parent_user_id query failed:', directError.message);
-    }
-
-    // Method 2: If no results, try relationship table
-    if (sub_users.length === 0) {
-      try {
-        const [relationshipUsers] = await db.query(`
-          SELECT u.id, u.name, u.email, u.user_id, u.role, ur.created_at as added_date
-          FROM users u
-          INNER JOIN user_relationships ur ON u.user_id = ur.child_user_id
-          WHERE ur.parent_user_id = ? AND ur.relationship_type = 'sub_user'
-          ORDER BY ur.created_at DESC
-        `, [mainUserId]);
-        
-        sub_users = relationshipUsers;
-        console.log('✅ Found sub-users via relationships:', sub_users.length);
-      } catch (relationError) {
-        console.log('⚠️ Relationship table query failed:', relationError.message);
-      }
-    }
-
-    // Method 3: Fallback to naming convention
-    if (sub_users.length === 0) {
-      try {
-        const [fallbackUsers] = await db.query(`
-          SELECT id, name, email, user_id, role, created_at as added_date
-          FROM users 
-          WHERE user_id LIKE 'HS-SUB-%' AND user_id != ?
-          ORDER BY created_at DESC
-        `, [mainUserId]);
-        
-        sub_users = fallbackUsers;
-        console.log('✅ Found sub-users via naming convention:', sub_users.length);
-      } catch (fallbackError) {
-        console.log('⚠️ Fallback query failed:', fallbackError.message);
-      }
-    }
+    console.log('✅ Found sub-users:', subUsers.length);
     
     // ✅ Format the response properly
-    const formattedSubUsers = sub_users.map(user => ({
+    const formattedSubUsers = subUsers.map(user => ({
       id: user.id,
       user_id: user.user_id,
       name: user.name,
