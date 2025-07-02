@@ -18,8 +18,6 @@ function generateUserId(name, email) {
   return `HS-${firstName}-${emailPrefix}-${dateCode}`;
 }
 
-
-// controllers/authController.js (signup)
 exports.signup = async (req, res) => {
   const { name, email, password, confirmPassword } = req.body;
 
@@ -38,21 +36,18 @@ exports.signup = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const user_id = generateUserId(name, email); // ✅
 
-   const user_id = generateUserId(name, email); // ✅ custom ID
-
-await db.query(
-  'INSERT INTO users (name, email, password, user_id) VALUES (?, ?, ?, ?)',
-  [name, email, hashedPassword, user_id]
-);
+    await db.query(
+      'INSERT INTO users (name, email, password, user_id) VALUES (?, ?, ?, ?)',
+      [name, email, hashedPassword, user_id]
+    );
 
     res.json({ message: 'User registered successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Signup failed', details: err.message });
   }
 };
-
-
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
