@@ -15,7 +15,7 @@ import api from '../../api';
 export default function UserManagement({ navigation, onBack }) {
   const darkMode = useSelector(state => state.profile.darkMode);
   const loggedInUser = useSelector(state => state.auth.user);
- 
+ console.log('👤 Redux loggedInUser:', loggedInUser);
 
 
   const [users, setUsers] = useState([]);
