@@ -9,67 +9,180 @@ import {
   KeyboardAvoidingView,
   Platform,
   Animated,
+  Alert,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-export default function HexaSignUpScreen({ navigation }) {
+export default function HexaSignUpScreen({ navigation, route }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [accountType, setAccountType] = useState('main'); // Default to main
+  const [parentUserId, setParentUserId] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Get parent user ID from navigation params if passed (for sub-user creation)
+  React.useEffect(() => {
+    if (route?.params?.parentUserId) {
+      setParentUserId(route.params.parentUserId);
+      setAccountType('sub');
+    }
+  }, [route?.params]);
 
   const validateEmail = (email) => {
-  const regex = /^\S+@\S+\.\S+$/;
-  return regex.test(email);
-};
+    const regex = /^\S+@\S+\.\S+$/;
+    return regex.test(email);
+  };
 
   const handleSignUp = async () => {
-  if (!name.trim() || !email.trim() || !password || !confirmPassword) {
-    alert('Please fill in all fields');
-    return;
-  }
+    // Validation
+    if (!name.trim() || !email.trim() || !password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
 
-  if (!validateEmail(email)) {
-    alert('Please enter a valid email address');
-    return;
-  }
+    if (!validateEmail(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
 
-  if (password.length < 6) {
-    alert('Password must be at least 6 characters');
-    return;
-  }
+    if (password.length < 8) {
+      Alert.alert('Error', 'Password must be at least 8 characters');
+      return;
+    }
 
-  if (password !== confirmPassword) {
-    alert('Passwords do not match!');
-    return;
-  }
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match!');
+      return;
+    }
 
-  try {
-    const response = await api.post('/api/auth/signup', {
-      name,
-      email,
-      password,
-      confirmPassword,
-    });
-    console.log('✅ Signup Response:', response.status, response.data); // <-- LOG THIS
-    
-    alert(response.data.message || 'Account created successfully!');
-    navigation.replace('HexaLoginScreen'); // ✅ Navigate on success
-  } catch (error) {
-    console.error('Signup error:', error.response?.data || error.message);
-    alert(error.response?.data?.message || 'Signup failed');
-  }
-};
+    // If sub account, parent_user_id is required
+    if (accountType === 'sub' && !parentUserId.trim()) {
+      Alert.alert('Error', 'Parent User ID is required for sub accounts');
+      return;
+    }
 
+    setIsLoading(true);
+
+    try {
+      const requestData = {
+        name,
+        email,
+        password,
+        password_confirmation: confirmPassword, // Laravel expects this field name
+        account_type: accountType,
+      };
+
+      // Only add parent_user_id if it's a sub account
+      if (accountType === 'sub') {
+        requestData.parent_user_id = parentUserId;
+      }
+
+      console.log('📤 Sending signup request:', requestData);
+
+      const response = await api.post('/api/signup', requestData);
+      
+      console.log('✅ Signup Response:', response.status, response.data);
+      
+      Alert.alert(
+        'Success', 
+        response.data.message || 'Account created successfully!',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // If this was a sub-user creation, go back to the previous screen
+              if (accountType === 'sub' && route?.params?.fromMainUser) {
+                navigation.goBack();
+              } else {
+                // Otherwise go to login screen
+                navigation.replace('HexaLoginScreen');
+              }
+            }
+          }
+        ]
+      );
+      
+    } catch (error) {
+      console.error('❌ Signup error:', error.response?.data || error.message);
+      
+      let errorMessage = 'Signup failed';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.errors) {
+        // Handle validation errors
+        const errors = error.response.data.errors;
+        errorMessage = Object.values(errors).flat().join('\n');
+      }
+      
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <LinearGradient colors={['#c4d3d2', '#c4d3d2']} style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
+      <Text style={styles.title}>
+        {accountType === 'sub' ? 'Create Sub Account' : 'Create Account'}
+      </Text>
 
       <View style={styles.card}>
+        {/* Account Type Selection - Only show if not passed from parent */}
+        {!route?.params?.parentUserId && (
+          <View style={styles.accountTypeContainer}>
+            <Text style={styles.accountTypeLabel}>Account Type:</Text>
+            <View style={styles.accountTypeButtons}>
+              <TouchableOpacity
+                style={[
+                  styles.accountTypeButton,
+                  accountType === 'main' && styles.accountTypeButtonActive
+                ]}
+                onPress={() => setAccountType('main')}
+              >
+                <Text style={[
+                  styles.accountTypeButtonText,
+                  accountType === 'main' && styles.accountTypeButtonTextActive
+                ]}>
+                  Main Account
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.accountTypeButton,
+                  accountType === 'sub' && styles.accountTypeButtonActive
+                ]}
+                onPress={() => setAccountType('sub')}
+              >
+                <Text style={[
+                  styles.accountTypeButtonText,
+                  accountType === 'sub' && styles.accountTypeButtonTextActive
+                ]}>
+                  Sub Account
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* Parent User ID - Only show for sub accounts */}
+        {accountType === 'sub' && (
+          <TextInput
+            style={styles.input}
+            placeholder="Parent User ID (e.g., HS-JOHN-ABC-2501031420)"
+            placeholderTextColor="#aaa"
+            value={parentUserId}
+            onChangeText={setParentUserId}
+            returnKeyType="next"
+            editable={!route?.params?.parentUserId} // Disable if passed from parent
+          />
+        )}
+
         <TextInput
           style={styles.input}
           placeholder="Name"
@@ -79,6 +192,7 @@ export default function HexaSignUpScreen({ navigation }) {
           onChangeText={setName}
           returnKeyType="next"
         />
+        
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -130,14 +244,20 @@ export default function HexaSignUpScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.buttonContainer} onPress={handleSignUp}>
+        <TouchableOpacity 
+          style={[styles.buttonContainer, isLoading && styles.buttonDisabled]} 
+          onPress={handleSignUp}
+          disabled={isLoading}
+        >
           <LinearGradient
-            colors={['#00C9FF', '#92FE9D']} // Updated to match Login screen
+            colors={isLoading ? ['#ccc', '#999'] : ['#00C9FF', '#92FE9D']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.button}
           >
-            <Text style={styles.buttonText}>Sign Up</Text>
+            <Text style={styles.buttonText}>
+              {isLoading ? 'Creating Account...' : 'Sign Up'}
+            </Text>
           </LinearGradient>
         </TouchableOpacity>
 
@@ -163,7 +283,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 25,
-    fontFamily: 'HoryzenDigital-24', // Updated font
+    fontFamily: 'HoryzenDigital-24',
     marginBottom: 16,
     textAlign: 'center',
     color: '#333',
@@ -179,8 +299,44 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 12,
     transform: [{ perspective: 800 }],
-    marginTop: 10, // Added marginTop to adjust position
-    height: 'auto', // Make card shorter
+    marginTop: 10,
+    height: 'auto',
+  },
+  accountTypeContainer: {
+    marginBottom: 20,
+  },
+  accountTypeLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+  },
+  accountTypeButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  accountTypeButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  accountTypeButtonActive: {
+    backgroundColor: '#007BFF',
+    borderColor: '#007BFF',
+  },
+  accountTypeButtonText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  accountTypeButtonTextActive: {
+    color: '#fff',
+    fontWeight: '600',
   },
   input: {
     height: 50,
@@ -216,6 +372,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 20 },
     shadowOpacity: 80,
     shadowRadius: 6,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   button: {
     paddingVertical: 10,
