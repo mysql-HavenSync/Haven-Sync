@@ -3,31 +3,30 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sendMail = require('../utils/sendMail');
 
+// controllers/authController.js (signup)
 exports.signup = async (req, res) => {
   const { name, email, password, confirmPassword } = req.body;
 
   try {
-    // Check for missing fields
     if (!name || !email || !password || !confirmPassword) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    // Confirm password check
     if (password !== confirmPassword) {
       return res.status(400).json({ message: 'Passwords do not match' });
     }
 
-    // Check if user already exists
     const [existing] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
     if (existing.length > 0) {
       return res.status(400).json({ message: 'Email already registered' });
     }
 
-    // Hash and insert
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // ✅ Insert with user_id = NULL for main user
     await db.query(
-      'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-      [name, email, hashedPassword]
+      'INSERT INTO users (name, email, password, user_id) VALUES (?, ?, ?, ?)',
+      [name, email, hashedPassword, null]
     );
 
     res.json({ message: 'User registered successfully' });
