@@ -897,7 +897,7 @@ const styles = StyleSheet.create({
   },
   otpInputContainer: {
     width: '100%',
-    marginBottom
+    marginBottom:30
   },
   otpInput: {
     borderWidth: 1,
