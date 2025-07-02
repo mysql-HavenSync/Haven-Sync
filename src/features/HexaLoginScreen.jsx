@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { setUser, setToken } from '../../redux/slices/authSlice'; // ✅ This too
-import { useDispatch } from 'react-redux'; // ✅ MISSING
+import { setUser, setToken } from '../redux/slices/authSlice';
+import { useDispatch } from 'react-redux'; 
 
 import {
   View,
@@ -15,7 +15,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FastImage from 'react-native-fast-image';
 import api from '../api'; // ✅ Live backend API instance
-
+console.log(setUser, setToken);
 const { width, height } = Dimensions.get('window');
 
 export default function HexaLoginScreen({ navigation }) {
@@ -204,53 +204,48 @@ export default function HexaLoginScreen({ navigation }) {
     ]).start();
   };
 
-  const handleLogin = async () => {
-    console.log('📡 Sending login request with:', email, password);
+const handleLogin = async () => {
+  console.log('📡 Sending login request with:', email, password);
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.trim() === '') {
-      setLoginStatus('failed');
-      shakeButton();
-      return;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.trim() === '') {
+    setLoginStatus('failed');
+    shakeButton();
+    return;
+  }
+
+  setIsLoading(true);
+  try {
+    const res = await api.post('/api/auth/login', { email, password });
+
+    console.log('✅ Login success:', res.data);
+
+    // ✅ Save token and user to Redux
+    dispatch(setToken(res.data.token));
+    dispatch(setUser(res.data.user));
+
+    setLoginStatus('success');
+
+    setTimeout(() => {
+      navigation.replace('DashboardDrawer');
+    }, 1500);
+  } catch (err) {
+    console.error('❌ Login failed:', err?.message || err);
+
+    if (err?.response) {
+      console.log('🔴 Server error response:', err.response.status, err.response.data);
+    } else if (err?.request) {
+      console.log('🔌 No response from backend:', err.request);
+    } else {
+      console.log('⚠️ Unknown login error object:', err);
     }
 
-    setIsLoading(true);
-    try {
-  const res = await api.post('/api/auth/login', { email, password }); // ✅ First await
-
-  console.log('✅ Login success:', res.data); // ✅ Now 'res' is defined
-
-      setLoginStatus('success');
-
-      setTimeout(() => {
-        navigation.replace('DashboardDrawer');
-      }, 1500);
-   } catch (err) {
-  console.error('❌ Login failed:', err?.message || err);
-
-  // ✅ Check if it's a server error (like 400/401)
-  if (err?.response) {
-    console.log('🔴 Server error response:', err.response.status, err.response.data);
-    
-  }
-
-  // ✅ Check if request was made but no response (network issue)
-  else if (err?.request) {
-    console.log('🔌 No response from backend:', err.request);
-    
-  }
-
-  // ✅ Completely unknown error (your current case)
-  else {
-    console.log('⚠️ Unknown login error object:', err);
-    // Handle unknown error
-  }
-
-  setLoginStatus('failed');
-  shakeButton();
-} finally {
+    setLoginStatus('failed');
+    shakeButton();
+  } finally {
     setIsLoading(false);
   }
 };
+
 
   const getGradientColors = () => {
     if (loginStatus === 'success') return ['#4CAF50', '#8BC34A'];
