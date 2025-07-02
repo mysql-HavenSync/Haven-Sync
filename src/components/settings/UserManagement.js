@@ -27,39 +27,64 @@ export default function UserManagement({ navigation, onBack }) {
   const fetchUsers = async () => {
     try {
       console.log('🔄 Fetching users with token:', token);
+      console.log('👤 LoggedInUser structure:', loggedInUser);
       
-      // ✅ Fixed endpoint: /sub_users (plural)
-      const res = await api.get('/api/users/sub_users', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // ✅ Check if loggedInUser exists before proceeding
+      if (!loggedInUser) {
+        console.error('❌ No logged in user found');
+        Alert.alert('Error', 'User session expired. Please login again.');
+        return;
+      }
 
-      console.log('✅ API Response:', res.data);
+      let subUsers = [];
+      
+      // ✅ Try to fetch sub-users, but don't fail if API call fails
+      try {
+        const res = await api.get('/api/users/sub_users', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log('✅ API Response:', res.data);
+        subUsers = res.data.sub_users || [];
+      } catch (err) {
+        console.warn('⚠️ Failed to fetch sub-users (this is okay for new users):', err.response?.data || err.message);
+        // Don't show error alert for sub-users, just continue with empty array
+        subUsers = [];
+      }
 
-      const allUsers = [
-        {
-          id: loggedInUser?.id, // ✅ Use actual ID
-          name: loggedInUser?.name,
-          email: loggedInUser?.email,
-          role: 'Admin', // ✅ Main user is admin
-          active: true,
-          addedBy: 'Self',
-        },
-        ...res.data.sub_users, // from API
-      ];
+      // ✅ Always include the main user first
+      const mainUser = {
+        id: loggedInUser?.id || loggedInUser?.user_id || 'main_user', // Use multiple fallbacks
+        user_id: loggedInUser?.user_id || loggedInUser?.id,
+        name: loggedInUser?.name || 'Main User',
+        email: loggedInUser?.email || 'No email',
+        role: 'Admin', // Main user is always admin
+        active: true,
+        addedBy: 'Self',
+        created_at: new Date().toISOString(),
+      };
 
+      const allUsers = [mainUser, ...subUsers];
+      
       setUsers(allUsers);
       console.log('👥 All users set:', allUsers);
     } catch (err) {
-      console.error('❌ Failed to fetch users:', err.response?.data || err.message);
-      Alert.alert('Error', 'Could not load users');
+      console.error('❌ Critical error in fetchUsers:', err.response?.data || err.message);
+      // Only show error if it's a critical error, not for missing sub-users
+      if (err.response?.status !== 404) {
+        Alert.alert('Error', 'Could not load user data. Please try again.');
+      }
     }
   };
 
   // 🔄 Load existing users
   useEffect(() => {
-    console.log('👤 Redux loggedInUser:', loggedInUser);
+    console.log('🔄 UseEffect triggered with loggedInUser:', loggedInUser);
+    console.log('🔄 UseEffect triggered with token:', !!token);
+    
     if (loggedInUser && token) {
       fetchUsers();
+    } else {
+      console.warn('⚠️ Missing loggedInUser or token:', { loggedInUser: !!loggedInUser, token: !!token });
     }
   }, [loggedInUser, token]);
 
@@ -129,14 +154,23 @@ export default function UserManagement({ navigation, onBack }) {
     try {
       setIsLoading(true);
 
-      // ✅ Fixed: Include mainUserId in the request
+      // ✅ Use the correct user_id field
+      const mainUserId = loggedInUser.user_id || loggedInUser.id;
+      
+      if (!mainUserId) {
+        Alert.alert('Error', 'User session invalid. Please login again.');
+        return;
+      }
+
+      console.log('🔄 Adding sub-user with mainUserId:', mainUserId);
+
       await api.post(
         '/api/users/add-sub_user',
         {
           name: newUserData.name,
           email: newUserData.email,
           role: newUserData.role,
-          mainUserId: loggedInUser.user_id, // ✅ Pass the main user's user_id
+          mainUserId: mainUserId,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -161,6 +195,27 @@ export default function UserManagement({ navigation, onBack }) {
 
   // ✅ Show all users (main user + sub-users)
   const visibleUsers = users;
+
+  // ✅ Show loading state while fetching
+  if (isLoading && users.length === 0) {
+    return (
+      <SafeAreaView style={[styles.container, darkMode && styles.containerDark]}>
+        <View style={[styles.header, darkMode && styles.headerDark]}>
+          <TouchableOpacity onPress={onBack || (() => navigation.goBack())}>
+            <FontAwesomeIcon icon={faArrowLeft} size={20} color={darkMode ? '#fff' : '#333'} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, darkMode && styles.textWhite]}>
+            User Management
+          </Text>
+          <View style={{ width: 40 }} />
+        </View>
+        <View style={[styles.loadingContainer, darkMode && styles.containerDark]}>
+          <ActivityIndicator size="large" color="#4caf50" />
+          <Text style={[styles.loadingText, darkMode && styles.textWhite]}>Loading users...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, darkMode && styles.containerDark]}>
@@ -197,12 +252,17 @@ export default function UserManagement({ navigation, onBack }) {
             Current Users ({visibleUsers.length})
           </Text>
           {visibleUsers.length === 0 ? (
-            <Text style={[styles.emptyText, darkMode && styles.textGray]}>
-              No users found
-            </Text>
+            <View style={styles.emptyContainer}>
+              <Text style={[styles.emptyText, darkMode && styles.textGray]}>
+                No users found
+              </Text>
+              <Text style={[styles.emptySubText, darkMode && styles.textGray]}>
+                Add your first sub-user to get started
+              </Text>
+            </View>
           ) : (
             visibleUsers.map((user, index) => (
-              <View key={user.id || index} style={[styles.userCard, darkMode && styles.userCardDark]}>
+              <View key={user.id || user.user_id || index} style={[styles.userCard, darkMode && styles.userCardDark]}>
                 <View style={styles.userInfo}>
                   <View style={[styles.userAvatar, darkMode && styles.userAvatarDark]}>
                     <Text style={[styles.avatarText, darkMode && styles.textWhite]}>
@@ -212,6 +272,9 @@ export default function UserManagement({ navigation, onBack }) {
                   <View style={styles.userDetails}>
                     <Text style={[styles.userName, darkMode && styles.textWhite]}>
                       {user.name}
+                      {user.role === 'Admin' && (
+                        <Text style={styles.youLabel}> (You)</Text>
+                      )}
                     </Text>
                     <Text style={[styles.userEmail, darkMode && styles.textGray]}>
                       {user.email}
@@ -453,6 +516,19 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   
+  // Loading styles
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#333',
+  },
+  
   // Header Styles
   header: {
     flexDirection: 'row',
@@ -493,11 +569,28 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 15,
   },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
   emptyText: {
     textAlign: 'center',
     fontSize: 16,
+    fontWeight: '500',
     color: '#666',
-    marginTop: 20,
+    marginBottom: 8,
+  },
+  emptySubText: {
+    textAlign: 'center',
+    fontSize: 14,
+    color: '#999',
+  },
+  
+  // You label style
+  youLabel: {
+    fontSize: 12,
+    color: '#4caf50',
+    fontWeight: '500',
   },
   
   // Icon Container Style
@@ -804,7 +897,7 @@ const styles = StyleSheet.create({
   },
   otpInputContainer: {
     width: '100%',
-    marginBottom: 30,
+    marginBottom
   },
   otpInput: {
     borderWidth: 1,
