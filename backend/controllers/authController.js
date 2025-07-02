@@ -53,22 +53,11 @@ exports.login = async (req, res) => {
       expiresIn: '1d',
     });
 
-    // ✅ Return full user info
-    res.json({
-      message: 'Login successful',
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role || 'User',
-      },
-    });
+    res.json({ message: 'Login successful', token });
   } catch (err) {
     res.status(500).json({ error: 'Login failed', details: err.message });
   }
 };
-
 
 exports.requestOtp = async (req, res) => {
   const { email } = req.body;
