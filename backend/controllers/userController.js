@@ -22,17 +22,16 @@ exports.addsub_user = async (req, res) => {
 };
 
 // ✅ Get sub_users by main user
-exports.getsub_users = async (req, res) => {
-  const { mainUserId } = req.query;
-
+exports.getSubUsers = async (req, res) => {
   try {
-    const [sub_users] = await db.query(
-      'SELECT * FROM users WHERE user_id = ?',
-      [mainUserId]
-    );
-    res.json({ sub_users });
+    const mainUserId = req.user.id; // assuming JWT middleware adds this
+
+    const [subUsers] = await db.query('SELECT * FROM users WHERE user_id = ?', [mainUserId]);
+
+    res.json({ sub_users: subUsers });
   } catch (err) {
-    res.status(500).json({ message: 'Error fetching sub_users', error: err.message });
+    console.error('❌ Fetch sub-users error:', err);
+    res.status(500).json({ message: 'Failed to fetch sub-users' });
   }
 };
 
