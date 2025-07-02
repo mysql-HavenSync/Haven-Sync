@@ -38,7 +38,7 @@ export default function UserManagement({ navigation, onBack }) {
 
       let subUsers = [];
       
-      // ✅ Try to fetch sub-users, but don't fail if API call fails
+      // ✅ Try to fetch sub_user, but don't fail if API call fails
       try {
         const res = await api.get('/api/users/sub_users', {
           headers: { Authorization: `Bearer ${token}` },
@@ -46,8 +46,8 @@ export default function UserManagement({ navigation, onBack }) {
         console.log('✅ API Response:', res.data);
         subUsers = res.data.sub_users || [];
       } catch (err) {
-        console.warn('⚠️ Failed to fetch sub-users (this is okay for new users):', err.response?.data || err.message);
-        // Don't show error alert for sub-users, just continue with empty array
+        console.warn('⚠️ Failed to fetch sub_user (this is okay for new users):', err.response?.data || err.message);
+        // Don't show error alert for sub_user, just continue with empty array
         subUsers = [];
       }
 
@@ -69,7 +69,7 @@ export default function UserManagement({ navigation, onBack }) {
       console.log('👥 All users set:', allUsers);
     } catch (err) {
       console.error('❌ Critical error in fetchUsers:', err.response?.data || err.message);
-      // Only show error if it's a critical error, not for missing sub-users
+      // Only show error if it's a critical error, not for missing sub_user
       if (err.response?.status !== 404) {
         Alert.alert('Error', 'Could not load user data. Please try again.');
       }
@@ -162,7 +162,7 @@ export default function UserManagement({ navigation, onBack }) {
         return;
       }
 
-      console.log('🔄 Adding sub-user with mainUserId:', mainUserId);
+      console.log('🔄 Adding sub_user with mainUserId:', mainUserId);
 
       await api.post(
         '/api/users/add-sub_user',
@@ -177,7 +177,7 @@ export default function UserManagement({ navigation, onBack }) {
         }
       );
 
-      Alert.alert('Success', 'Sub-user added!');
+      Alert.alert('Success', 'sub_user added!');
       setShowOtpModal(false);
       setOtpCode('');
       setGeneratedOtp('');
@@ -193,7 +193,7 @@ export default function UserManagement({ navigation, onBack }) {
     }
   };
 
-  // ✅ Show all users (main user + sub-users)
+  // ✅ Show all users (main user + sub_user)
   const visibleUsers = users;
 
   // ✅ Show loading state while fetching
@@ -257,7 +257,7 @@ export default function UserManagement({ navigation, onBack }) {
                 No users found
               </Text>
               <Text style={[styles.emptySubText, darkMode && styles.textGray]}>
-                Add your first sub-user to get started
+                Add your first sub_user to get started
               </Text>
             </View>
           ) : (

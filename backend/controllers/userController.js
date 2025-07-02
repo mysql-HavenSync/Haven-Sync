@@ -1,7 +1,7 @@
 const db = require('../db');
 const sendMail = require('../utils/sendMail');
 
-// Helper function to generate unique user_id for sub-users
+// Helper function to generate unique user_id for sub_user
 function generateSubUserId(name, email) {
   const firstName = name.trim().split(' ')[0].toUpperCase();
   const emailPrefix = email.trim().split('@')[0].slice(0, 3).toUpperCase();
@@ -22,7 +22,7 @@ function generateSubUserId(name, email) {
 exports.addsub_user = async (req, res) => {
   const { name, email, mainUserId, role } = req.body;
 
-  console.log('📝 Adding sub-user:', { name, email, mainUserId, role });
+  console.log('📝 Adding sub_user:', { name, email, mainUserId, role });
   console.log('🔍 Request user from JWT:', req.user);
 
   try {
@@ -36,10 +36,10 @@ exports.addsub_user = async (req, res) => {
     console.log('🔍 JWT user_id:', jwtUserId);
     console.log('🔍 mainUserId from request:', mainUserId);
 
-    // ✅ SECURITY: Verify that the requester is authorized to add sub-users for this mainUserId
+    // ✅ SECURITY: Verify that the requester is authorized to add sub_user for this mainUserId
     if (jwtUserId !== mainUserId) {
       console.log('❌ Authorization failed: JWT user_id does not match mainUserId');
-      return res.status(403).json({ message: 'You can only add sub-users for your own account' });
+      return res.status(403).json({ message: 'You can only add sub_user for your own account' });
     }
 
     // Check if email already exists in users table
@@ -67,15 +67,15 @@ if (!parentUserId) {
 console.log('🧾 Using parent_user_id:', parentUserId, 'for subuser insert');
 
 
-    // Generate unique user_id for sub-user
+    // Generate unique user_id for sub_user
     const subUserUserId = generateSubUserId(name, email);
-    console.log('🔧 Generated sub-user ID:', subUserUserId);
+    console.log('🔧 Generated sub_user ID:', subUserUserId);
     
     // ✅ FIXED: Use database transaction for atomic operations
     await db.query('START TRANSACTION');
     
     try {
-      // ✅ FIXED: Insert sub-user into users table with correct parent_user_id
+      // ✅ FIXED: Insert sub_user into users table with correct parent_user_id
       // The parent_user_id should be the same as the main user's parent_user_id (not the main user's user_id)
       await db.query(
         'INSERT INTO users (name, email, user_id, role, password, parent_user_id) VALUES (?, ?, ?, ?, ?, ?)',
@@ -83,7 +83,7 @@ console.log('🧾 Using parent_user_id:', parentUserId, 'for subuser insert');
       );
 
       // ✅ FIXED: Create the relationship in the subuser table
-      // main_user_id should be the parent_user_id, sub_user_id should be the new sub-user's user_id
+      // main_user_id should be the parent_user_id, sub_user_id should be the new sub_user's user_id
       await db.query(
         'INSERT INTO subuser (main_user_id, sub_user_id, role) VALUES (?, ?, ?)',
         [parentUserId, subUserUserId, role || 'User']
@@ -91,7 +91,7 @@ console.log('🧾 Using parent_user_id:', parentUserId, 'for subuser insert');
 
       // Commit the transaction
       await db.query('COMMIT');
-      console.log('✅ Sub-user added successfully to both tables');
+      console.log('✅ sub_user added successfully to both tables');
       
     } catch (insertError) {
       // Rollback on error
@@ -101,7 +101,7 @@ console.log('🧾 Using parent_user_id:', parentUserId, 'for subuser insert');
     }
 
     res.json({ 
-      message: 'Sub-user added successfully',
+      message: 'sub_user added successfully',
       subUser: {
         user_id: subUserUserId,
         name,
@@ -111,7 +111,7 @@ console.log('🧾 Using parent_user_id:', parentUserId, 'for subuser insert');
       }
     });
   } catch (err) {
-    console.error('❌ Error adding sub-user:', err);
+    console.error('❌ Error adding sub_user:', err);
     console.error('❌ Error details:', {
       message: err.message,
       code: err.code,
@@ -121,7 +121,7 @@ console.log('🧾 Using parent_user_id:', parentUserId, 'for subuser insert');
     });
     
     // Provide more specific error messages
-    let errorMessage = 'Failed to add sub-user';
+    let errorMessage = 'Failed to add sub_user';
     if (err.code === 'ER_NO_REFERENCED_ROW_2') {
       errorMessage = 'Foreign key constraint failed. Please check user relationships.';
     } else if (err.code === 'ER_DUP_ENTRY') {
@@ -151,7 +151,7 @@ exports.getsub_users = async (req, res) => {
     return res.status(401).json({ message: 'Invalid token: missing user_id' });
   }
   
-  console.log('🔍 Fetching sub-users for main user:', mainUserId);
+  console.log('🔍 Fetching sub_user for main user:', mainUserId);
 
   try {
     // First, get the parent_user_id for this user
@@ -167,7 +167,7 @@ if (!parentUserId) {
   parentUserId = mainUserId;
 }
 
-    // ✅ FIXED: Query sub-users with better error handling
+    // ✅ FIXED: Query sub_user with better error handling
     const [subUsers] = await db.query(`
       SELECT 
         u.id,
@@ -183,7 +183,7 @@ if (!parentUserId) {
       ORDER BY s.created_at DESC
     `, [parentUserId]);
     
-    console.log('✅ Found sub-users:', subUsers.length);
+    console.log('✅ Found sub_user:', subUsers.length);
     
     // ✅ Format the response properly
     const formattedSubUsers = subUsers.map(user => ({
@@ -197,7 +197,7 @@ if (!parentUserId) {
       created_at: user.created_at || user.added_date
     }));
     
-    console.log('✅ Returning sub-users:', formattedSubUsers.length);
+    console.log('✅ Returning sub_user:', formattedSubUsers.length);
     res.json({ sub_users: formattedSubUsers });
   } catch (err) {
     console.error('❌ Error fetching sub_users:', err);
@@ -237,7 +237,7 @@ exports.assignDevice = async (req, res) => {
   }
 };
 
-// ✅ Send OTP to sub-user during registration
+// ✅ Send OTP to sub_user during registration
 exports.sendSubUserOtp = async (req, res) => {
   const { email, otp } = req.body;
 
@@ -246,9 +246,9 @@ exports.sendSubUserOtp = async (req, res) => {
   }
 
   try {
-    const subject = 'HavenSync - Sub-User Verification OTP';
+    const subject = 'HavenSync - sub_user Verification OTP';
     const message = `
-      <h2>HavenSync Sub-User Verification</h2>
+      <h2>HavenSync sub_user Verification</h2>
       <p>Your verification OTP is: <strong>${otp}</strong></p>
       <p>This code will expire in 5 minutes.</p>
       <p>If you didn't request this verification, please ignore this email.</p>
@@ -257,7 +257,7 @@ exports.sendSubUserOtp = async (req, res) => {
     await sendMail(email, message, subject);
 
     console.log('✅ OTP sent to:', email);
-    res.json({ message: 'OTP sent to sub-user email successfully' });
+    res.json({ message: 'OTP sent to sub_user email successfully' });
   } catch (err) {
     console.error('❌ OTP Email sending failed:', err);
     res.status(500).json({ message: 'Failed to send OTP', error: err.message });
