@@ -34,19 +34,21 @@ const fetchUsers = async () => {
     });
 
     const allUsers = [
-      {
-        id: 0,
-        name: loggedInUser?.name,
-        email: loggedInUser?.email,
-        role: 'Admin',
-        active: true,
-        addedBy: loggedInUser?.email,
-      },
-       ...res.data.sub_users,
-    ];
+  {
+    id: loggedInUser.id, // <- your logged-in user's id
+    name: loggedInUser.name,
+    email: loggedInUser.email,
+    role: 'Admin',
+    active: true,
+    addedBy: loggedInUser.email,
+  },
+  ...res.data.sub_users, // from API
+];
 
-    setUsers(allUsers);
-  } catch (err) {
+setUsers(allUsers);
+  } 
+  
+  catch (err) {
     console.error('❌ Failed to fetch users:', err);
     Alert.alert('Error', 'Could not load users');
   }

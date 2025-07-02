@@ -11,4 +11,7 @@ router.get('/sub_users', userController.getsub_users);
 // POST: Assign device to sub_user
 router.post('/assign-device', userController.assignDevice);
 
+// ✅ POST: Send OTP email to sub_user
+router.post('/send-subuser-otp', userController.sendSubUserOtp);  // 👈 Add this line
+
 module.exports = router;

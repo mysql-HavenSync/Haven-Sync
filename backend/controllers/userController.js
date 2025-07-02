@@ -1,5 +1,5 @@
 const db = require('../db');
-
+const sendMail = require('../utils/sendMail');
 // ✅ Add sub_user under main user
 exports.addsub_user = async (req, res) => {
   const { name, email, mainUserId, role } = req.body;
@@ -49,5 +49,23 @@ exports.assignDevice = async (req, res) => {
     res.json({ message: 'Device assigned successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Failed to assign device', error: err.message });
+  }
+};
+// ✅ Send OTP to sub-user during registration
+exports.sendSubUserOtp = async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({ message: 'Email and OTP are required' });
+  }
+
+  try {
+    const message = `Your OTP is: ${otp}`;
+    await sendMail(email, message);
+
+    res.json({ message: 'OTP sent to sub-user email successfully' });
+  } catch (err) {
+    console.error('❌ OTP Email sending failed:', err);
+    res.status(500).json({ message: 'Failed to send OTP', error: err.message });
   }
 };
