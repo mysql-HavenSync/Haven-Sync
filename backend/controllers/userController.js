@@ -21,9 +21,9 @@ exports.addsub_user = async (req, res) => {
   }
 };
 
-// ✅ Get sub_users by main user
+// ✅ Secure: Get sub_users for the logged-in user only
 exports.getsub_users = async (req, res) => {
-  const { mainUserId } = req.query;
+  const mainUserId = req.user.id; // Comes from verified JWT token
 
   try {
     const [sub_users] = await db.query(
@@ -35,6 +35,7 @@ exports.getsub_users = async (req, res) => {
     res.status(500).json({ message: 'Error fetching sub_users', error: err.message });
   }
 };
+
 
 // ✅ Assign device to a sub_user
 exports.assignDevice = async (req, res) => {

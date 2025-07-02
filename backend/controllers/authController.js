@@ -70,6 +70,7 @@ exports.login = async (req, res) => {
       token,
       user: {
         id: user.id,
+        user_id: user.user_id, // ✅ important!
         name: user.name,
         email: user.email,
         role: user.role || 'User',

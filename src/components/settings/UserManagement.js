@@ -161,10 +161,10 @@ setUsers(allUsers);
 
 
   const visibleUsers = users.filter(
-    user =>
-      user.email === loggedInUser?.email ||
-      user.addedBy === loggedInUser?.email
-  );
+  user =>
+    user.email === loggedInUser?.email ||      // current main user
+    user.user_id === loggedInUser?.id          // sub-users of this main user
+);
 
   return (
     <SafeAreaView style={[styles.container, darkMode && styles.containerDark]}>
