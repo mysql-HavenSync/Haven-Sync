@@ -20,6 +20,7 @@ const { width, height } = Dimensions.get('window');
 
 export default function HexaLoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
+  const dispatch = useDispatch();
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
