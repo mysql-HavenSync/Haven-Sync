@@ -31,8 +31,14 @@ exports.addsub_user = async (req, res) => {
       return res.status(400).json({ message: 'Name, email, and mainUserId are required' });
     }
 
+    // ✅ FIXED: Get the user_id from JWT token properly
+    const jwtUserId = req.user.user_id || req.user.id;
+    console.log('🔍 JWT user_id:', jwtUserId);
+    console.log('🔍 mainUserId from request:', mainUserId);
+
     // ✅ SECURITY: Verify that the requester is authorized to add sub-users for this mainUserId
-    if (req.user.user_id !== mainUserId) {
+    if (jwtUserId !== mainUserId) {
+      console.log('❌ Authorization failed: JWT user_id does not match mainUserId');
       return res.status(403).json({ message: 'You can only add sub-users for your own account' });
     }
 
@@ -48,14 +54,19 @@ exports.addsub_user = async (req, res) => {
       return res.status(400).json({ message: 'Main user not found' });
     }
 
+    console.log('✅ Main user found:', mainUser[0]);
+
     // Generate unique user_id for sub-user
     const subUserUserId = generateSubUserId(name, email);
+    console.log('🔧 Generated sub-user ID:', subUserUserId);
     
-    // Insert the sub-user
-    await db.query(
-      'INSERT INTO users (name, email, user_id, role, password) VALUES (?, ?, ?, ?, ?)',
-      [name, email, subUserUserId, role || 'User', null] // password is null for sub-users
+    // ✅ FIXED: Insert the sub-user with proper column mapping
+    const insertResult = await db.query(
+      'INSERT INTO users (name, email, user_id, role, password, parent_user_id) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, email, subUserUserId, role || 'User', null, mainUserId] // Use mainUserId as parent_user_id
     );
+
+    console.log('✅ Sub-user inserted successfully:', insertResult);
 
     // Create a record in user_relationships table to track parent-child relationship
     // ✅ First, check if table exists, if not create it
@@ -71,14 +82,21 @@ exports.addsub_user = async (req, res) => {
           UNIQUE KEY unique_relationship (parent_user_id, child_user_id)
         )
       `);
+      console.log('✅ user_relationships table ready');
     } catch (tableError) {
       console.log('⚠️ Table might already exist or creation failed:', tableError.message);
     }
 
-    await db.query(
-      'INSERT INTO user_relationships (parent_user_id, child_user_id, relationship_type) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP',
-      [mainUserId, subUserUserId, 'sub_user']
-    );
+    // Insert relationship record
+    try {
+      await db.query(
+        'INSERT INTO user_relationships (parent_user_id, child_user_id, relationship_type) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP',
+        [mainUserId, subUserUserId, 'sub_user']
+      );
+      console.log('✅ Relationship record created');
+    } catch (relError) {
+      console.log('⚠️ Relationship record creation failed (non-critical):', relError.message);
+    }
 
     console.log('✅ Sub-user added successfully');
     res.json({ 
@@ -92,7 +110,8 @@ exports.addsub_user = async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Error adding sub-user:', err);
-    res.status(500).json({ message: 'Failed to add sub_user', error: err.message });
+    console.error('❌ Error stack:', err.stack);
+    res.status(500).json({ message: 'Failed to add sub_user', error: err.message, stack: err.stack });
   }
 };
 
@@ -111,31 +130,57 @@ exports.getsub_users = async (req, res) => {
   console.log('🔍 Fetching sub-users for main user:', mainUserId);
 
   try {
-    // ✅ First, try to get sub-users using the relationship table
+    // ✅ First, try to get sub-users using the parent_user_id column
     let sub_users = [];
     
     try {
-      const [relationshipUsers] = await db.query(`
-        SELECT u.id, u.name, u.email, u.user_id, u.role, ur.created_at as added_date
-        FROM users u
-        INNER JOIN user_relationships ur ON u.user_id = ur.child_user_id
-        WHERE ur.parent_user_id = ? AND ur.relationship_type = 'sub_user'
-        ORDER BY ur.created_at DESC
-      `, [mainUserId]);
-      
-      sub_users = relationshipUsers;
-    } catch (relationError) {
-      console.log('⚠️ Relationship table query failed, trying fallback method:', relationError.message);
-      
-      // ✅ Fallback: If relationship table doesn't exist, try to get sub-users by naming convention
-      const [fallbackUsers] = await db.query(`
+      // Method 1: Using parent_user_id column (most reliable)
+      const [directUsers] = await db.query(`
         SELECT id, name, email, user_id, role, created_at as added_date
         FROM users 
-        WHERE user_id LIKE 'HS-SUB-%' AND user_id != ?
+        WHERE parent_user_id = ? AND user_id != ?
         ORDER BY created_at DESC
-      `, [mainUserId]);
+      `, [mainUserId, mainUserId]);
       
-      sub_users = fallbackUsers;
+      sub_users = directUsers;
+      console.log('✅ Found sub-users via parent_user_id:', sub_users.length);
+    } catch (directError) {
+      console.log('⚠️ Direct parent_user_id query failed:', directError.message);
+    }
+
+    // Method 2: If no results, try relationship table
+    if (sub_users.length === 0) {
+      try {
+        const [relationshipUsers] = await db.query(`
+          SELECT u.id, u.name, u.email, u.user_id, u.role, ur.created_at as added_date
+          FROM users u
+          INNER JOIN user_relationships ur ON u.user_id = ur.child_user_id
+          WHERE ur.parent_user_id = ? AND ur.relationship_type = 'sub_user'
+          ORDER BY ur.created_at DESC
+        `, [mainUserId]);
+        
+        sub_users = relationshipUsers;
+        console.log('✅ Found sub-users via relationships:', sub_users.length);
+      } catch (relationError) {
+        console.log('⚠️ Relationship table query failed:', relationError.message);
+      }
+    }
+
+    // Method 3: Fallback to naming convention
+    if (sub_users.length === 0) {
+      try {
+        const [fallbackUsers] = await db.query(`
+          SELECT id, name, email, user_id, role, created_at as added_date
+          FROM users 
+          WHERE user_id LIKE 'HS-SUB-%' AND user_id != ?
+          ORDER BY created_at DESC
+        `, [mainUserId]);
+        
+        sub_users = fallbackUsers;
+        console.log('✅ Found sub-users via naming convention:', sub_users.length);
+      } catch (fallbackError) {
+        console.log('⚠️ Fallback query failed:', fallbackError.message);
+      }
     }
     
     // ✅ Format the response properly
@@ -150,7 +195,7 @@ exports.getsub_users = async (req, res) => {
       added_date: user.added_date
     }));
     
-    console.log('✅ Found sub-users:', formattedSubUsers.length);
+    console.log('✅ Returning sub-users:', formattedSubUsers.length);
     res.json({ sub_users: formattedSubUsers });
   } catch (err) {
     console.error('❌ Error fetching sub_users:', err);
