@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, Modal,
-  TextInput, SafeAreaView, Alert, ActivityIndicator, Platform,StyleSheet,
+  TextInput, SafeAreaView, Alert, ActivityIndicator, Platform, StyleSheet,
   KeyboardAvoidingView
 } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -10,13 +10,10 @@ import { faArrowLeft, faEnvelope, faLock, faTimes } from '@fortawesome/free-soli
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import api from '../../api';
 
-
-
 export default function UserManagement({ navigation, onBack }) {
   const darkMode = useSelector(state => state.profile.darkMode);
   const loggedInUser = useSelector(state => state.auth.user);
- console.log('👤 Redux loggedInUser:', loggedInUser);
-
+  console.log('👤 Redux loggedInUser:', loggedInUser);
 
   const [users, setUsers] = useState([]);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -27,42 +24,44 @@ export default function UserManagement({ navigation, onBack }) {
   const [generatedOtp, setGeneratedOtp] = useState('');
   const token = useSelector(state => state.auth.token);
 
-const fetchUsers = async () => {
-  try {
-    const res = await api.get('/api/users/sub_user', {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  const fetchUsers = async () => {
+    try {
+      console.log('🔄 Fetching users with token:', token);
+      
+      // ✅ Fixed endpoint: /sub_users (plural)
+      const res = await api.get('/api/users/sub_users', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    const allUsers = [
-  {
-    id: loggedInUser?.id, // ✅ Use actual ID
-    name: loggedInUser?.name,
-    email: loggedInUser?.email,
-    role: 'Admin',
-    active: true,
-    addedBy: loggedInUser.email,
-  },
-  ...res.data.sub_users, // from API
-];
+      console.log('✅ API Response:', res.data);
 
-setUsers(allUsers);
-  } 
-  
-  catch (err) {
-    console.error('❌ Failed to fetch users:', err);
-    Alert.alert('Error', 'Could not load users');
-  }
-};
+      const allUsers = [
+        {
+          id: loggedInUser?.id, // ✅ Use actual ID
+          name: loggedInUser?.name,
+          email: loggedInUser?.email,
+          role: 'Admin', // ✅ Main user is admin
+          active: true,
+          addedBy: 'Self',
+        },
+        ...res.data.sub_users, // from API
+      ];
 
+      setUsers(allUsers);
+      console.log('👥 All users set:', allUsers);
+    } catch (err) {
+      console.error('❌ Failed to fetch users:', err.response?.data || err.message);
+      Alert.alert('Error', 'Could not load users');
+    }
+  };
 
-  // 🔄 Load existing users (mock for now, backend later)
+  // 🔄 Load existing users
   useEffect(() => {
     console.log('👤 Redux loggedInUser:', loggedInUser);
-  if (loggedInUser) {
-    fetchUsers();
-  }
-}, [loggedInUser]);
-
+    if (loggedInUser && token) {
+      fetchUsers();
+    }
+  }, [loggedInUser, token]);
 
   const handleAddUser = () => setShowAddUserModal(true);
   
@@ -70,6 +69,7 @@ setUsers(allUsers);
     setShowAddUserModal(false);
     setNewUserData({ name: '', email: '', role: 'User' });
   };
+
   const closeOtpModal = () => {
     setShowOtpModal(false);
     setOtpCode('');
@@ -83,88 +83,84 @@ setUsers(allUsers);
     Math.floor(100000 + Math.random() * 900000).toString();
 
   const handleSendOTP = async () => {
-  if (!newUserData.name.trim() || !newUserData.email.trim()) {
-    Alert.alert('Error', 'Please fill all fields');
-    return;
-  }
+    if (!newUserData.name.trim() || !newUserData.email.trim()) {
+      Alert.alert('Error', 'Please fill all fields');
+      return;
+    }
 
-  if (!validateEmail(newUserData.email)) {
-    Alert.alert('Error', 'Invalid email format');
-    return;
-  }
+    if (!validateEmail(newUserData.email)) {
+      Alert.alert('Error', 'Invalid email format');
+      return;
+    }
 
-  if (users.some(u => u.email === newUserData.email)) {
-    Alert.alert('Error', 'User already exists');
-    return;
-  }
+    if (users.some(u => u.email === newUserData.email)) {
+      Alert.alert('Error', 'User already exists');
+      return;
+    }
 
-  setIsLoading(true);
-  const otp = generateOTP();
-  setGeneratedOtp(otp);
+    setIsLoading(true);
+    const otp = generateOTP();
+    setGeneratedOtp(otp);
 
-  try {
-    // ✅ Call backend to send OTP email
-    await api.post('/api/users/send-subuser-otp', {
-      email: newUserData.email,
-      otp,
-    });
+    try {
+      // ✅ Call backend to send OTP email
+      await api.post('/api/users/send-subuser-otp', {
+        email: newUserData.email,
+        otp,
+      });
 
-    setShowAddUserModal(false);
-    setShowOtpModal(true);
-    Alert.alert('OTP Sent', `Verification code sent to ${newUserData.email}`);
-  } catch (err) {
-    console.error('❌ OTP send error:', err);
-    Alert.alert('Error', 'Failed to send OTP');
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+      setShowAddUserModal(false);
+      setShowOtpModal(true);
+      Alert.alert('OTP Sent', `Verification code sent to ${newUserData.email}`);
+    } catch (err) {
+      console.error('❌ OTP send error:', err);
+      Alert.alert('Error', 'Failed to send OTP');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleVerifyOTP = async () => {
-  if (otpCode !== generatedOtp) {
-    Alert.alert('Error', 'Invalid OTP');
-    return;
-  }
+    if (otpCode !== generatedOtp) {
+      Alert.alert('Error', 'Invalid OTP');
+      return;
+    }
 
-  try {
-    setIsLoading(true);
+    try {
+      setIsLoading(true);
 
-    await api.post(
-      '/api/users/add-sub_user',
-      {
-        name: newUserData.name,
-        email: newUserData.email,
-        role: newUserData.role,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+      // ✅ Fixed: Include mainUserId in the request
+      await api.post(
+        '/api/users/add-sub_user',
+        {
+          name: newUserData.name,
+          email: newUserData.email,
+          role: newUserData.role,
+          mainUserId: loggedInUser.user_id, // ✅ Pass the main user's user_id
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-    Alert.alert('Success', 'sub_user added!');
-    setShowOtpModal(false);
-    setOtpCode('');
-    setGeneratedOtp('');
-    setNewUserData({ name: '', email: '', role: 'User' });
+      Alert.alert('Success', 'Sub-user added!');
+      setShowOtpModal(false);
+      setOtpCode('');
+      setGeneratedOtp('');
+      setNewUserData({ name: '', email: '', role: 'User' });
 
-    // 🔄 Optional: Refresh user list
-    
-    fetchUsers();
-  } catch (err) {
-    console.error('❌ Failed to add user:', err);
-    Alert.alert('Error', err?.response?.data?.message || 'Could not add user');
-  } finally {
-    setIsLoading(false);
-  }
-};
+      // 🔄 Refresh user list
+      fetchUsers();
+    } catch (err) {
+      console.error('❌ Failed to add user:', err);
+      Alert.alert('Error', err?.response?.data?.message || 'Could not add user');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-
-  const visibleUsers = users.filter(
-  user =>
-    user.email === loggedInUser?.email ||      // current main user
-    user.user_id === loggedInUser?.id          // sub-users of this main user
-);
+  // ✅ Show all users (main user + sub-users)
+  const visibleUsers = users;
 
   return (
     <SafeAreaView style={[styles.container, darkMode && styles.containerDark]}>
@@ -200,38 +196,44 @@ setUsers(allUsers);
           <Text style={[styles.sectionTitle, darkMode && styles.textWhite]}>
             Current Users ({visibleUsers.length})
           </Text>
-          {visibleUsers.map(user => (
-            <View key={user.id} style={[styles.userCard, darkMode && styles.userCardDark]}>
-              <View style={styles.userInfo}>
-                <View style={[styles.userAvatar, darkMode && styles.userAvatarDark]}>
-                  <Text style={[styles.avatarText, darkMode && styles.textWhite]}>
-                    {user.name.charAt(0)}
-                  </Text>
-                </View>
-                <View style={styles.userDetails}>
-                  <Text style={[styles.userName, darkMode && styles.textWhite]}>
-                    {user.name}
-                  </Text>
-                  <Text style={[styles.userEmail, darkMode && styles.textGray]}>
-                    {user.email}
-                  </Text>
-                  <View style={styles.userMeta}>
-                    <Text style={[styles.userRole, darkMode && styles.textGray]}>
-                      {user.role}
+          {visibleUsers.length === 0 ? (
+            <Text style={[styles.emptyText, darkMode && styles.textGray]}>
+              No users found
+            </Text>
+          ) : (
+            visibleUsers.map((user, index) => (
+              <View key={user.id || index} style={[styles.userCard, darkMode && styles.userCardDark]}>
+                <View style={styles.userInfo}>
+                  <View style={[styles.userAvatar, darkMode && styles.userAvatarDark]}>
+                    <Text style={[styles.avatarText, darkMode && styles.textWhite]}>
+                      {user.name?.charAt(0)?.toUpperCase() || '?'}
                     </Text>
-                    <View style={[
-                      styles.statusBadge,
-                      user.active ? styles.activeBadge : styles.inactiveBadge
-                    ]}>
-                      <Text style={styles.statusText}>
-                        {user.active ? 'Active' : 'Inactive'}
+                  </View>
+                  <View style={styles.userDetails}>
+                    <Text style={[styles.userName, darkMode && styles.textWhite]}>
+                      {user.name}
+                    </Text>
+                    <Text style={[styles.userEmail, darkMode && styles.textGray]}>
+                      {user.email}
+                    </Text>
+                    <View style={styles.userMeta}>
+                      <Text style={[styles.userRole, darkMode && styles.textGray]}>
+                        {user.role}
                       </Text>
+                      <View style={[
+                        styles.statusBadge,
+                        user.active !== false ? styles.activeBadge : styles.inactiveBadge
+                      ]}>
+                        <Text style={styles.statusText}>
+                          {user.active !== false ? 'Active' : 'Inactive'}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </View>
               </View>
-            </View>
-          ))}
+            ))
+          )}
         </View>
       </ScrollView>
 
@@ -490,6 +492,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginBottom: 15,
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#666',
+    marginTop: 20,
   },
   
   // Icon Container Style
