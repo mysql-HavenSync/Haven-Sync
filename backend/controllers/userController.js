@@ -32,6 +32,7 @@ exports.getsub_users = async (req, res) => {
     );
     res.json({ sub_users });
   } catch (err) {
+    console.error('❌ Error fetching sub_users:', err);
     res.status(500).json({ message: 'Error fetching sub_users', error: err.message });
   }
 };

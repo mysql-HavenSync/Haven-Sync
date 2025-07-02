@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
+const auth = require('../middleware/auth'); // JWT auth middleware
 
 
 // POST: Add a sub_user
