@@ -205,6 +205,7 @@ export default function HexaLoginScreen({ navigation }) {
   };
 
 const handleLogin = async () => {
+   
   console.log('📡 Sending login request with:', email, password);
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.trim() === '') {
