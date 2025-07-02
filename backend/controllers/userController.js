@@ -18,7 +18,7 @@ function generateSubUserId(name, email) {
   return `HS-SUB-${firstName}-${emailPrefix}-${dateCode}`;
 }
 
-// ✅ FIXED: Add sub_user using the correct table structure
+// ✅ FIXED: Add sub_user with proper error handling and correct logic
 exports.addsub_user = async (req, res) => {
   const { name, email, mainUserId, role } = req.body;
 
@@ -31,7 +31,7 @@ exports.addsub_user = async (req, res) => {
       return res.status(400).json({ message: 'Name, email, and mainUserId are required' });
     }
 
-    // ✅ FIXED: Get the parent_user_id from JWT token properly
+    // ✅ FIXED: Get the JWT user_id properly
     const jwtUserId = req.user.user_id || req.user.id;
     console.log('🔍 JWT user_id:', jwtUserId);
     console.log('🔍 mainUserId from request:', mainUserId);
@@ -55,50 +55,81 @@ exports.addsub_user = async (req, res) => {
     }
 
     console.log('✅ Main user found:', mainUser[0]);
-    const parentUserId = mainUser[0].parent_user_id; // This is what we'll use as main_user_id
+    const parentUserId = mainUser[0].parent_user_id;
 
     // Generate unique user_id for sub-user
     const subUserUserId = generateSubUserId(name, email);
     console.log('🔧 Generated sub-user ID:', subUserUserId);
     
-    // ✅ OPTION 1: If you want to store sub-users in the separate subuser table
+    // ✅ FIXED: Use database transaction for atomic operations
+    await db.query('START TRANSACTION');
+    
     try {
-      // First, create the sub-user record in the users table (without password since they can't login independently)
+      // ✅ FIXED: Insert sub-user into users table with correct parent_user_id
+      // The parent_user_id should be the same as the main user's parent_user_id (not the main user's user_id)
       await db.query(
         'INSERT INTO users (name, email, user_id, role, password, parent_user_id) VALUES (?, ?, ?, ?, ?, ?)',
-        [name, email, subUserUserId, role || 'User', null, mainUserId]
+        [name, email, subUserUserId, role || 'User', null, parentUserId]
       );
 
-      // Then, create the relationship in the subuser table
+      // ✅ FIXED: Create the relationship in the subuser table
+      // main_user_id should be the parent_user_id, sub_user_id should be the new sub-user's user_id
       await db.query(
         'INSERT INTO subuser (main_user_id, sub_user_id, role) VALUES (?, ?, ?)',
         [parentUserId, subUserUserId, role || 'User']
       );
 
-      console.log('✅ Sub-user added to both users and subuser tables');
+      // Commit the transaction
+      await db.query('COMMIT');
+      console.log('✅ Sub-user added successfully to both tables');
+      
     } catch (insertError) {
-      console.error('❌ Insert error:', insertError);
+      // Rollback on error
+      await db.query('ROLLBACK');
+      console.error('❌ Insert error, transaction rolled back:', insertError);
       throw insertError;
     }
 
-    console.log('✅ Sub-user added successfully');
     res.json({ 
       message: 'Sub-user added successfully',
       subUser: {
         user_id: subUserUserId,
         name,
         email,
-        role: role || 'User'
+        role: role || 'User',
+        parent_user_id: parentUserId
       }
     });
   } catch (err) {
     console.error('❌ Error adding sub-user:', err);
-    console.error('❌ Error stack:', err.stack);
-    res.status(500).json({ message: 'Failed to add sub_user', error: err.message, stack: err.stack });
+    console.error('❌ Error details:', {
+      message: err.message,
+      code: err.code,
+      errno: err.errno,
+      sqlState: err.sqlState,
+      sqlMessage: err.sqlMessage
+    });
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to add sub-user';
+    if (err.code === 'ER_NO_REFERENCED_ROW_2') {
+      errorMessage = 'Foreign key constraint failed. Please check user relationships.';
+    } else if (err.code === 'ER_DUP_ENTRY') {
+      errorMessage = 'Duplicate entry. This user may already exist.';
+    } else if (err.code === 'ER_BAD_NULL_ERROR') {
+      errorMessage = 'Required field is missing or null.';
+    }
+    
+    res.status(500).json({ 
+      message: errorMessage, 
+      error: err.message,
+      code: err.code,
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 };
 
-// ✅ FIXED: Get sub_users using the correct table structure
+// ✅ FIXED: Get sub_users with better error handling
 exports.getsub_users = async (req, res) => {
   console.log('🔍 Request user from JWT:', req.user);
   
@@ -122,7 +153,7 @@ exports.getsub_users = async (req, res) => {
     const parentUserId = mainUser[0].parent_user_id;
     console.log('🔍 Parent user ID:', parentUserId);
 
-    // ✅ Query sub-users using the correct table structure
+    // ✅ FIXED: Query sub-users with better error handling
     const [subUsers] = await db.query(`
       SELECT 
         u.id,
@@ -130,6 +161,7 @@ exports.getsub_users = async (req, res) => {
         u.email,
         u.user_id,
         u.role,
+        u.created_at,
         s.created_at as added_date
       FROM subuser s
       INNER JOIN users u ON s.sub_user_id = u.user_id
@@ -148,14 +180,18 @@ exports.getsub_users = async (req, res) => {
       role: user.role || 'User',
       active: true,
       addedBy: 'Admin',
-      added_date: user.added_date
+      created_at: user.created_at || user.added_date
     }));
     
     console.log('✅ Returning sub-users:', formattedSubUsers.length);
     res.json({ sub_users: formattedSubUsers });
   } catch (err) {
     console.error('❌ Error fetching sub_users:', err);
-    res.status(500).json({ message: 'Error fetching sub_users', error: err.message });
+    res.status(500).json({ 
+      message: 'Error fetching sub_users', 
+      error: err.message,
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 };
 
