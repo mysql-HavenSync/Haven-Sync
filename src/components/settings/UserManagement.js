@@ -82,33 +82,43 @@ setUsers(allUsers);
     Math.floor(100000 + Math.random() * 900000).toString();
 
   const handleSendOTP = async () => {
-    if (!newUserData.name.trim() || !newUserData.email.trim()) {
-      Alert.alert('Error', 'Please fill all fields');
-      return;
-    }
+  if (!newUserData.name.trim() || !newUserData.email.trim()) {
+    Alert.alert('Error', 'Please fill all fields');
+    return;
+  }
 
-    if (!validateEmail(newUserData.email)) {
-      Alert.alert('Error', 'Invalid email format');
-      return;
-    }
+  if (!validateEmail(newUserData.email)) {
+    Alert.alert('Error', 'Invalid email format');
+    return;
+  }
 
-    if (users.some(u => u.email === newUserData.email)) {
-      Alert.alert('Error', 'User already exists');
-      return;
-    }
+  if (users.some(u => u.email === newUserData.email)) {
+    Alert.alert('Error', 'User already exists');
+    return;
+  }
 
-    setIsLoading(true);
-    const otp = generateOTP();
-    setGeneratedOtp(otp);
+  setIsLoading(true);
+  const otp = generateOTP();
+  setGeneratedOtp(otp);
 
-    // 🔁 Simulate email
-    setTimeout(() => {
-      setIsLoading(false);
-      setShowAddUserModal(false);
-      setShowOtpModal(true);
-      Alert.alert('OTP Sent', `Verification code sent to ${newUserData.email}`);
-    }, 1000);
-  };
+  try {
+    // ✅ Call backend to send OTP email
+    await api.post('/api/users/send-subuser-otp', {
+      email: newUserData.email,
+      otp,
+    });
+
+    setShowAddUserModal(false);
+    setShowOtpModal(true);
+    Alert.alert('OTP Sent', `Verification code sent to ${newUserData.email}`);
+  } catch (err) {
+    console.error('❌ OTP send error:', err);
+    Alert.alert('Error', 'Failed to send OTP');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const handleVerifyOTP = async () => {
   if (otpCode !== generatedOtp) {
