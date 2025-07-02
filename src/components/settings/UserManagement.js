@@ -35,9 +35,9 @@ const fetchUsers = async () => {
 
     const allUsers = [
   {
-    id: loggedInUser.id, // <- your logged-in user's id
-    name: loggedInUser.name,
-    email: loggedInUser.email,
+    id: loggedInUser?.id, // ✅ Use actual ID
+    name: loggedInUser?.name,
+    email: loggedInUser?.email,
     role: 'Admin',
     active: true,
     addedBy: loggedInUser.email,
@@ -57,6 +57,7 @@ setUsers(allUsers);
 
   // 🔄 Load existing users (mock for now, backend later)
   useEffect(() => {
+    console.log('👤 Redux loggedInUser:', loggedInUser);
   if (loggedInUser) {
     fetchUsers();
   }

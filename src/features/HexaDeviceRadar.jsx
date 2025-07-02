@@ -32,6 +32,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
+
 import { addDevice } from '../redux/slices/switchSlice';
 // Updated imports - replace the old libraries
 import { Camera, useCameraDevices, useCodeScanner } from 'react-native-vision-camera';

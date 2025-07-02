@@ -12,6 +12,9 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FastImage from 'react-native-fast-image';
 import api from '../api'; // ✅ Live backend API instance
+import { useDispatch } from 'react-redux';
+import { setUser, setToken } from '../../redux/slices/authSlice'; // ✅ ADD THIS
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -212,6 +215,9 @@ export default function HexaLoginScreen({ navigation }) {
     setIsLoading(true);
     try {
   const res = await api.post('/api/auth/login', { email, password }); // ✅ First await
+
+    dispatch(setToken(res.data.token));
+    dispatch(setUser(res.data.user));
 
   console.log('✅ Login success:', res.data); // ✅ Now 'res' is defined
 
