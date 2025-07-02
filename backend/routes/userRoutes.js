@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
+const authMiddleware = require('../middleware/auth');
 
 // POST: Add a sub_user
 router.post('/add-sub_user', userController.addsub_user);
@@ -13,5 +14,7 @@ router.post('/assign-device', userController.assignDevice);
 
 // ✅ POST: Send OTP email to sub_user
 router.post('/send-subuser-otp', userController.sendSubUserOtp);  // 👈 Add this line
+
+router.get('/sub_user', authMiddleware, usersController.getSubUsers);
 
 module.exports = router;
