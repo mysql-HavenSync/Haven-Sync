@@ -1,11 +1,13 @@
 require('dotenv').config();
 require('./services/mqttClient');
 
+
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const db = require('./db');
 const pool = require('./db');
+const userRoutes = require('./routes/userRoutes'); // 👈 new line
 
 // ✅ Check MySQL DB connection
 pool.getConnection((err, conn) => {
@@ -27,9 +29,11 @@ app.use(express.json());
 // ✅ Routes
 const authRoutes = require('./routes/authRoutes');
 const mqttRoutes = require('./routes/mqttRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/mqtt', mqttRoutes);
+app.use('/api/users', userRoutes);
 
 // ✅ Test route
 app.get('/', (req, res) => {

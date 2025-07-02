@@ -8,10 +8,15 @@ import { useSelector } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowLeft, faEnvelope, faLock, faTimes } from '@fortawesome/free-solid-svg-icons';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import api from '../../api';
+
+
 
 export default function UserManagement({ navigation, onBack }) {
   const darkMode = useSelector(state => state.profile.darkMode);
   const loggedInUser = useSelector(state => state.auth.user);
+ 
+
 
   const [users, setUsers] = useState([]);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -20,25 +25,44 @@ export default function UserManagement({ navigation, onBack }) {
   const [newUserData, setNewUserData] = useState({ name: '', email: '', role: 'User' });
   const [otpCode, setOtpCode] = useState('');
   const [generatedOtp, setGeneratedOtp] = useState('');
+  const token = useSelector(state => state.auth.token);
+
+const fetchUsers = async () => {
+  try {
+    const res = await api.get('/api/users/sub_user', {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const allUsers = [
+      {
+        id: 0,
+        name: loggedInUser?.name,
+        email: loggedInUser?.email,
+        role: 'Admin',
+        active: true,
+        addedBy: loggedInUser?.email,
+      },
+       ...res.data.sub_users,
+    ];
+
+    setUsers(allUsers);
+  } catch (err) {
+    console.error('❌ Failed to fetch users:', err);
+    Alert.alert('Error', 'Could not load users');
+  }
+};
+
 
   // 🔄 Load existing users (mock for now, backend later)
   useEffect(() => {
-    // Replace this with API fetch in real app
-    if (loggedInUser) {
-      setUsers([
-        {
-          id: 1,
-          name: loggedInUser.name,
-          email: loggedInUser.email,
-          role: 'Admin',
-          active: true,
-          addedBy: loggedInUser.email
-        }
-      ]);
-    }
-  }, [loggedInUser]);
+  if (loggedInUser) {
+    fetchUsers();
+  }
+}, [loggedInUser]);
+
 
   const handleAddUser = () => setShowAddUserModal(true);
+  
   const closeAddUserModal = () => {
     setShowAddUserModal(false);
     setNewUserData({ name: '', email: '', role: 'User' });
@@ -84,26 +108,44 @@ export default function UserManagement({ navigation, onBack }) {
     }, 1000);
   };
 
-  const handleVerifyOTP = () => {
-    if (otpCode !== generatedOtp) {
-      Alert.alert('Error', 'Invalid OTP');
-      return;
-    }
+  const handleVerifyOTP = async () => {
+  if (otpCode !== generatedOtp) {
+    Alert.alert('Error', 'Invalid OTP');
+    return;
+  }
 
-    const newUser = {
-      id: users.length + 1,
-      ...newUserData,
-      active: true,
-      addedBy: loggedInUser?.email
-    };
+  try {
+    setIsLoading(true);
 
-    setUsers(prev => [...prev, newUser]);
+    await api.post(
+      '/api/users/add-sub_user',
+      {
+        name: newUserData.name,
+        email: newUserData.email,
+        role: newUserData.role,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    Alert.alert('Success', 'sub_user added!');
     setShowOtpModal(false);
-    setNewUserData({ name: '', email: '', role: 'User' });
     setOtpCode('');
     setGeneratedOtp('');
-    Alert.alert('Success', 'User added!');
-  };
+    setNewUserData({ name: '', email: '', role: 'User' });
+
+    // 🔄 Optional: Refresh user list
+    
+    fetchUsers();
+  } catch (err) {
+    console.error('❌ Failed to add user:', err);
+    Alert.alert('Error', err?.response?.data?.message || 'Could not add user');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const visibleUsers = users.filter(
     user =>
