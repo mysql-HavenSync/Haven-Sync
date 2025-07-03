@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faArrowLeft, faEnvelope, faLock, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faEnvelope, faLock, faTimes, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import api from '../../api';
 
@@ -18,105 +18,166 @@ export default function UserManagement({ navigation, onBack }) {
   const [users, setUsers] = useState([]);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [userToRemove, setUserToRemove] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
   const [newUserData, setNewUserData] = useState({ name: '', email: '', role: 'User', password: '' });
   const [otpCode, setOtpCode] = useState('');
   const [generatedOtp, setGeneratedOtp] = useState('');
   const token = useSelector(state => state.auth.token);
 
-  // ✅ FIXED: Enhanced fetchUsers function with better error handling and field mapping
-  const fetchUsers = async () => {
-    try {
-      console.log('🔄 Fetching users with token:', token);
-      console.log('👤 LoggedInUser structure:', loggedInUser);
-      
-      if (!loggedInUser) {
-        console.error('❌ No logged in user found');
-        Alert.alert('Error', 'User session expired. Please login again.');
-        return;
-      }
+  // ✅ Updated helper function to check if logged-in user can remove a specific user
+const canRemoveUser = (targetUser) => {
+  // Get logged-in user's role (Admin role for main user, or their assigned role for subusers)
+  const loggedInUserRole = loggedInUser?.role || 'Admin'; // Main user is always Admin
+  const loggedInUserId = loggedInUser?.id || loggedInUser?.user_id;
+  const targetUserId = targetUser?.id || targetUser?.user_id;
 
-      let subusers = [];
+  // Only Admin users can see the remove option
+  if (loggedInUserRole !== 'Admin') {
+    return false;
+  }
+
+  // Admin users cannot remove themselves
+  if (loggedInUserId === targetUserId) {
+    return false;
+  }
+
+  // Admin users can remove other users (but not themselves)
+  return true;
+};
+ // ✅ FIXED: Enhanced fetchUsers function with proper admin/subuser handling
+const fetchUsers = async () => {
+  try {
+    console.log('🔄 Fetching users with token:', token);
+    console.log('👤 LoggedInUser structure:', loggedInUser);
+    
+    if (!loggedInUser) {
+      console.error('❌ No logged in user found');
+      Alert.alert('Error', 'User session expired. Please login again.');
+      return;
+    }
+
+    const loggedInUserId = loggedInUser?.user_id || loggedInUser?.id;
+    
+    // ✅ FIXED: First, determine if the logged-in user is admin or subuser
+    let adminUser = null;
+    let subusers = [];
+    
+    try {
+      // Check if logged-in user has a parent_user_id (meaning they are a subuser)
+      const [loggedInUserDetails] = await api.get(`/api/users/user-details/${loggedInUserId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       
-      try {
-        console.log('🔄 Making API call to fetch subusers...');
-        const res = await api.get('/api/users/subusers', {
+      if (loggedInUserDetails?.parent_user_id) {
+        // Logged-in user is a subuser, fetch the admin user
+        console.log('🔍 Logged-in user is a subuser, fetching admin user...');
+        const adminUserId = loggedInUserDetails.parent_user_id;
+        
+        const [adminDetails] = await api.get(`/api/users/user-details/${adminUserId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         
-        console.log('✅ API Response received:', res.data);
-        console.log('🔍 Response structure:', Object.keys(res.data));
+        adminUser = {
+          id: adminDetails.user_id,
+          user_id: adminDetails.user_id,
+          name: adminDetails.name,
+          email: adminDetails.email,
+          role: 'Admin',
+          active: true,
+          addedBy: 'Self',
+          created_at: adminDetails.created_at,
+          isMainUser: false, // Not the currently logged-in user
+        };
         
-        // ✅ FIXED: Handle different possible response structures
-        if (res.data && res.data.subuserss) {
-          subusers = res.data.subuserss;
-          console.log('✅ Found subuserss array:', subusers.length, 'users');
-        } else if (res.data && res.data.subusers) {
-          subusers = res.data.subusers;
-          console.log('✅ Found subusers array:', subusers.length, 'users');
-        } else if (res.data && Array.isArray(res.data)) {
-          subusers = res.data;
-          console.log('✅ Found direct array:', subusers.length, 'users');
-        } else {
-          console.warn('⚠️ No recognizable subusers array in response');
-          subusers = [];
-        }
-        
-        // ✅ FIXED: Map database fields to expected UI fields
-        subusers = subusers.map(user => ({
-          id: user.sub_user_id || user.id || user.user_id,
-          user_id: user.sub_user_id || user.id || user.user_id,
-          name: user.name || 'Unknown User',
-          email: user.email || 'No email',
-          role: user.role || 'User',
-          active: user.active !== false,
-          addedBy: user.addedBy || 'Admin',
-          created_at: user.created_at || new Date().toISOString(),
-          parent_user_id: user.parent_user_id,
-        }));
-        
-        console.log('✅ Mapped subusers:', subusers);
-        
-      } catch (err) {
-        console.error('❌ Error fetching subusers:', err.response?.data || err.message);
-        console.error('❌ Error status:', err.response?.status);
-        
-        if (err.response?.status !== 404) {
-          Alert.alert('Warning', 'Could not load subusers. Please try again.');
-        }
-        subusers = [];
+        console.log('✅ Admin user found:', adminUser);
+      } else {
+        // Logged-in user is the admin
+        console.log('🔍 Logged-in user is the admin');
+        adminUser = {
+          id: loggedInUser.user_id || loggedInUser.id,
+          user_id: loggedInUser.user_id || loggedInUser.id,
+          name: loggedInUser.name,
+          email: loggedInUser.email,
+          role: 'Admin',
+          active: true,
+          addedBy: 'Self',
+          created_at: loggedInUser.created_at || new Date().toISOString(),
+          isMainUser: true, // This is the currently logged-in user
+        };
       }
-
-      // ✅ Always include the main user first
-      const mainUser = {
-        id: loggedInUser?.id || loggedInUser?.user_id || 'main_user',
-        user_id: loggedInUser?.user_id || loggedInUser?.id,
-        name: loggedInUser?.name || 'Main User',
-        email: loggedInUser?.email || 'No email',
+    } catch (err) {
+      console.error('❌ Error fetching user details:', err);
+      // Fallback: treat logged-in user as admin
+      adminUser = {
+        id: loggedInUser.user_id || loggedInUser.id,
+        user_id: loggedInUser.user_id || loggedInUser.id,
+        name: loggedInUser.name,
+        email: loggedInUser.email,
         role: 'Admin',
         active: true,
         addedBy: 'Self',
-        created_at: new Date().toISOString(),
+        created_at: loggedInUser.created_at || new Date().toISOString(),
+        isMainUser: true,
       };
+    }
 
-      const allUsers = [mainUser, ...subusers];
+    // ✅ Now fetch subusers
+    try {
+      console.log('🔄 Making API call to fetch subusers...');
+      const res = await api.get('/api/users/subusers', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       
-      console.log('👥 Setting all users:', allUsers);
-      console.log('📊 Total users count:', allUsers.length);
-      console.log('📋 Users details:', allUsers.map(u => ({ 
-        id: u.id, 
-        name: u.name, 
-        email: u.email, 
-        role: u.role 
-      })));
+      console.log('✅ API Response received:', res.data);
       
-      setUsers(allUsers);
+      if (res.data && res.data.subuserss) {
+        subusers = res.data.subuserss;
+      } else if (res.data && res.data.subusers) {
+        subusers = res.data.subusers;
+      } else if (res.data && Array.isArray(res.data)) {
+        subusers = res.data;
+      } else {
+        console.warn('⚠️ No recognizable subusers array in response');
+        subusers = [];
+      }
+      
+      // ✅ Map subusers and mark if they are the currently logged-in user
+      subusers = subusers.map(user => ({
+        id: user.sub_user_id || user.id || user.user_id,
+        user_id: user.sub_user_id || user.id || user.user_id,
+        name: user.name || 'Unknown User',
+        email: user.email || 'No email',
+        role: user.role || 'User',
+        active: user.active !== false,
+        addedBy: 'Admin',
+        created_at: user.created_at || new Date().toISOString(),
+        parent_user_id: user.parent_user_id,
+        isMainUser: (user.sub_user_id || user.user_id) === loggedInUserId, // ✅ Check if this subuser is the logged-in user
+      }));
+      
+      console.log('✅ Mapped subusers:', subusers);
       
     } catch (err) {
-      console.error('❌ Critical error in fetchUsers:', err);
-      Alert.alert('Error', 'Could not load user data. Please try again.');
+      console.error('❌ Error fetching subusers:', err.response?.data || err.message);
+      subusers = [];
     }
-  };
+
+    // ✅ Combine admin and subusers, with admin always first
+    const allUsers = [adminUser, ...subusers];
+    
+    console.log('👥 Setting all users:', allUsers);
+    console.log('📊 Total users count:', allUsers.length);
+    
+    setUsers(allUsers);
+    
+  } catch (err) {
+    console.error('❌ Critical error in fetchUsers:', err);
+    Alert.alert('Error', 'Could not load user data. Please try again.');
+  }
+};
 
   // ✅ Refresh on component focus
   useEffect(() => {
@@ -158,6 +219,62 @@ export default function UserManagement({ navigation, onBack }) {
     setOtpCode('');
     setGeneratedOtp('');
   };
+
+  // ✅ Updated handleRemoveUser with proper role-based permissions
+const handleRemoveUser = (user) => {
+  // Check if the current user has permission to remove this user
+  if (!canRemoveUser(user)) {
+    Alert.alert(
+      'Permission Denied', 
+      'You do not have permission to remove this user.'
+    );
+    return;
+  }
+
+  // Show confirmation dialog
+  setUserToRemove(user);
+  setShowRemoveModal(true);
+};
+
+  const closeRemoveModal = () => {
+    setShowRemoveModal(false);
+    setUserToRemove(null);
+  };
+
+// ✅ Updated confirmRemoveUser - simplified since self-removal is no longer allowed
+const confirmRemoveUser = async () => {
+  if (!userToRemove) return;
+
+  setIsRemoving(true);
+  
+  try {
+    console.log('🗑️ Removing user:', userToRemove.id);
+    
+    // Remove the subuser
+    const response = await api.delete(`/api/users/subusers/${userToRemove.id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    console.log('✅ User removed successfully:', response.data);
+    
+    closeRemoveModal();
+    Alert.alert('Success', 'User removed successfully!');
+    
+    // Add small delay before refresh to ensure database is updated
+    setTimeout(() => {
+      fetchUsers();
+    }, 500);
+
+  } catch (err) {
+    console.error('❌ Failed to remove user:', err);
+    console.error('❌ Error response:', err.response?.data);
+    
+    const errorMessage = err?.response?.data?.message || 'Could not remove user. Please try again.';
+    Alert.alert('Error', errorMessage);
+  } finally {
+    setIsRemoving(false);
+  }
+};
 
   const validateEmail = (email) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -335,7 +452,7 @@ export default function UserManagement({ navigation, onBack }) {
                   <View style={styles.userDetails}>
                     <Text style={[styles.userName, darkMode && styles.textWhite]}>
                       {user.name}
-                      {user.role === 'Admin' && (
+                      {user.isMainUser && (
                         <Text style={styles.youLabel}> (You)</Text>
                       )}
                     </Text>
@@ -357,6 +474,15 @@ export default function UserManagement({ navigation, onBack }) {
                     </View>
                   </View>
                 </View>
+                {/* ✅ FIXED: Show remove button based on permissions */}
+                {canRemoveUser(user) && (
+                  <TouchableOpacity
+                    style={[styles.removeButton, darkMode && styles.removeButtonDark]}
+                    onPress={() => handleRemoveUser(user)}
+                  >
+                    <FontAwesomeIcon icon={faTrashAlt} size={16} color="#ff4444" />
+                  </TouchableOpacity>
+                )}
               </View>
             ))
           )}
@@ -567,6 +693,69 @@ export default function UserManagement({ navigation, onBack }) {
           </View>
         </View>
       </Modal>
+
+      {/* Remove User Confirmation Modal */}
+      <Modal
+        visible={showRemoveModal}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={closeRemoveModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.removeModalContent, darkMode && styles.modalContentDark]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, darkMode && styles.textWhite]}>
+                Remove User
+              </Text>
+              <TouchableOpacity onPress={closeRemoveModal}>
+                <FontAwesomeIcon 
+                  icon={faTimes} 
+                  size={20} 
+                  color={darkMode ? '#fff' : '#333'} 
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.removeInfo}>
+              <View style={[styles.removeIcon, darkMode && styles.removeIconDark]}>
+                <FontAwesomeIcon 
+                  icon={faTrashAlt} 
+                  size={24} 
+                  color="#ff4444" 
+                />
+              </View>
+              <Text style={[styles.removeTitle, darkMode && styles.textWhite]}>
+                Are you sure?
+              </Text>
+              <Text style={[styles.removeSubtitle, darkMode && styles.textGray]}>
+                You are about to remove <Text style={styles.boldText}>{userToRemove?.name}</Text> from your account. This action cannot be undone.
+              </Text>
+            </View>
+
+            <View style={styles.removeActions}>
+              <TouchableOpacity
+                style={[styles.cancelButton, darkMode && styles.cancelButtonDark]}
+                onPress={closeRemoveModal}
+              >
+                <Text style={[styles.cancelButtonText, darkMode && styles.textWhite]}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.removeConfirmButton, isRemoving && styles.buttonDisabled]}
+                onPress={confirmRemoveUser}
+                disabled={isRemoving}
+              >
+                {isRemoving ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.removeConfirmButtonText}>Remove User</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -574,10 +763,29 @@ export default function UserManagement({ navigation, onBack }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
   },
   containerDark: {
-    backgroundColor: '#1e1e1e',
+    backgroundColor: '#1a1a1a',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  headerDark: {
+    backgroundColor: '#2a2a2a',
+    borderBottomColor: '#444',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
   },
   textWhite: {
     color: '#fff',
@@ -585,53 +793,55 @@ const styles = StyleSheet.create({
   textGray: {
     color: '#999',
   },
-  
-  // Loading styles
+  content: {
+    flex: 1,
+    padding: 20,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
   },
   loadingText: {
-    marginTop: 16,
+    marginTop: 10,
     fontSize: 16,
-    color: '#333',
+    color: '#666',
   },
-  
-  // Header Styles
-  header: {
+  actionSection: {
+    marginBottom: 30,
+  },
+  actionButton: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  headerDark: {
-    borderBottomColor: '#333',
+  actionButtonDark: {
+    backgroundColor: '#2a2a2a',
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  backButton: {
+  iconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 15,
   },
-  placeholder: {
-    width: 40,
-  },
-  
-  // Content Styles
-  content: {
+  actionButtonText: {
     flex: 1,
-    padding: 20,
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+  },
+  usersSection: {
+    flex: 1,
   },
   sectionTitle: {
     fontSize: 18,
@@ -641,106 +851,55 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     alignItems: 'center',
-    paddingVertical: 40,
+    justifyContent: 'center',
+    padding: 40,
   },
   emptyText: {
-    textAlign: 'center',
     fontSize: 16,
-    fontWeight: '500',
     color: '#666',
-    marginBottom: 8,
+    marginBottom: 5,
   },
   emptySubText: {
-    textAlign: 'center',
     fontSize: 14,
     color: '#999',
-  },
-  
-  // You label style
-  youLabel: {
-    fontSize: 12,
-    color: '#4caf50',
-    fontWeight: '500',
-  },
-  
-  // Icon Container Style
-  iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  
-  // Action Button Styles
-  actionSection: {
-    marginBottom: 30,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  actionButtonDark: {
-    backgroundColor: '#333',
-    borderColor: '#444',
-  },
-  actionButtonText: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-  },
-  
-  // User List Styles
-  usersSection: {
-    marginBottom: 20,
   },
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 16,
+    padding: 15,
     borderRadius: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    marginBottom: 10,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   userCardDark: {
-    backgroundColor: '#333',
-    borderColor: '#444',
+    backgroundColor: '#2a2a2a',
   },
   userInfo: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
   },
   userAvatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#4caf50',
-    justifyContent: 'center',
+    backgroundColor: '#e0e0e0',
     alignItems: 'center',
-    marginRight: 12,
+    justifyContent: 'center',
+    marginRight: 15,
   },
   userAvatarDark: {
-    backgroundColor: '#555',
+    backgroundColor: '#444',
   },
   avatarText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: '#333',
   },
   userDetails: {
     flex: 1,
@@ -749,21 +908,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
+    marginBottom: 2,
+  },
+  youLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#4caf50',
   },
   userEmail: {
     fontSize: 14,
     color: '#666',
-    marginTop: 2,
+    marginBottom: 5,
   },
   userMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
   },
   userRole: {
     fontSize: 12,
     color: '#999',
-    marginRight: 8,
+    marginRight: 10,
   },
   statusBadge: {
     paddingHorizontal: 8,
@@ -771,57 +935,62 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   activeBadge: {
-    backgroundColor: '#e8f5e8',
+    backgroundColor: '#e8f5e9',
   },
   inactiveBadge: {
-    backgroundColor: '#ffeaea',
+    backgroundColor: '#ffebee',
   },
   statusText: {
     fontSize: 10,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '500',
+    color: '#4caf50',
   },
-
-  // Modal Styles
+  removeButton: {
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: '#ffebee',
+  },
+  removeButtonDark: {
+    backgroundColor: '#2d1b1b',
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
   },
   modalContent: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    width: '100%',
+    borderRadius: 15,
+    padding: 0,
+    width: '90%',
     maxWidth: 400,
   },
   modalContentDark: {
-    backgroundColor: '#333',
+    backgroundColor: '#2a2a2a',
   },
   modalHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    justifyContent: 'space-between',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
     color: '#333',
   },
-
-  // Form Styles
   formContainer: {
-    marginBottom: 20,
+    padding: 20,
   },
   label: {
     fontSize: 14,
     fontWeight: '500',
     color: '#333',
     marginBottom: 8,
-    marginTop: 16,
+    marginTop: 15,
   },
   input: {
     borderWidth: 1,
@@ -829,11 +998,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#f9f9f9',
   },
   inputDark: {
-    borderColor: '#555',
-    backgroundColor: '#444',
+    borderColor: '#444',
+    backgroundColor: '#1a1a1a',
     color: '#fff',
   },
   inputContainer: {
@@ -842,24 +1011,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e0e0e0',
     borderRadius: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#fff',
+    backgroundColor: '#f9f9f9',
   },
   inputContainerDark: {
-    borderColor: '#555',
-    backgroundColor: '#444',
+    borderColor: '#444',
+    backgroundColor: '#1a1a1a',
   },
   inputWithIcon: {
     flex: 1,
     padding: 12,
     fontSize: 16,
-    marginLeft: 8,
+    color: '#333',
   },
-
-  // Role Selection
   roleContainer: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
   roleOption: {
     flex: 1,
@@ -868,48 +1034,47 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e0e0e0',
     alignItems: 'center',
+    backgroundColor: '#f9f9f9',
   },
   roleOptionDark: {
-    borderColor: '#555',
-    backgroundColor: '#444',
+    borderColor: '#444',
+    backgroundColor: '#1a1a1a',
   },
   roleOptionSelected: {
     borderColor: '#4caf50',
-    backgroundColor: '#e8f5e8',
+    backgroundColor: '#e8f5e9',
   },
   roleOptionSelectedDark: {
-    backgroundColor: '#2d4a2d',
+    borderColor: '#4caf50',
+    backgroundColor: '#1a2e1a',
   },
   roleText: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#333',
+    color: '#666',
   },
   roleTextSelected: {
     color: '#4caf50',
   },
-
-  // Action Buttons
   modalActions: {
     flexDirection: 'row',
-    gap: 12,
+    padding: 20,
+    gap: 10,
   },
   cancelButton: {
     flex: 1,
     padding: 12,
     borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    backgroundColor: '#f0f0f0',
     alignItems: 'center',
   },
   cancelButtonDark: {
-    borderColor: '#555',
-    backgroundColor: '#444',
+    backgroundColor: '#1a1a1a',
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
+    color: '#666',
   },
   sendOtpButton: {
     flex: 1,
@@ -926,15 +1091,12 @@ const styles = StyleSheet.create({
   buttonDisabled: {
     opacity: 0.6,
   },
-
-  // OTP Modal Styles
   otpModalContent: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 30,
-    width: '100%',
+    borderRadius: 15,
+    padding: 20,
+    width: '90%',
     maxWidth: 350,
-    alignItems: 'center',
   },
   otpInfo: {
     alignItems: 'center',
@@ -944,53 +1106,48 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#e8f5e8',
-    justifyContent: 'center',
+    backgroundColor: '#e8f5e9',
     alignItems: 'center',
-    marginBottom: 16,
+    justifyContent: 'center',
+    marginBottom: 15,
   },
   otpIconDark: {
-    backgroundColor: '#2d4a2d',
+    backgroundColor: '#1a2e1a',
   },
   otpTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#333',
-    marginBottom: 8,
-    textAlign: 'center',
+    marginBottom: 5,
   },
   otpSubtitle: {
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
-    lineHeight: 20,
   },
   otpInputContainer: {
-    width: '100%',
-    marginBottom:30
+    marginBottom: 20,
   },
   otpInput: {
     borderWidth: 1,
     borderColor: '#e0e0e0',
     borderRadius: 8,
-    padding: 16,
-    fontSize: 20,
-    fontWeight: '600',
-    letterSpacing: 2,
-    backgroundColor: '#fff',
+    padding: 15,
+    fontSize: 18,
+    backgroundColor: '#f9f9f9',
+    letterSpacing: 3,
   },
   otpInputDark: {
-    borderColor: '#555',
-    backgroundColor: '#444',
+    borderColor: '#444',
+    backgroundColor: '#1a1a1a',
     color: '#fff',
   },
   verifyButton: {
-    width: '100%',
-    padding: 16,
+    padding: 15,
     borderRadius: 8,
     backgroundColor: '#4caf50',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
   },
   verifyButtonText: {
     fontSize: 16,
@@ -1007,5 +1164,59 @@ const styles = StyleSheet.create({
   resendLink: {
     color: '#4caf50',
     fontWeight: '500',
+  },
+  removeModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 20,
+    width: '90%',
+    maxWidth: 350,
+  },
+  removeInfo: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  removeIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#ffebee',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  removeIconDark: {
+    backgroundColor: '#2d1b1b',
+  },
+  removeTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 5,
+  },
+  removeSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  boldText: {
+    fontWeight: '600',
+  },
+  removeActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  removeConfirmButton: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#ff4444',
+    alignItems: 'center',
+  },
+  removeConfirmButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#fff',
   },
 });

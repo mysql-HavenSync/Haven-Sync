@@ -174,7 +174,7 @@ Regards`;
       const ratingText = rating > 0 ? `Rating: ${rating}/5 stars\n\n` : '';
       const body = `${ratingText}Feedback:\n${feedback}`;
       
-      const mailto = `mailto:support@hexahavenintegrations.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      const mailto = `mailto:feedback@hexahavenintegrations.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       
       Alert.alert(
         'Submit Feedback',

@@ -11,6 +11,9 @@ router.post('/add-subusers', auth, userController.addsubusers);
 // CHANGED: From '/subuserss' to '/subusers' to match frontend call
 router.get('/subusers', auth, userController.getsubuserss);
 
+// ✅ NEW: Get user details by user_id
+router.get('/user-details/:userId', auth, userController.getUserDetails);
+
 // POST: Assign device to subusers
 router.post('/assign-device', auth, userController.assignDevice);
 

@@ -217,6 +217,33 @@ exports.getsubuserss = async (req, res) => {
     });
   }
 };
+// ✅ NEW: Get user details by user_id
+exports.getUserDetails = async (req, res) => {
+  const { userId } = req.params;
+  
+  console.log('🔍 Fetching user details for:', userId);
+  
+  try {
+    const [user] = await db.query(
+      'SELECT user_id, name, email, parent_user_id, created_at FROM users WHERE user_id = ?',
+      [userId]
+    );
+    
+    if (user.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    console.log('✅ User details found:', user[0]);
+    res.json(user[0]);
+    
+  } catch (err) {
+    console.error('❌ Error fetching user details:', err);
+    res.status(500).json({ 
+      message: 'Error fetching user details', 
+      error: err.message 
+    });
+  }
+};
 
 // ✅ Assign device to a subusers
 exports.assignDevice = async (req, res) => {
