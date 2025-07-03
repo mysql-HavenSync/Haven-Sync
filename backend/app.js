@@ -37,13 +37,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/mqtt', mqttRoutes);
 app.use('/api/users', userRoutes);
-// Add the feedback routes to your app
-app.use('/api', feedbackRoutes);
-
-// Alternative endpoints that your frontend is trying
-app.use('/', feedbackRoutes);
-app.use('/feedback', feedbackRoutes);
-app.use('/email', feedbackRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 // ✅ Test route
 app.get('/', (req, res) => {
