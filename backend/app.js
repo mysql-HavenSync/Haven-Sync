@@ -11,7 +11,8 @@ const pool = require('./db');
 // ✅ Routes
 const authRoutes = require('./routes/authRoutes');
 const mqttRoutes = require('./routes/mqttRoutes');
-const userRoutes = require('./routes/userRoutes'); // 👈 new line
+const userRoutes = require('./routes/userRoutes'); 
+const feedbackRoutes = require('./routes/feedbackRoutes');
 
 // ✅ Check MySQL DB connection
 pool.getConnection((err, conn) => {
@@ -36,6 +37,13 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/mqtt', mqttRoutes);
 app.use('/api/users', userRoutes);
+// Add the feedback routes to your app
+app.use('/api', feedbackRoutes);
+
+// Alternative endpoints that your frontend is trying
+app.use('/', feedbackRoutes);
+app.use('/feedback', feedbackRoutes);
+app.use('/email', feedbackRoutes);
 
 // ✅ Test route
 app.get('/', (req, res) => {
