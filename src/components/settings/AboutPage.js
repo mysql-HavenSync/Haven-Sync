@@ -1,4 +1,5 @@
 import React from 'react';
+import DeviceInfo from 'react-native-device-info';
 import {
   View,
   StyleSheet,
@@ -35,12 +36,14 @@ export default function AboutPage({ navigation, onBack }) {
     Alert.alert('Terms of Service', 'This will open the terms of service document.');
     // Linking.openURL('https://hexatech.com/terms-of-service');
   };
+const version = DeviceInfo.getVersion();       // e.g., "1.0.1"
+const buildNumber = DeviceInfo.getBuildNumber(); // e.g., "3"
 
   const appInfo = [
-    { label: 'Version', value: '1.0.01' },
-        { label: 'Developer', value: 'Hexahaven Integrations' },
+  { label: 'Version', value: `${version} (${buildNumber})` },
+  { label: 'Developer', value: 'Hexahaven Integrations' },
+];
 
-  ];
 
   return (
     <SafeAreaView style={[styles.container, darkMode && styles.containerDark]}>
