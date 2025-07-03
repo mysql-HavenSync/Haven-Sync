@@ -1,8 +1,8 @@
 const db = require('../db');
 const sendMail = require('../utils/sendMail');
 
-// Helper function to generate unique user_id for sub_user
-function generateSubUserId(name, email) {
+// Helper function to generate unique user_id for subusers
+function generatesubusersId(name, email) {
   const firstName = name.trim().split(' ')[0].toUpperCase();
   const emailPrefix = email.trim().split('@')[0].slice(0, 3).toUpperCase();
 
@@ -18,11 +18,11 @@ function generateSubUserId(name, email) {
   return `HS-SUB-${firstName}-${emailPrefix}-${dateCode}`;
 }
 
-// ✅ FIXED: Add sub_user with correct database structure
-exports.addsub_user = async (req, res) => {
+// ✅ FIXED: Add subusers with correct database structure
+exports.addsubusers = async (req, res) => {
   const { name, email, mainUserId, role } = req.body;
 
-  console.log('📝 Adding sub_user:', { name, email, mainUserId, role });
+  console.log('📝 Adding subusers:', { name, email, mainUserId, role });
   console.log('🔍 Request user from JWT:', req.user);
 
   try {
@@ -36,10 +36,10 @@ exports.addsub_user = async (req, res) => {
     console.log('🔍 JWT user_id:', jwtUserId);
     console.log('🔍 mainUserId from request:', mainUserId);
 
-    // ✅ SECURITY: Verify that the requester is authorized to add sub_user for this mainUserId
+    // ✅ SECURITY: Verify that the requester is authorized to add subusers for this mainUserId
     if (jwtUserId !== mainUserId) {
       console.log('❌ Authorization failed: JWT user_id does not match mainUserId');
-      return res.status(403).json({ message: 'You can only add sub_user for your own account' });
+      return res.status(403).json({ message: 'You can only add subusers for your own account' });
     }
 
     // Check if email already exists in users table
@@ -63,11 +63,11 @@ exports.addsub_user = async (req, res) => {
       parentUserId = mainUser[0].user_id;
     }
 
-    console.log('🧾 Using parent_user_id:', parentUserId, 'for subuser insert');
+    console.log('🧾 Using parent_user_id:', parentUserId, 'for subusers insert');
 
-    // Generate unique user_id for sub_user
-    const subUserUserId = generateSubUserId(name, email);
-    console.log('🔧 Generated sub_user ID:', subUserUserId);
+    // Generate unique user_id for subusers
+    const subusersUserId = generatesubusersId(name, email);
+    console.log('🔧 Generated subusers ID:', subusersUserId);
     
     // ✅ FIXED: Use database transaction for atomic operations
 await db.query('START TRANSACTION');
@@ -76,17 +76,17 @@ try {
   // ✅ Insert into users table (REMOVE `role`)
   await db.query(
     'INSERT INTO users (name, email, user_id, password, parent_user_id) VALUES (?, ?, ?, ?, ?)',
-    [name, email, subUserUserId, null, parentUserId]
+    [name, email, subusersUserId, null, parentUserId]
   );
 
-  // ✅ Insert into subuser table (WITH role)
+  // ✅ Insert into subusers table (WITH role)
   await db.query(
-    'INSERT INTO subuser (parent_user_id, sub_user_id, role) VALUES (?, ?, ?)',
-    [parentUserId, subUserUserId, role || 'User']
+    'INSERT INTO subusers (parent_user_id, subusers_id, role) VALUES (?, ?, ?)',
+    [parentUserId, subusersUserId, role || 'User']
   );
 
   await db.query('COMMIT');
-  console.log('✅ sub_user added successfully to both tables');
+  console.log('✅ subusers added successfully to both tables');
 } catch (insertError) {
   await db.query('ROLLBACK');
   console.error('❌ Insert error, transaction rolled back:', insertError);
@@ -95,9 +95,9 @@ try {
 
 
     res.json({ 
-      message: 'sub_user added successfully',
-      subUser: {
-        user_id: subUserUserId,
+      message: 'subusers added successfully',
+      subusers: {
+        user_id: subusersUserId,
         name,
         email,
         role: role || 'User',
@@ -105,7 +105,7 @@ try {
       }
     });
   } catch (err) {
-    console.error('❌ Error adding sub_user:', err);
+    console.error('❌ Error adding subusers:', err);
     console.error('❌ Error details:', {
       message: err.message,
       code: err.code,
@@ -115,7 +115,7 @@ try {
     });
     
     // Provide more specific error messages
-    let errorMessage = 'Failed to add sub_user';
+    let errorMessage = 'Failed to add subusers';
     if (err.code === 'ER_NO_REFERENCED_ROW_2') {
       errorMessage = 'Foreign key constraint failed. Please check user relationships.';
     } else if (err.code === 'ER_DUP_ENTRY') {
@@ -133,8 +133,8 @@ try {
   }
 };
 
-// ✅ FIXED: Get sub_users with correct column names
-exports.getsub_users = async (req, res) => {
+// ✅ FIXED: Get subuserss with correct column names
+exports.getsubuserss = async (req, res) => {
   console.log('🔍 Request user from JWT:', req.user);
   
   // ✅ FIXED: Extract user_id properly from JWT payload
@@ -145,7 +145,7 @@ exports.getsub_users = async (req, res) => {
     return res.status(401).json({ message: 'Invalid token: missing user_id' });
   }
   
-  console.log('🔍 Fetching sub_user for main user:', mainUserId);
+  console.log('🔍 Fetching subusers for main user:', mainUserId);
 
   try {
     // First, get the parent_user_id for this user
@@ -161,8 +161,8 @@ exports.getsub_users = async (req, res) => {
       parentUserId = mainUserId;
     }
 
-    // ✅ FIXED: Query sub_user with correct column names from your DB structure
-    const [subUsers] = await db.query(`
+    // ✅ FIXED: Query subusers with correct column names from your DB structure
+    const [subuserss] = await db.query(`
       SELECT 
         u.id,
         u.name,
@@ -171,16 +171,16 @@ exports.getsub_users = async (req, res) => {
         u.role,
         u.created_at,
         s.created_at as added_date
-      FROM subuser s
-      INNER JOIN users u ON s.sub_user_id = u.user_id
+      FROM subusers s
+      INNER JOIN users u ON s.subusers_id = u.user_id
       WHERE s.parent_user_id = ?
       ORDER BY s.created_at DESC
     `, [parentUserId]);
     
-    console.log('✅ Found sub_user:', subUsers.length);
+    console.log('✅ Found subusers:', subuserss.length);
     
     // ✅ Format the response properly
-    const formattedSubUsers = subUsers.map(user => ({
+    const formattedsubuserss = subuserss.map(user => ({
       id: user.id,
       user_id: user.user_id,
       name: user.name,
@@ -191,19 +191,19 @@ exports.getsub_users = async (req, res) => {
       created_at: user.created_at || user.added_date
     }));
     
-    console.log('✅ Returning sub_user:', formattedSubUsers.length);
-    res.json({ sub_users: formattedSubUsers });
+    console.log('✅ Returning subusers:', formattedsubuserss.length);
+    res.json({ subuserss: formattedsubuserss });
   } catch (err) {
-    console.error('❌ Error fetching sub_users:', err);
+    console.error('❌ Error fetching subuserss:', err);
     res.status(500).json({ 
-      message: 'Error fetching sub_users', 
+      message: 'Error fetching subuserss', 
       error: err.message,
       details: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
   }
 };
 
-// ✅ Assign device to a sub_user
+// ✅ Assign device to a subusers
 exports.assignDevice = async (req, res) => {
   const { userId, deviceId } = req.body;
 
@@ -231,8 +231,8 @@ exports.assignDevice = async (req, res) => {
   }
 };
 
-// ✅ Send OTP to sub_user during registration
-exports.sendSubUserOtp = async (req, res) => {
+// ✅ Send OTP to subusers during registration
+exports.sendsubusersOtp = async (req, res) => {
   const { email, otp } = req.body;
 
   if (!email || !otp) {
@@ -240,9 +240,9 @@ exports.sendSubUserOtp = async (req, res) => {
   }
 
   try {
-    const subject = 'HavenSync - sub_user Verification OTP';
+    const subject = 'HavenSync - subusers Verification OTP';
     const message = `
-      <h2>HavenSync sub_user Verification</h2>
+      <h2>HavenSync subusers Verification</h2>
       <p>Your verification OTP is: <strong>${otp}</strong></p>
       <p>This code will expire in 5 minutes.</p>
       <p>If you didn't request this verification, please ignore this email.</p>
@@ -251,7 +251,7 @@ exports.sendSubUserOtp = async (req, res) => {
     await sendMail(email, message, subject);
 
     console.log('✅ OTP sent to:', email);
-    res.json({ message: 'OTP sent to sub_user email successfully' });
+    res.json({ message: 'OTP sent to subusers email successfully' });
   } catch (err) {
     console.error('❌ OTP Email sending failed:', err);
     res.status(500).json({ message: 'Failed to send OTP', error: err.message });

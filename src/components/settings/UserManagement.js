@@ -36,19 +36,19 @@ export default function UserManagement({ navigation, onBack }) {
         return;
       }
 
-      let subUsers = [];
+      let subuserss = [];
       
-      // ✅ Try to fetch sub_user, but don't fail if API call fails
+      // ✅ Try to fetch subusers, but don't fail if API call fails
       try {
-        const res = await api.get('/api/users/sub_users', {
+        const res = await api.get('/api/users/subuserss', {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log('✅ API Response:', res.data);
-        subUsers = res.data.sub_users || [];
+        subuserss = res.data.subuserss || [];
       } catch (err) {
-        console.warn('⚠️ Failed to fetch sub_user (this is okay for new users):', err.response?.data || err.message);
-        // Don't show error alert for sub_user, just continue with empty array
-        subUsers = [];
+        console.warn('⚠️ Failed to fetch subusers (this is okay for new users):', err.response?.data || err.message);
+        // Don't show error alert for subusers, just continue with empty array
+        subuserss = [];
       }
 
       // ✅ Always include the main user first
@@ -63,13 +63,13 @@ export default function UserManagement({ navigation, onBack }) {
         created_at: new Date().toISOString(),
       };
 
-      const allUsers = [mainUser, ...subUsers];
+      const allUsers = [mainUser, ...subuserss];
       
       setUsers(allUsers);
       console.log('👥 All users set:', allUsers);
     } catch (err) {
       console.error('❌ Critical error in fetchUsers:', err.response?.data || err.message);
-      // Only show error if it's a critical error, not for missing sub_user
+      // Only show error if it's a critical error, not for missing subusers
       if (err.response?.status !== 404) {
         Alert.alert('Error', 'Could not load user data. Please try again.');
       }
@@ -129,7 +129,7 @@ export default function UserManagement({ navigation, onBack }) {
 
     try {
       // ✅ Call backend to send OTP email
-      await api.post('/api/users/send-subuser-otp', {
+      await api.post('/api/users/send-subusers-otp', {
         email: newUserData.email,
         otp,
       });
@@ -162,11 +162,11 @@ export default function UserManagement({ navigation, onBack }) {
         return;
       }
 
-      console.log('🔄 Adding sub_user with mainUserId:', mainUserId);
+      console.log('🔄 Adding subusers with mainUserId:', mainUserId);
         console.log('✅ Password entered:', newUserData.password);
 
       await api.post(
-        '/api/users/add-sub_user',
+        '/api/users/add-subusers',
         {
           name: newUserData.name,
           email: newUserData.email,
@@ -182,7 +182,7 @@ export default function UserManagement({ navigation, onBack }) {
       );
 console.log('📦 Sending new user data:', newUserData);
 
-      Alert.alert('Success', 'sub_user added!');
+      Alert.alert('Success', 'subusers added!');
       setShowOtpModal(false);
       setOtpCode('');
       setGeneratedOtp('');
@@ -198,7 +198,7 @@ console.log('📦 Sending new user data:', newUserData);
     }
   };
 
-  // ✅ Show all users (main user + sub_user)
+  // ✅ Show all users (main user + subusers)
   const visibleUsers = users;
 
   // ✅ Show loading state while fetching
@@ -262,7 +262,7 @@ console.log('📦 Sending new user data:', newUserData);
                 No users found
               </Text>
               <Text style={[styles.emptySubText, darkMode && styles.textGray]}>
-                Add your first sub_user to get started
+                Add your first subusers to get started
               </Text>
             </View>
           ) : (

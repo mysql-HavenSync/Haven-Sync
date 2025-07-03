@@ -3,17 +3,17 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const auth = require('../middleware/auth'); // JWT auth middleware
 
-// ✅ FIXED: Add auth middleware to sub_user routes
-// POST: Add a sub_user (requires authentication)
-router.post('/add-sub_user', auth, userController.addsub_user);
+// ✅ FIXED: Add auth middleware to subusers routes
+// POST: Add a subusers (requires authentication)
+router.post('/add-subusers', auth, userController.addsubusers);
 
-// GET: Get sub_users for a main user (requires authentication)
-router.get('/sub_users', auth, userController.getsub_users);
+// GET: Get subuserss for a main user (requires authentication)
+router.get('/subuserss', auth, userController.getsubuserss);
 
-// POST: Assign device to sub_user
+// POST: Assign device to subusers
 router.post('/assign-device', auth, userController.assignDevice);
 
-// POST: Send OTP email to sub_user (no auth needed for OTP sending)
-router.post('/send-subuser-otp', userController.sendSubUserOtp);
+// POST: Send OTP email to subusers (no auth needed for OTP sending)
+router.post('/send-subusers-otp', userController.sendsubusersOtp);
 
 module.exports = router;

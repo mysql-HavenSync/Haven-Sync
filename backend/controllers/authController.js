@@ -67,7 +67,7 @@ exports.signup = async (req, res) => {
     console.log('🔍 DEBUG - Users table columns:', columns.map(col => col.Field));
 
     // ✅ FIX: Assign 'Admin' role to new signups by default
-    const userRole = 'Admin'; // This makes every new signup an Admin who can add sub-users
+    const userRole = 'Admin'; // This makes every new signup an Admin who can add subuserss
     
     // Try inserting with explicit column names including role
     const insertQuery = 'INSERT INTO users (name, email, password, user_id, parent_user_id, role) VALUES (?, ?, ?, ?, ?, ?)';
