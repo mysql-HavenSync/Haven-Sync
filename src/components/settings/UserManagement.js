@@ -163,6 +163,7 @@ export default function UserManagement({ navigation, onBack }) {
       }
 
       console.log('🔄 Adding sub_user with mainUserId:', mainUserId);
+        console.log('✅ Password entered:', newUserData.password);
 
       await api.post(
         '/api/users/add-sub_user',
@@ -173,16 +174,19 @@ export default function UserManagement({ navigation, onBack }) {
           password: newUserData.password,
           mainUserId: mainUserId,
         },
+        
         {
           headers: { Authorization: `Bearer ${token}` },
         }
+        
       );
+console.log('📦 Sending new user data:', newUserData);
 
       Alert.alert('Success', 'sub_user added!');
       setShowOtpModal(false);
       setOtpCode('');
       setGeneratedOtp('');
-      setNewUserData({ name: '', email: '', role: 'User',password: ''  });
+      setNewUserData({ name: '', email: '', role: 'User', password: '' });
 
       // 🔄 Refresh user list
       fetchUsers();
