@@ -7,9 +7,9 @@ const auth = require('../middleware/auth'); // JWT auth middleware
 // POST: Add a subusers (requires authentication)
 router.post('/add-subusers', auth, userController.addsubusers);
 
-// GET: Get subuserss for a main user (requires authentication)
-// CHANGED: From '/subuserss' to '/subusers' to match frontend call
-router.get('/subusers', auth, userController.getsubuserss);
+// GET: Get subusers for a main user (requires authentication)
+// CHANGED: From '/subusers' to '/subusers' to match frontend call
+router.get('/subusers', auth, userController.getsubusers);
 
 // ✅ NEW: Delete/Remove subuser endpoint
 router.delete('/subusers/:userId', auth, userController.removeSubuser);

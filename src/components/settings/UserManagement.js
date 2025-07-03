@@ -179,8 +179,8 @@ const fetchUsers = async () => {
       
       console.log('✅ Subusers API Response received:', res.data);
       
-      if (res.data && res.data.subuserss) {
-        subusers = res.data.subuserss;
+      if (res.data && res.data.subusers) {
+        subusers = res.data.subusers;
       } else if (res.data && res.data.subusers) {
         subusers = res.data.subusers;
       } else if (res.data && Array.isArray(res.data)) {
@@ -289,109 +289,108 @@ const handleRemoveUser = (user) => {
   };
 
 
-// ✅ FIXED: Correct API call for removing subuser
+// ✅ FIXED: Corrected variable names and API call
 const confirmRemoveUser = async () => {
   try {
-    console.log('🗑️ Attempting to remove user:', subuserToRemove);
+    console.log('🗑️ Attempting to remove user:', userToRemove);
     
-    // Get the token from localStorage
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('No authentication token found');
+    if (!userToRemove) {
+      Alert.alert('Error', 'No user selected for removal');
+      return;
     }
 
+    setIsRemoving(true);
+
     // Use the correct API endpoint that matches your backend route
-    const response = await fetch(`${API_BASE_URL}/api/users/subusers/${subuserToRemove.user_id}`, {
-      method: 'DELETE',
+    const response = await api.delete(`/api/users/subusers/${userToRemove.user_id}`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || `HTTP error! status: ${response.status}`);
-    }
-
-    console.log('✅ User removed successfully:', data);
+    console.log('✅ User removed successfully:', response.data);
 
     // Remove from local state
-    setUsers(users.filter(user => user.user_id !== subuserToRemove.user_id));
+    setUsers(prevUsers => prevUsers.filter(user => user.user_id !== userToRemove.user_id));
     
     // Close the modal
     setShowRemoveModal(false);
-    setSubuserToRemove(null);
+    setUserToRemove(null);
     
     // Show success message
-    alert('User removed successfully!');
+    Alert.alert('Success', 'User removed successfully!');
     
   } catch (error) {
     console.error('❌ Error removing user:', error);
     
     // Show user-friendly error message
-    alert(`Failed to remove user: ${error.message}`);
+    Alert.alert(
+      'Error', 
+      error.response?.data?.message || 'Failed to remove user. Please try again.'
+    );
     
-    // Optional: Show debug info in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Full error details:', error);
-    }
+  } finally {
+    setIsRemoving(false);
   }
 };
 
-// ✅ Alternative: If you want to be extra safe, try multiple endpoints
+// ✅ Alternative with multiple endpoint fallback
 const confirmRemoveUserWithFallback = async () => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    alert('No authentication token found. Please login again.');
+  if (!userToRemove) {
+    Alert.alert('Error', 'No user selected for removal');
     return;
   }
 
+  if (!token) {
+    Alert.alert('Error', 'No authentication token found. Please login again.');
+    return;
+  }
+
+  setIsRemoving(true);
+
   const endpoints = [
-    `/api/users/subusers/${subuserToRemove.user_id}`,
-    `/api/subusers/${subuserToRemove.user_id}`,
-    `/api/users/${subuserToRemove.user_id}/remove`
+    `/api/users/subusers/${userToRemove.user_id}`,
+    `/api/subusers/${userToRemove.user_id}`,
+    `/api/users/${userToRemove.user_id}/remove`
   ];
 
   for (const endpoint of endpoints) {
     try {
       console.log('🔍 Trying endpoint:', endpoint);
       
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: 'DELETE',
+      const response = await api.delete(endpoint, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        console.log('✅ Success with endpoint:', endpoint);
-        
-        // Remove from local state
-        setUsers(users.filter(user => user.user_id !== subuserToRemove.user_id));
-        
-        // Close the modal
-        setShowRemoveModal(false);
-        setSubuserToRemove(null);
-        
-        // Show success message
-        alert('User removed successfully!');
-        return; // Exit on success
-      } else {
-        console.log('❌ Failed with endpoint:', endpoint, data.message);
-      }
+      console.log('✅ Success with endpoint:', endpoint);
+      
+      // Remove from local state
+      setUsers(prevUsers => prevUsers.filter(user => user.user_id !== userToRemove.user_id));
+      
+      // Close the modal
+      setShowRemoveModal(false);
+      setUserToRemove(null);
+      setIsRemoving(false);
+      
+      // Show success message
+      Alert.alert('Success', 'User removed successfully!');
+      return; // Exit on success
+      
     } catch (error) {
-      console.log('❌ Error with endpoint:', endpoint, error.message);
+      console.log('❌ Failed with endpoint:', endpoint, error.response?.data?.message || error.message);
     }
   }
 
   // If all endpoints fail
-  alert('Failed to remove user. Please contact support.');
+  setIsRemoving(false);
+  Alert.alert('Error', 'Failed to remove user. Please contact support.');
 };
+
+
 // ✅ ADDITIONAL: Helper function to check available endpoints
 const checkAvailableEndpoints = async () => {
   const endpoints = [
