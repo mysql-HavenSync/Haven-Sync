@@ -337,35 +337,19 @@ export default function BugReport({ navigation, onBack }) {
   };
 
   const handleSubmitReport = async () => {
-    if (selectedIssues.length === 0 || !description.trim()) {
-      Alert.alert('Incomplete Report', 'Please select at least one issue type and provide a description.');
-      return;
-    }
+  if (selectedIssues.length === 0 || !description.trim()) {
+    Alert.alert('Incomplete Report', 'Please select at least one issue type and provide a description.');
+    return;
+  }
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
 
-    try {
-      const selectedTitles = selectedIssues.map(id => 
-        issueTypes.find(issue => issue.id === id)?.title
-      ).filter(Boolean);
+  try {
+    const selectedTitles = selectedIssues
+      .map(id => issueTypes.find(issue => issue.id === id)?.title)
+      .filter(Boolean);
 
-      const reportData = {
-        to: 'bugreport@hexahavenintegrations.com',
-        subject: 'Bug Report - Mobile App',
-        issues: selectedTitles,
-        description: description.trim(),
-        mediaCount: attachedMedia.length,
-        timestamp: new Date().toISOString(),
-        platform: Platform.OS,
-        mediaFiles: attachedMedia.map(media => ({
-          fileName: media.fileName,
-          type: media.type,
-          fileSize: media.fileSize
-        }))
-      };
-
-      // Create email body
-      const emailBody = `
+    const emailBody = `
 Bug Report Details:
 ==================
 
@@ -379,74 +363,56 @@ Additional Information:
 - Timestamp: ${new Date().toLocaleString()}
 - Media Files Attached: ${attachedMedia.length}
 
-${attachedMedia.length > 0 ? 'Media Files:\n' + attachedMedia.map(media => `- ${media.fileName} (${media.type})`).join('\n') : ''}
-      `;
+${attachedMedia.length > 0
+  ? 'Media Files:\n' + attachedMedia.map(media => `- ${media.fileName} (${media.type})`).join('\n')
+  : ''}
+    `;
 
-      const emailData = {
-        to: reportData.to,
-        subject: reportData.subject,
-        body: emailBody,
-        attachments: attachedMedia // Include media files if your API supports it
-      };
+    const formData = new FormData();
+    formData.append('to', 'feedback@hexahavenintegrations.com');
+    formData.append('subject', 'Bug Report - HavenSync App');
+    formData.append('body', emailBody);
+    formData.append('user', JSON.stringify({
+      name: loggedInUser?.name,
+      email: loggedInUser?.email,
+      user_id: loggedInUser?.user_id,
+      role: loggedInUser?.role,
+      platform: Platform.OS,
+      version: Platform.Version,
+      rating: null,
+    }));
 
-      // Send email via API
- const response = await api.post('/api/feedback/send-feedback-email', {
-  to: 'feedback@hexahavenintegrations.com', // or bugreport@ if separate
-  subject: 'Bug Report - HavenSync App',
-  body: emailBody,
-  attachments: attachedMedia.map(file => ({
-    filename: file.fileName || 'attachment',
-    uri: file.uri,
-    type: file.type
-  })),
-  user: {
-    name: loggedInUser?.name,
-    email: loggedInUser?.email,
-    user_id: loggedInUser?.user_id,
-    role: loggedInUser?.role,
-    platform: Platform.OS,
-    version: Platform.Version,
-    rating: null
-  }
-});
+    // Attach media files properly
+    attachedMedia.forEach((file, index) => {
+      formData.append('attachments', {
+        uri: file.uri,
+        type: file.type,
+        name: file.fileName || `attachment_${index + 1}`,
+      });
+    });
 
+    const response = await api.post('/api/feedback/send-feedback-email', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
-
-      if (response.data.success) {
-        Alert.alert(
-          'Report Submitted Successfully!', 
-          'Thank you for reporting the issue(s). Our team will investigate and get back to you soon.',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                // Reset form
-                setSelectedIssues([]);
-                setDescription('');
-                setAttachedMedia([]);
-                // Navigate back
-                handleBack();
-              }
-            }
-          ]
-        );
-      } else {
-        throw new Error(response.data.message || 'Failed to send report');
-      }
-    } catch (error) {
-      console.error('Error submitting bug report:', error);
-      Alert.alert(
-        'Submission Failed',
-        'There was an error submitting your bug report. Please try again or contact support directly at bugreport@hexahavenintegrations.com',
-        [
-          { text: 'Retry', onPress: handleSubmitReport },
-          { text: 'Cancel', style: 'cancel' }
-        ]
-      );
-    } finally {
-      setIsSubmitting(false);
+    if (response.data.success) {
+      Alert.alert('Report Submitted Successfully!', 'Thank you for your report.');
+      setSelectedIssues([]);
+      setDescription('');
+      setAttachedMedia([]);
+      handleBack();
+    } else {
+      throw new Error(response.data.message || 'Submission failed');
     }
-  };
+  } catch (err) {
+    console.error('Error submitting bug report:', err);
+    Alert.alert('Submission Failed', 'Something went wrong. Try again or contact support.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <SafeAreaView style={[styles.container, darkMode && styles.containerDark]}>
