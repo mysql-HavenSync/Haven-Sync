@@ -3,35 +3,61 @@ const router = express.Router();
 const nodemailer = require('nodemailer');
 const multer = require('multer');
 
-// Configure multer for file uploads
+// Storage for attachments
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
-// Email configuration
+// ✅ SMTP config using existing feedback sender
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.hexahavenintegrations.com', // or use a valid SMTP host
+  port: 587,
+  secure: false, // upgrade later with STARTTLS
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: process.env.EMAIL_USER, // SMTP_USER
+    pass: process.env.EMAIL_PASS  // SMTP_PASS
+  },
+  tls: {
+    rejectUnauthorized: false
   }
 });
 
-
-// Route to handle feedback email sending
+// ✅ Feedback route
 router.post('/send-feedback-email', upload.array('attachments', 5), async (req, res) => {
   try {
-    const { to, subject, body } = req.body;
-    
-    // Prepare email options
+    const { to, subject, body, user } = req.body;
+
+    if (!user || !user.email || !user.name) {
+      return res.status(400).json({ message: 'Missing user details' });
+    }
+
+    const message = `
+📝 Feedback from HavenSync App
+
+👤 User Details:
+- Name: ${user.name}
+- Email: ${user.email}
+- User ID: ${user.user_id || 'N/A'}
+- Role: ${user.role || 'N/A'}
+
+⭐ Rating: ${user.rating || 'Not rated'}
+📝 Feedback:
+${body}
+
+📱 Device Info:
+- Platform: ${user.platform || 'unknown'}
+- Version: ${user.version || 'unknown'}
+- Time: ${new Date().toISOString()}
+`;
+
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"HavenSync App" <${process.env.EMAIL_USER}>`,
       to: to || 'feedback@hexahavenintegrations.com',
-      subject: subject || 'App Feedback',
-      text: body,
+      subject: subject || 'New Feedback Submission',
+      text: message,
+      replyTo: user.email,
       attachments: []
     };
 
-    // Add attachments if any
     if (req.files && req.files.length > 0) {
       req.files.forEach((file, index) => {
         mailOptions.attachments.push({
@@ -42,19 +68,14 @@ router.post('/send-feedback-email', upload.array('attachments', 5), async (req, 
       });
     }
 
-    // Send email
     await transporter.sendMail(mailOptions);
-    
-    res.status(200).json({ 
-      message: 'Feedback email sent successfully',
-      success: true 
-    });
+
+    console.log('✅ Feedback email sent from:', user.email);
+    res.status(200).json({ success: true, message: 'Feedback sent successfully' });
+
   } catch (error) {
-    console.error('Error sending feedback email:', error);
-    res.status(500).json({ 
-      message: 'Failed to send feedback email',
-      error: error.message 
-    });
+    console.error('❌ Error sending feedback:', error.message);
+    res.status(500).json({ success: false, message: 'Failed to send feedback', error: error.message });
   }
 });
 

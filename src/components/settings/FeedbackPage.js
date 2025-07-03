@@ -100,13 +100,11 @@ export default function FeedbackPage({ navigation, onBack }) {
         }))
       };
 
-      // Try multiple possible endpoint variations
+  
       const endpoints = [
-        '/send-feedback-email',
-        '/api/send-feedback-email',
-        '/feedback/send-email',
-        '/email/send-feedback'
-      ];
+  '/api/feedback/send-feedback-email' // ← your real working endpoint
+];
+
 
       let response = null;
       let lastError = null;
