@@ -100,10 +100,9 @@ export default function FeedbackPage({ navigation, onBack }) {
         }))
       };
 
-  
-      const endpoints = [
-  '/api/feedback/send-feedback-email' // ← your real working endpoint
-];
+
+      const endpoints = ['/api/feedback/send-feedback-email' // ← your real working endpoint
+      ];
 
 
       let response = null;
@@ -170,9 +169,6 @@ export default function FeedbackPage({ navigation, onBack }) {
       Alert.alert('Error', 'Please enter your feedback before submitting.');
       return;
     }
-
-    // Directly send feedback via email without showing options
-    sendFeedbackEmail();
   };
 
   const ActionButton = ({ icon, text, onPress, bgColor }) => (
