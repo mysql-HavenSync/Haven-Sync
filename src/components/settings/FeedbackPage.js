@@ -73,7 +73,7 @@ export default function FeedbackPage({ navigation, onBack }) {
     Linking.openURL(mailto).catch(() => Alert.alert('Error', 'Unable to open email client'));
   };
 
-  // Fixed: Single function declaration for sending feedback email
+  // Single function declaration for sending feedback email
   const sendFeedbackEmail = async () => {
     try {
       setIsSubmitting(true);
@@ -137,36 +137,27 @@ export default function FeedbackPage({ navigation, onBack }) {
     } catch (error) {
       console.error('Email sending error:', error);
       
-      // Enhanced error handling
+      // Enhanced error handling with fallback to email client
       const isNetworkError = error.message === 'Network Error' || !error.response;
       const is404Error = error.response?.status === 404;
       
-      if (is404Error) {
+      if (is404Error || isNetworkError) {
         Alert.alert(
           'Service Unavailable',
-          'The feedback service is currently unavailable. Would you like to send feedback via email instead?',
+          'The feedback service is currently unavailable. Would you like to send feedback via your email app instead?',
           [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Send Email', onPress: () => openEmail('feedback') }
-          ]
-        );
-      } else if (isNetworkError) {
-        Alert.alert(
-          'Connection Error',
-          'Unable to connect to the server. Please check your internet connection and try again.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Retry', onPress: () => sendFeedbackEmail() },
-            { text: 'Send Email', onPress: () => openEmail('feedback') }
+            { text: 'Open Email', onPress: () => openEmail('feedback') }
           ]
         );
       } else {
         Alert.alert(
           'Failed to Send',
-          'Unable to send feedback at this time. Would you like to try sending via email?',
+          'Unable to send feedback at this time. Would you like to try sending via your email app?',
           [
             { text: 'Cancel', style: 'cancel' },
-            { text: 'Send Email', onPress: () => openEmail('feedback') }
+            { text: 'Retry', onPress: () => sendFeedbackEmail() },
+            { text: 'Open Email', onPress: () => openEmail('feedback') }
           ]
         );
       }
