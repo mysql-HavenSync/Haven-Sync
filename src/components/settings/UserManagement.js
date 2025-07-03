@@ -19,121 +19,138 @@ export default function UserManagement({ navigation, onBack }) {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
- const [newUserData, setNewUserData] = useState({ name: '', email: '', role: 'User', password: '' });
+  const [newUserData, setNewUserData] = useState({ name: '', email: '', role: 'User', password: '' });
   const [otpCode, setOtpCode] = useState('');
   const [generatedOtp, setGeneratedOtp] = useState('');
   const token = useSelector(state => state.auth.token);
 
-// Fixed fetchUsers function and related code
-const fetchUsers = async () => {
-  try {
-    console.log('🔄 Fetching users with token:', token);
-    console.log('👤 LoggedInUser structure:', loggedInUser);
-    
-    // ✅ Check if loggedInUser exists before proceeding
-    if (!loggedInUser) {
-      console.error('❌ No logged in user found');
-      Alert.alert('Error', 'User session expired. Please login again.');
-      return;
-    }
-
-    let subuserss = [];
-    
-    // ✅ FIXED: Always try to fetch subusers and handle errors properly
+  // ✅ FIXED: Enhanced fetchUsers function with better error handling and field mapping
+  const fetchUsers = async () => {
     try {
-      console.log('🔄 Making API call to fetch subusers...');
-      const res = await api.get('/api/users/subusers', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      console.log('🔄 Fetching users with token:', token);
+      console.log('👤 LoggedInUser structure:', loggedInUser);
       
-      console.log('✅ API Response received:', res.data);
-      console.log('🔍 Subusers data:', res.data.subuserss);
-      
-      // ✅ FIXED: Handle the response properly
-      if (res.data && res.data.subuserss) {
-        subuserss = res.data.subuserss;
-        console.log('✅ Subusers parsed successfully:', subuserss.length, 'users');
-      } else {
-        console.warn('⚠️ No subuserss array in response');
-        subuserss = [];
+      if (!loggedInUser) {
+        console.error('❌ No logged in user found');
+        Alert.alert('Error', 'User session expired. Please login again.');
+        return;
       }
+
+      let subusers = [];
+      
+      try {
+        console.log('🔄 Making API call to fetch subusers...');
+        const res = await api.get('/api/users/subusers', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        console.log('✅ API Response received:', res.data);
+        console.log('🔍 Response structure:', Object.keys(res.data));
+        
+        // ✅ FIXED: Handle different possible response structures
+        if (res.data && res.data.subuserss) {
+          subusers = res.data.subuserss;
+          console.log('✅ Found subuserss array:', subusers.length, 'users');
+        } else if (res.data && res.data.subusers) {
+          subusers = res.data.subusers;
+          console.log('✅ Found subusers array:', subusers.length, 'users');
+        } else if (res.data && Array.isArray(res.data)) {
+          subusers = res.data;
+          console.log('✅ Found direct array:', subusers.length, 'users');
+        } else {
+          console.warn('⚠️ No recognizable subusers array in response');
+          subusers = [];
+        }
+        
+        // ✅ FIXED: Map database fields to expected UI fields
+        subusers = subusers.map(user => ({
+          id: user.sub_user_id || user.id || user.user_id,
+          user_id: user.sub_user_id || user.id || user.user_id,
+          name: user.name || 'Unknown User',
+          email: user.email || 'No email',
+          role: user.role || 'User',
+          active: user.active !== false,
+          addedBy: user.addedBy || 'Admin',
+          created_at: user.created_at || new Date().toISOString(),
+          parent_user_id: user.parent_user_id,
+        }));
+        
+        console.log('✅ Mapped subusers:', subusers);
+        
+      } catch (err) {
+        console.error('❌ Error fetching subusers:', err.response?.data || err.message);
+        console.error('❌ Error status:', err.response?.status);
+        
+        if (err.response?.status !== 404) {
+          Alert.alert('Warning', 'Could not load subusers. Please try again.');
+        }
+        subusers = [];
+      }
+
+      // ✅ Always include the main user first
+      const mainUser = {
+        id: loggedInUser?.id || loggedInUser?.user_id || 'main_user',
+        user_id: loggedInUser?.user_id || loggedInUser?.id,
+        name: loggedInUser?.name || 'Main User',
+        email: loggedInUser?.email || 'No email',
+        role: 'Admin',
+        active: true,
+        addedBy: 'Self',
+        created_at: new Date().toISOString(),
+      };
+
+      const allUsers = [mainUser, ...subusers];
+      
+      console.log('👥 Setting all users:', allUsers);
+      console.log('📊 Total users count:', allUsers.length);
+      console.log('📋 Users details:', allUsers.map(u => ({ 
+        id: u.id, 
+        name: u.name, 
+        email: u.email, 
+        role: u.role 
+      })));
+      
+      setUsers(allUsers);
+      
     } catch (err) {
-      console.error('❌ Error fetching subusers:', err.response?.data || err.message);
-      console.error('❌ Error status:', err.response?.status);
-      console.error('❌ Error details:', err.response);
-      
-      // Only show error alert for unexpected errors (not 404)
-      if (err.response?.status !== 404) {
-        Alert.alert('Warning', 'Could not load subusers. Please try again.');
+      console.error('❌ Critical error in fetchUsers:', err);
+      Alert.alert('Error', 'Could not load user data. Please try again.');
+    }
+  };
+
+  // ✅ Refresh on component focus
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      console.log('📱 Screen focused, refreshing users...');
+      if (loggedInUser && token) {
+        fetchUsers();
       }
-      subuserss = [];
-    }
-
-    // ✅ Always include the main user first
-    const mainUser = {
-      id: loggedInUser?.id || loggedInUser?.user_id || 'main_user',
-      user_id: loggedInUser?.user_id || loggedInUser?.id,
-      name: loggedInUser?.name || 'Main User',
-      email: loggedInUser?.email || 'No email',
-      role: 'Admin', // Main user is always admin
-      active: true,
-      addedBy: 'Self',
-      created_at: new Date().toISOString(),
-    };
-
-    const allUsers = [mainUser, ...subuserss];
-    
-    console.log('👥 Setting all users:', allUsers);
-    console.log('📊 Total users count:', allUsers.length);
-    
-    setUsers(allUsers);
-    
-    // ✅ Additional debug logging
-    console.log('✅ Users state updated successfully');
-    console.log('📋 Final users list:', allUsers.map(u => ({ name: u.name, email: u.email, role: u.role })));
-    
-  } catch (err) {
-    console.error('❌ Critical error in fetchUsers:', err);
-    Alert.alert('Error', 'Could not load user data. Please try again.');
-  }
-};
-
-// ✅ FIXED: Enhanced handleVerifyOTP with proper refresh
-/* Duplicate handleVerifyOTP removed to fix redeclaration error */
-
-// ✅ FIXED: Also refresh on component focus (when navigating back)
-useEffect(() => {
-  const unsubscribe = navigation.addListener('focus', () => {
-    console.log('📱 Screen focused, refreshing users...');
-    if (loggedInUser && token) {
-      fetchUsers();
-    }
-  });
-
-  return unsubscribe;
-}, [navigation, loggedInUser, token]);
-
-// ✅ FIXED: Enhanced initial load
-useEffect(() => {
-  console.log('🔄 UseEffect triggered with loggedInUser:', loggedInUser);
-  console.log('🔄 UseEffect triggered with token:', !!token);
-  
-  if (loggedInUser && token) {
-    console.log('🚀 Initial fetch users...');
-    fetchUsers();
-  } else {
-    console.warn('⚠️ Missing loggedInUser or token:', { 
-      loggedInUser: !!loggedInUser, 
-      token: !!token 
     });
-  }
-}, [loggedInUser, token]);
+
+    return unsubscribe;
+  }, [navigation, loggedInUser, token]);
+
+  // ✅ Initial load
+  useEffect(() => {
+    console.log('🔄 UseEffect triggered with loggedInUser:', loggedInUser);
+    console.log('🔄 UseEffect triggered with token:', !!token);
+    
+    if (loggedInUser && token) {
+      console.log('🚀 Initial fetch users...');
+      fetchUsers();
+    } else {
+      console.warn('⚠️ Missing loggedInUser or token:', { 
+        loggedInUser: !!loggedInUser, 
+        token: !!token 
+      });
+    }
+  }, [loggedInUser, token]);
 
   const handleAddUser = () => setShowAddUserModal(true);
   
   const closeAddUserModal = () => {
     setShowAddUserModal(false);
-    setNewUserData({ name: '', email: '', role: 'User',password: '' });
+    setNewUserData({ name: '', email: '', role: 'User', password: '' });
   };
 
   const closeOtpModal = () => {
@@ -149,7 +166,7 @@ useEffect(() => {
     Math.floor(100000 + Math.random() * 900000).toString();
 
   const handleSendOTP = async () => {
-    if (!newUserData.name.trim() || !newUserData.email.trim()|| !newUserData.password.trim()) {
+    if (!newUserData.name.trim() || !newUserData.email.trim() || !newUserData.password.trim()) {
       Alert.alert('Error', 'Please fill all fields');
       return;
     }
@@ -169,7 +186,6 @@ useEffect(() => {
     setGeneratedOtp(otp);
 
     try {
-      // ✅ Call backend to send OTP email
       await api.post('/api/users/send-subusers-otp', {
         email: newUserData.email,
         otp,
@@ -195,7 +211,6 @@ useEffect(() => {
     try {
       setIsLoading(true);
 
-      // ✅ Use the correct user_id field
       const mainUserId = loggedInUser.user_id || loggedInUser.id;
       
       if (!mainUserId) {
@@ -203,13 +218,10 @@ useEffect(() => {
         return;
       }
 
-      console.log('🔄 Adding subusers with mainUserId:', mainUserId);
-console.log('✅ Password entered:', newUserData.password);
-console.log('✅ Email entered:', newUserData.email); // 👈 Add this line
-console.log('📦 Sending new user data:', newUserData);
+      console.log('🔄 Adding subuser with mainUserId:', mainUserId);
+      console.log('📦 Sending new user data:', newUserData);
 
-
-      await api.post(
+      const response = await api.post(
         '/api/users/add-subusers',
         {
           name: newUserData.name,
@@ -218,31 +230,33 @@ console.log('📦 Sending new user data:', newUserData);
           password: newUserData.password,
           mainUserId: mainUserId,
         },
-        
         {
           headers: { Authorization: `Bearer ${token}` },
         }
-        
       );
-console.log('📦 Sending new user data:', newUserData);
 
-      Alert.alert('Success', 'subusers added!');
+      console.log('✅ Subuser added successfully:', response.data);
+      
+      Alert.alert('Success', 'Subuser added successfully!');
       setShowOtpModal(false);
       setOtpCode('');
       setGeneratedOtp('');
       setNewUserData({ name: '', email: '', role: 'User', password: '' });
 
-      // 🔄 Refresh user list
-      fetchUsers();
+      // ✅ FIXED: Add small delay before refresh to ensure database is updated
+      setTimeout(() => {
+        fetchUsers();
+      }, 1000);
+
     } catch (err) {
       console.error('❌ Failed to add user:', err);
+      console.error('❌ Error response:', err.response?.data);
       Alert.alert('Error', err?.response?.data?.message || 'Could not add user');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // ✅ Show all users (main user + subusers)
   const visibleUsers = users;
 
   // ✅ Show loading state while fetching
@@ -306,7 +320,7 @@ console.log('📦 Sending new user data:', newUserData);
                 No users found
               </Text>
               <Text style={[styles.emptySubText, darkMode && styles.textGray]}>
-                Add your first subusers to get started
+                Add your first subuser to get started
               </Text>
             </View>
           ) : (
@@ -361,7 +375,6 @@ console.log('📦 Sending new user data:', newUserData);
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
           <View style={[styles.modalContent, darkMode && styles.modalContentDark]}>
-            {/* Modal Header */}
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, darkMode && styles.textWhite]}>
                 Add New User
@@ -375,7 +388,6 @@ console.log('📦 Sending new user data:', newUserData);
               </TouchableOpacity>
             </View>
 
-            {/* Form Fields */}
             <View style={styles.formContainer}>
               <Text style={[styles.label, darkMode && styles.textWhite]}>Full Name</Text>
               <TextInput
@@ -405,20 +417,21 @@ console.log('📦 Sending new user data:', newUserData);
                   autoCapitalize="none"
                 />
               </View>
-<Text style={[styles.label, darkMode && styles.textWhite]}>Password</Text>
-<View style={[styles.inputContainer, darkMode && styles.inputContainerDark]}>
-  <View style={[styles.iconContainer, { backgroundColor: '#FFF3E0' }]}>
-    <FontAwesomeIcon icon={faLock} size={14} color="#FF9800" />
-  </View>
-  <TextInput
-    style={[styles.inputWithIcon, darkMode && styles.textWhite]}
-    placeholder="Enter password"
-    placeholderTextColor={darkMode ? '#999' : '#666'}
-    secureTextEntry={true}
-    value={newUserData.password}
-    onChangeText={(text) => setNewUserData({ ...newUserData, password: text })}
-  />
-</View>
+
+              <Text style={[styles.label, darkMode && styles.textWhite]}>Password</Text>
+              <View style={[styles.inputContainer, darkMode && styles.inputContainerDark]}>
+                <View style={[styles.iconContainer, { backgroundColor: '#FFF3E0' }]}>
+                  <FontAwesomeIcon icon={faLock} size={14} color="#FF9800" />
+                </View>
+                <TextInput
+                  style={[styles.inputWithIcon, darkMode && styles.textWhite]}
+                  placeholder="Enter password"
+                  placeholderTextColor={darkMode ? '#999' : '#666'}
+                  secureTextEntry={true}
+                  value={newUserData.password}
+                  onChangeText={(text) => setNewUserData({ ...newUserData, password: text })}
+                />
+              </View>
 
               <Text style={[styles.label, darkMode && styles.textWhite]}>Role</Text>
               <View style={styles.roleContainer}>
@@ -459,7 +472,6 @@ console.log('📦 Sending new user data:', newUserData);
               </View>
             </View>
 
-            {/* Action Buttons */}
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={[styles.cancelButton, darkMode && styles.cancelButtonDark]}
@@ -494,7 +506,6 @@ console.log('📦 Sending new user data:', newUserData);
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.otpModalContent, darkMode && styles.modalContentDark]}>
-            {/* Modal Header */}
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, darkMode && styles.textWhite]}>
                 Verify Email
@@ -508,7 +519,6 @@ console.log('📦 Sending new user data:', newUserData);
               </TouchableOpacity>
             </View>
 
-            {/* OTP Info */}
             <View style={styles.otpInfo}>
               <View style={[styles.otpIcon, darkMode && styles.otpIconDark]}>
                 <FontAwesomeIcon 
@@ -525,7 +535,6 @@ console.log('📦 Sending new user data:', newUserData);
               </Text>
             </View>
 
-            {/* OTP Input */}
             <View style={styles.otpInputContainer}>
               <TextInput
                 style={[styles.otpInput, darkMode && styles.otpInputDark]}
@@ -539,7 +548,6 @@ console.log('📦 Sending new user data:', newUserData);
               />
             </View>
 
-            {/* Verify Button */}
             <TouchableOpacity
               style={styles.verifyButton}
               onPress={handleVerifyOTP}
@@ -547,7 +555,6 @@ console.log('📦 Sending new user data:', newUserData);
               <Text style={styles.verifyButtonText}>Verify & Add User</Text>
             </TouchableOpacity>
 
-            {/* Resend OTP */}
             <TouchableOpacity
               style={styles.resendContainer}
               onPress={() => handleSendOTP()}
