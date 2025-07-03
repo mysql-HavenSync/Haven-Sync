@@ -37,7 +37,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/mqtt', mqttRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/feedback', feedbackRoutes);
+app.use('/api/feedback', require('./routes/feedbackRoutes'));
 
 // ✅ Test route
 app.get('/', (req, res) => {
