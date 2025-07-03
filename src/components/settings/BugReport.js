@@ -390,10 +390,10 @@ ${attachedMedia.length > 0 ? 'Media Files:\n' + attachedMedia.map(media => `- ${
       };
 
       // Send email via API
-      await api.post('/api/feedback/send-feedback-email', {
-  to: 'feedback@hexahavenintegrations.com', // or create bugreport@ if you want
+ const response = await api.post('/api/feedback/send-feedback-email', {
+  to: 'feedback@hexahavenintegrations.com', // or bugreport@ if separate
   subject: 'Bug Report - HavenSync App',
-  body: description,// Or whatever your text is
+  body: emailBody,
   attachments: attachedMedia.map(file => ({
     filename: file.fileName || 'attachment',
     uri: file.uri,
@@ -409,6 +409,7 @@ ${attachedMedia.length > 0 ? 'Media Files:\n' + attachedMedia.map(media => `- ${
     rating: null
   }
 });
+
 
 
       if (response.data.success) {
