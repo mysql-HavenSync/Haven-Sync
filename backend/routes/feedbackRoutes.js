@@ -21,6 +21,13 @@ const transporter = nodemailer.createTransport({
     rejectUnauthorized: false
   }
 });
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('❌ SMTP connection failed:', error.message);
+  } else {
+    console.log('✅ SMTP server is ready to take messages');
+  }
+});
 
 // ✅ Feedback route
 router.post('/send-feedback-email', upload.array('attachments', 5), async (req, res) => {
