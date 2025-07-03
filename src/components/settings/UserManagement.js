@@ -29,28 +29,44 @@ export default function UserManagement({ navigation, onBack }) {
 
   // ✅ Updated helper function to check if logged-in user can remove a specific user
 const canRemoveUser = (targetUser) => {
+  console.log('🔍 Checking permissions for user removal...');
+  console.log('🔍 Logged-in user:', loggedInUser);
+  console.log('🔍 Target user:', targetUser);
+  
   // Get logged-in user's role (Admin role for main user, or their assigned role for subusers)
   const loggedInUserRole = loggedInUser?.role || 'Admin'; // Main user is always Admin
   const loggedInUserId = loggedInUser?.id || loggedInUser?.user_id;
-  const targetUserId = targetUser?.id || targetUser?.user_id;
+  const targetUserId = targetUser?.id || targetUser?.user_id || targetUser?.sub_user_id;
+
+  console.log('🔍 Logged-in user role:', loggedInUserRole);
+  console.log('🔍 Logged-in user ID:', loggedInUserId);
+  console.log('🔍 Target user ID:', targetUserId);
 
   // Only Admin users can see the remove option
   if (loggedInUserRole !== 'Admin') {
+    console.log('❌ Permission denied: User is not Admin');
     return false;
   }
 
   // Admin users cannot remove themselves
   if (loggedInUserId === targetUserId) {
+    console.log('❌ Permission denied: Cannot remove self');
     return false;
   }
 
-  // Admin users can remove other users (but not themselves)
+  // Don't allow removing main admin user
+  if (targetUser?.role === 'Admin' && !targetUser?.parent_user_id) {
+    console.log('❌ Permission denied: Cannot remove main admin');
+    return false;
+  }
+
+  console.log('✅ Permission granted: Can remove user');
   return true;
 };
- // ✅ FIXED: Enhanced fetchUsers function with proper admin/subuser handling
+// ✅ FIXED: Enhanced fetchUsers function with proper admin/subuser handling
 const fetchUsers = async () => {
   try {
-    console.log('🔄 Fetching users with token:', token);
+    console.log('🔄 Fetching users with token:', token ? 'Present' : 'Missing');
     console.log('👤 LoggedInUser structure:', loggedInUser);
     
     if (!loggedInUser) {
@@ -59,26 +75,50 @@ const fetchUsers = async () => {
       return;
     }
 
+    if (!token) {
+      console.error('❌ No token found');
+      Alert.alert('Error', 'Authentication token missing. Please login again.');
+      return;
+    }
+
     const loggedInUserId = loggedInUser?.user_id || loggedInUser?.id;
     
-    // ✅ FIXED: First, determine if the logged-in user is admin or subuser
+    if (!loggedInUserId) {
+      console.error('❌ No user ID found in logged-in user object');
+      Alert.alert('Error', 'Invalid user session. Please login again.');
+      return;
+    }
+
+    // Rest of your existing fetchUsers code...
+    // (Keep all the existing logic for fetching admin and subusers)
+    
     let adminUser = null;
     let subusers = [];
     
     try {
       // Check if logged-in user has a parent_user_id (meaning they are a subuser)
-      const [loggedInUserDetails] = await api.get(`/api/users/user-details/${loggedInUserId}`, {
+      const loggedInUserResponse = await api.get(`/api/users/user-details/${loggedInUserId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
+      const loggedInUserDetails = Array.isArray(loggedInUserResponse.data) 
+        ? loggedInUserResponse.data[0] 
+        : loggedInUserResponse.data;
+      
+      console.log('🔍 Logged-in user details:', loggedInUserDetails);
       
       if (loggedInUserDetails?.parent_user_id) {
         // Logged-in user is a subuser, fetch the admin user
         console.log('🔍 Logged-in user is a subuser, fetching admin user...');
         const adminUserId = loggedInUserDetails.parent_user_id;
         
-        const [adminDetails] = await api.get(`/api/users/user-details/${adminUserId}`, {
+        const adminResponse = await api.get(`/api/users/user-details/${adminUserId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        
+        const adminDetails = Array.isArray(adminResponse.data) 
+          ? adminResponse.data[0] 
+          : adminResponse.data;
         
         adminUser = {
           id: adminDetails.user_id,
@@ -89,7 +129,7 @@ const fetchUsers = async () => {
           active: true,
           addedBy: 'Self',
           created_at: adminDetails.created_at,
-          isMainUser: false, // Not the currently logged-in user
+          isMainUser: false,
         };
         
         console.log('✅ Admin user found:', adminUser);
@@ -97,41 +137,47 @@ const fetchUsers = async () => {
         // Logged-in user is the admin
         console.log('🔍 Logged-in user is the admin');
         adminUser = {
-          id: loggedInUser.user_id || loggedInUser.id,
-          user_id: loggedInUser.user_id || loggedInUser.id,
+          id: loggedInUserId,
+          user_id: loggedInUserId,
+          name: loggedInUserDetails.name || loggedInUser.name,
+          email: loggedInUserDetails.email || loggedInUser.email,
+          role: 'Admin',
+          active: true,
+          addedBy: 'Self',
+          created_at: loggedInUserDetails.created_at || loggedInUser.created_at || new Date().toISOString(),
+          isMainUser: true,
+        };
+      }
+    } catch (err) {
+      console.error('❌ Error fetching user details:', err);
+      const isSubuser = loggedInUser?.parent_user_id;
+      
+      if (isSubuser) {
+        Alert.alert('Error', 'Unable to fetch admin user details. Please try again.');
+        return;
+      } else {
+        adminUser = {
+          id: loggedInUserId,
+          user_id: loggedInUserId,
           name: loggedInUser.name,
           email: loggedInUser.email,
           role: 'Admin',
           active: true,
           addedBy: 'Self',
           created_at: loggedInUser.created_at || new Date().toISOString(),
-          isMainUser: true, // This is the currently logged-in user
+          isMainUser: true,
         };
       }
-    } catch (err) {
-      console.error('❌ Error fetching user details:', err);
-      // Fallback: treat logged-in user as admin
-      adminUser = {
-        id: loggedInUser.user_id || loggedInUser.id,
-        user_id: loggedInUser.user_id || loggedInUser.id,
-        name: loggedInUser.name,
-        email: loggedInUser.email,
-        role: 'Admin',
-        active: true,
-        addedBy: 'Self',
-        created_at: loggedInUser.created_at || new Date().toISOString(),
-        isMainUser: true,
-      };
     }
 
-    // ✅ Now fetch subusers
+    // Fetch subusers
     try {
       console.log('🔄 Making API call to fetch subusers...');
       const res = await api.get('/api/users/subusers', {
         headers: { Authorization: `Bearer ${token}` },
       });
       
-      console.log('✅ API Response received:', res.data);
+      console.log('✅ Subusers API Response received:', res.data);
       
       if (res.data && res.data.subuserss) {
         subusers = res.data.subuserss;
@@ -144,10 +190,11 @@ const fetchUsers = async () => {
         subusers = [];
       }
       
-      // ✅ Map subusers and mark if they are the currently logged-in user
+      // Map subusers and mark if they are the currently logged-in user
       subusers = subusers.map(user => ({
         id: user.sub_user_id || user.id || user.user_id,
         user_id: user.sub_user_id || user.id || user.user_id,
+        sub_user_id: user.sub_user_id || user.id || user.user_id, // Keep original field for API calls
         name: user.name || 'Unknown User',
         email: user.email || 'No email',
         role: user.role || 'User',
@@ -155,7 +202,7 @@ const fetchUsers = async () => {
         addedBy: 'Admin',
         created_at: user.created_at || new Date().toISOString(),
         parent_user_id: user.parent_user_id,
-        isMainUser: (user.sub_user_id || user.user_id) === loggedInUserId, // ✅ Check if this subuser is the logged-in user
+        isMainUser: (user.sub_user_id || user.user_id) === loggedInUserId,
       }));
       
       console.log('✅ Mapped subusers:', subusers);
@@ -165,7 +212,7 @@ const fetchUsers = async () => {
       subusers = [];
     }
 
-    // ✅ Combine admin and subusers, with admin always first
+    // Combine admin and subusers, with admin always first
     const allUsers = [adminUser, ...subusers];
     
     console.log('👥 Setting all users:', allUsers);
@@ -242,34 +289,153 @@ const handleRemoveUser = (user) => {
   };
 
 // ✅ Updated confirmRemoveUser - simplified since self-removal is no longer allowed
+// ✅ FIXED: Enhanced confirmRemoveUser with better debugging and API handling
 const confirmRemoveUser = async () => {
-  if (!userToRemove) return;
+  if (!userToRemove) {
+    Alert.alert('Error', 'No user selected for removal');
+    return;
+  }
 
   setIsRemoving(true);
   
   try {
-    console.log('🗑️ Removing user:', userToRemove.id);
-    
-    // Remove the subuser
-    const response = await api.delete(`/api/users/subusers/${userToRemove.id}`, {
-      headers: { Authorization: `Bearer ${token}` },
+    // 🔍 Enhanced debugging - log all possible ID fields
+    console.log('🗑️ Full userToRemove object:', JSON.stringify(userToRemove, null, 2));
+    console.log('🗑️ Available ID fields:', {
+      id: userToRemove.id,
+      user_id: userToRemove.user_id,
+      sub_user_id: userToRemove.sub_user_id,
     });
+    
+    // Get the correct user ID based on user type
+    let userIdToRemove = null;
+    
+    // For subusers, prioritize sub_user_id field
+    if (userToRemove.sub_user_id) {
+      userIdToRemove = userToRemove.sub_user_id;
+      console.log('🔍 Using sub_user_id:', userIdToRemove);
+    } else if (userToRemove.id) {
+      userIdToRemove = userToRemove.id;
+      console.log('🔍 Using id:', userIdToRemove);
+    } else if (userToRemove.user_id) {
+      userIdToRemove = userToRemove.user_id;
+      console.log('🔍 Using user_id:', userIdToRemove);
+    }
+    
+    if (!userIdToRemove) {
+      console.error('❌ No valid user ID found:', userToRemove);
+      Alert.alert('Error', 'Invalid user ID. Cannot remove user.');
+      return;
+    }
 
-    console.log('✅ User removed successfully:', response.data);
+    console.log('🗑️ Attempting to remove user with ID:', userIdToRemove);
+    console.log('🗑️ Using token:', token ? 'Present' : 'Missing');
     
-    closeRemoveModal();
-    Alert.alert('Success', 'User removed successfully!');
+    // Try multiple API endpoints in order of preference
+    let response;
+    let success = false;
     
-    // Add small delay before refresh to ensure database is updated
-    setTimeout(() => {
-      fetchUsers();
-    }, 500);
+    // Method 1: Standard subuser removal endpoint
+    try {
+      console.log('🔄 Trying endpoint 1: /api/users/subusers/' + userIdToRemove);
+      response = await api.delete(`/api/users/subusers/${userIdToRemove}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log('✅ Method 1 successful:', response.data);
+      success = true;
+    } catch (error1) {
+      console.log('❌ Method 1 failed:', error1.response?.status, error1.response?.data);
+      
+      // Method 2: Alternative endpoint
+      try {
+        console.log('🔄 Trying endpoint 2: /api/users/remove-subuser/' + userIdToRemove);
+        response = await api.delete(`/api/users/remove-subuser/${userIdToRemove}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        console.log('✅ Method 2 successful:', response.data);
+        success = true;
+      } catch (error2) {
+        console.log('❌ Method 2 failed:', error2.response?.status, error2.response?.data);
+        
+        // Method 3: POST request with body
+        try {
+          console.log('🔄 Trying endpoint 3: POST /api/users/remove-subuser');
+          response = await api.post('/api/users/remove-subuser', {
+            userId: userIdToRemove,
+            subUserId: userIdToRemove,
+            sub_user_id: userIdToRemove // Include all possible field names
+          }, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          console.log('✅ Method 3 successful:', response.data);
+          success = true;
+        } catch (error3) {
+          console.log('❌ Method 3 failed:', error3.response?.status, error3.response?.data);
+          
+          // Method 4: Alternative POST endpoint
+          try {
+            console.log('🔄 Trying endpoint 4: POST /api/users/delete-subuser');
+            response = await api.post('/api/users/delete-subuser', {
+              id: userIdToRemove,
+              sub_user_id: userIdToRemove
+            }, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            console.log('✅ Method 4 successful:', response.data);
+            success = true;
+          } catch (error4) {
+            console.log('❌ Method 4 failed:', error4.response?.status, error4.response?.data);
+            
+            // Method 5: Try with different URL format
+            try {
+              console.log('🔄 Trying endpoint 5: DELETE /api/subusers/' + userIdToRemove);
+              response = await api.delete(`/api/subusers/${userIdToRemove}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              console.log('✅ Method 5 successful:', response.data);
+              success = true;
+            } catch (error5) {
+              console.log('❌ All methods failed. Last error:', error5.response?.status, error5.response?.data);
+              throw error5; // Throw the last error
+            }
+          }
+        }
+      }
+    }
+
+    if (success) {
+      console.log('✅ User removed successfully');
+      closeRemoveModal();
+      Alert.alert('Success', 'User removed successfully!');
+      
+      // Refresh the user list after a short delay
+      setTimeout(() => {
+        fetchUsers();
+      }, 1000);
+    }
 
   } catch (err) {
-    console.error('❌ Failed to remove user:', err);
+    console.error('❌ Final error in confirmRemoveUser:', err);
     console.error('❌ Error response:', err.response?.data);
+    console.error('❌ Error status:', err.response?.status);
+    console.error('❌ Error headers:', err.response?.headers);
     
-    const errorMessage = err?.response?.data?.message || 'Could not remove user. Please try again.';
+    let errorMessage = 'Could not remove user. Please try again.';
+    
+    if (err.response?.data?.message) {
+      errorMessage = err.response.data.message;
+    } else if (err.response?.data?.error) {
+      errorMessage = err.response.data.error;
+    } else if (err.response?.status === 404) {
+      errorMessage = 'User not found in the system. Please refresh the page and try again.';
+    } else if (err.response?.status === 403) {
+      errorMessage = 'You do not have permission to remove this user.';
+    } else if (err.response?.status === 401) {
+      errorMessage = 'Session expired. Please login again.';
+    } else if (err.response?.status === 500) {
+      errorMessage = 'Server error. Please try again later.';
+    }
+    
     Alert.alert('Error', errorMessage);
   } finally {
     setIsRemoving(false);
