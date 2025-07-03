@@ -8,13 +8,14 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // Email configuration
-const transporter = nodemailer.createTransporter({
-  service: 'gmail', // or your email service
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   }
 });
+
 
 // Route to handle feedback email sending
 router.post('/send-feedback-email', upload.array('attachments', 5), async (req, res) => {
