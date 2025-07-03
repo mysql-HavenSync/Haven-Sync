@@ -25,7 +25,7 @@ export default function UserManagement({ navigation, onBack }) {
   const token = useSelector(state => state.auth.token);
 
   // ✅ Check if current user can add sub-users
-  const canAddUsers = loggedInUser?.role === 'Admin' || loggedInUser?.role === 'SuperAdmin' || loggedInUser?.id === loggedInUser?.user_id;
+  const canAddUsers = loggedInUser?.role === 'Admin' || loggedInUser?.role === 'SuperAdmin';
 
   const fetchUsers = async () => {
     try {

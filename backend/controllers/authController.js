@@ -66,12 +66,15 @@ exports.signup = async (req, res) => {
     const [columns] = await db.query('DESCRIBE users');
     console.log('🔍 DEBUG - Users table columns:', columns.map(col => col.Field));
 
-    // Try inserting with explicit column names
-    const insertQuery = 'INSERT INTO users (name, email, password, user_id, parent_user_id) VALUES (?, ?, ?, ?, ?)';
+    // ✅ FIX: Assign 'Admin' role to new signups by default
+    const userRole = 'Admin'; // This makes every new signup an Admin who can add sub-users
+    
+    // Try inserting with explicit column names including role
+    const insertQuery = 'INSERT INTO users (name, email, password, user_id, parent_user_id, role) VALUES (?, ?, ?, ?, ?, ?)';
     console.log('🔍 DEBUG - Insert query:', insertQuery);
-    console.log('🔍 DEBUG - Insert values:', [name, email, '[HIDDEN]', user_id, parent_user_id]);
+    console.log('🔍 DEBUG - Insert values:', [name, email, '[HIDDEN]', user_id, parent_user_id, userRole]);
 
-    const result = await db.query(insertQuery, [name, email, hashedPassword, user_id, parent_user_id]);
+    const result = await db.query(insertQuery, [name, email, hashedPassword, user_id, parent_user_id, userRole]);
     
     console.log('🔍 DEBUG - Insert result:', result);
 
@@ -83,9 +86,11 @@ exports.signup = async (req, res) => {
       message: 'User registered successfully',
       user_id: user_id,
       parent_user_id: parent_user_id,
+      role: userRole, // ✅ Return the assigned role
       debug: {
         generated_user_id: user_id,
         generated_parent_user_id: parent_user_id,
+        assigned_role: userRole,
         inserted_data: insertedUser[0]
       }
     });
@@ -96,7 +101,7 @@ exports.signup = async (req, res) => {
   }
 };
 
-// ✅ FIXED: Include user_id in JWT token
+// ✅ FIXED: Include user_id in JWT token and ensure role is included
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -108,11 +113,12 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: 'Incorrect password' });
 
-    // ✅ FIXED: Include user_id in JWT payload
+    // ✅ FIXED: Ensure role is included in JWT payload
     const token = jwt.sign({ 
       id: user.id, 
-      user_id: user.user_id,  // ← This was missing!
-      email: user.email 
+      user_id: user.user_id,
+      email: user.email,
+      role: user.role || 'Admin' // ✅ Fallback to Admin if role is null
     }, process.env.JWT_SECRET, {
       expiresIn: '1d',
     });
@@ -120,10 +126,11 @@ exports.login = async (req, res) => {
     console.log('🔍 JWT payload created:', { 
       id: user.id, 
       user_id: user.user_id, 
-      email: user.email 
+      email: user.email,
+      role: user.role || 'Admin'
     });
 
-    // ✅ Return full user info including parent_user_id
+    // ✅ Return full user info including role
     res.json({
       message: 'Login successful',
       token,
@@ -133,7 +140,7 @@ exports.login = async (req, res) => {
         parent_user_id: user.parent_user_id,
         name: user.name,
         email: user.email,
-        role: user.role || 'User',
+        role: user.role || 'Admin', // ✅ Ensure role is always returned
       },
     });
   } catch (err) {
