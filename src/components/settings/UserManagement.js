@@ -24,6 +24,9 @@ export default function UserManagement({ navigation, onBack }) {
   const [generatedOtp, setGeneratedOtp] = useState('');
   const token = useSelector(state => state.auth.token);
 
+  // ✅ Check if current user can add sub-users
+  const canAddUsers = loggedInUser?.role === 'Admin' || loggedInUser?.role === 'SuperAdmin';
+
   const fetchUsers = async () => {
     try {
       console.log('🔄 Fetching users with token:', token);
@@ -38,7 +41,7 @@ export default function UserManagement({ navigation, onBack }) {
 
       let subUsers = [];
       
-      // ✅ Try to fetch sub_user, but don't fail if API call fails
+      // ✅ Try to fetch sub_users, but don't fail if API call fails
       try {
         const res = await api.get('/api/users/sub_users', {
           headers: { Authorization: `Bearer ${token}` },
@@ -46,18 +49,18 @@ export default function UserManagement({ navigation, onBack }) {
         console.log('✅ API Response:', res.data);
         subUsers = res.data.sub_users || [];
       } catch (err) {
-        console.warn('⚠️ Failed to fetch sub_user (this is okay for new users):', err.response?.data || err.message);
-        // Don't show error alert for sub_user, just continue with empty array
+        console.warn('⚠️ Failed to fetch sub_users (this is okay for new users):', err.response?.data || err.message);
+        // Don't show error alert for sub_users, just continue with empty array
         subUsers = [];
       }
 
-      // ✅ Always include the main user first
+      // ✅ Use the actual user role from Redux, don't hardcode as Admin
       const mainUser = {
-        id: loggedInUser?.id || loggedInUser?.user_id || 'main_user', // Use multiple fallbacks
+        id: loggedInUser?.id || loggedInUser?.user_id || 'main_user',
         user_id: loggedInUser?.user_id || loggedInUser?.id,
         name: loggedInUser?.name || 'Main User',
         email: loggedInUser?.email || 'No email',
-        role: 'Admin', // Main user is always admin
+        role: loggedInUser?.role || 'User', // ✅ Use actual role from Redux
         active: true,
         addedBy: 'Self',
         created_at: new Date().toISOString(),
@@ -69,7 +72,7 @@ export default function UserManagement({ navigation, onBack }) {
       console.log('👥 All users set:', allUsers);
     } catch (err) {
       console.error('❌ Critical error in fetchUsers:', err.response?.data || err.message);
-      // Only show error if it's a critical error, not for missing sub_user
+      // Only show error if it's a critical error, not for missing sub_users
       if (err.response?.status !== 404) {
         Alert.alert('Error', 'Could not load user data. Please try again.');
       }
@@ -88,7 +91,18 @@ export default function UserManagement({ navigation, onBack }) {
     }
   }, [loggedInUser, token]);
 
-  const handleAddUser = () => setShowAddUserModal(true);
+  const handleAddUser = () => {
+    // ✅ Check permissions before showing modal
+    if (!canAddUsers) {
+      Alert.alert(
+        'Permission Denied', 
+        'Only Admin users can add new sub-users. Please contact your administrator.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+    setShowAddUserModal(true);
+  };
   
   const closeAddUserModal = () => {
     setShowAddUserModal(false);
@@ -123,6 +137,12 @@ export default function UserManagement({ navigation, onBack }) {
       return;
     }
 
+    // ✅ Double-check permissions
+    if (!canAddUsers) {
+      Alert.alert('Error', 'You do not have permission to add users');
+      return;
+    }
+
     setIsLoading(true);
     const otp = generateOTP();
     setGeneratedOtp(otp);
@@ -132,6 +152,8 @@ export default function UserManagement({ navigation, onBack }) {
       await api.post('/api/users/send-subuser-otp', {
         email: newUserData.email,
         otp,
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       setShowAddUserModal(false);
@@ -139,7 +161,8 @@ export default function UserManagement({ navigation, onBack }) {
       Alert.alert('OTP Sent', `Verification code sent to ${newUserData.email}`);
     } catch (err) {
       console.error('❌ OTP send error:', err);
-      Alert.alert('Error', 'Failed to send OTP');
+      const errorMessage = err.response?.data?.message || 'Failed to send OTP';
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -148,6 +171,12 @@ export default function UserManagement({ navigation, onBack }) {
   const handleVerifyOTP = async () => {
     if (otpCode !== generatedOtp) {
       Alert.alert('Error', 'Invalid OTP');
+      return;
+    }
+
+    // ✅ Double-check permissions
+    if (!canAddUsers) {
+      Alert.alert('Error', 'You do not have permission to add users');
       return;
     }
 
@@ -163,6 +192,7 @@ export default function UserManagement({ navigation, onBack }) {
       }
 
       console.log('🔄 Adding sub_user with mainUserId:', mainUserId);
+      console.log('👤 Current user role:', loggedInUser.role);
 
       await api.post(
         '/api/users/add-sub_user',
@@ -177,7 +207,7 @@ export default function UserManagement({ navigation, onBack }) {
         }
       );
 
-      Alert.alert('Success', 'sub_user added!');
+      Alert.alert('Success', 'Sub-user added successfully!');
       setShowOtpModal(false);
       setOtpCode('');
       setGeneratedOtp('');
@@ -187,13 +217,14 @@ export default function UserManagement({ navigation, onBack }) {
       fetchUsers();
     } catch (err) {
       console.error('❌ Failed to add user:', err);
-      Alert.alert('Error', err?.response?.data?.message || 'Could not add user');
+      const errorMessage = err?.response?.data?.message || 'Could not add user. Please check your permissions.';
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // ✅ Show all users (main user + sub_user)
+  // ✅ Show all users (main user + sub_users)
   const visibleUsers = users;
 
   // ✅ Show loading state while fetching
@@ -231,15 +262,34 @@ export default function UserManagement({ navigation, onBack }) {
       </View>
 
       <ScrollView style={styles.content}>
+        {/* ✅ Show permission notice if user cannot add users */}
+        {!canAddUsers && (
+          <View style={[styles.permissionNotice, darkMode && styles.permissionNoticeDark]}>
+            <Icon name="info-outline" size={20} color="#ff9800" />
+            <Text style={[styles.permissionText, darkMode && styles.textWhite]}>
+              You need Admin privileges to add new users
+            </Text>
+          </View>
+        )}
+
         <View style={styles.actionSection}>
           <TouchableOpacity
-            style={[styles.actionButton, darkMode && styles.actionButtonDark]}
+            style={[
+              styles.actionButton, 
+              darkMode && styles.actionButtonDark,
+              !canAddUsers && styles.actionButtonDisabled
+            ]}
             onPress={handleAddUser}
+            disabled={!canAddUsers}
           >
-            <View style={[styles.iconContainer, { backgroundColor: '#E3F2FD' }]}>
-              <Icon name="person-add" size={20} color="#2196F3" />
+            <View style={[styles.iconContainer, { backgroundColor: canAddUsers ? '#E3F2FD' : '#f5f5f5' }]}>
+              <Icon name="person-add" size={20} color={canAddUsers ? '#2196F3' : '#ccc'} />
             </View>
-            <Text style={[styles.actionButtonText, darkMode && styles.textWhite]}>
+            <Text style={[
+              styles.actionButtonText, 
+              darkMode && styles.textWhite,
+              !canAddUsers && styles.actionButtonTextDisabled
+            ]}>
               Add New User
             </Text>
             <Icon name="chevron-right" size={20} color={darkMode ? '#888' : '#ccc'} />
@@ -257,7 +307,7 @@ export default function UserManagement({ navigation, onBack }) {
                 No users found
               </Text>
               <Text style={[styles.emptySubText, darkMode && styles.textGray]}>
-                Add your first sub_user to get started
+                Add your first sub-user to get started
               </Text>
             </View>
           ) : (
@@ -272,7 +322,7 @@ export default function UserManagement({ navigation, onBack }) {
                   <View style={styles.userDetails}>
                     <Text style={[styles.userName, darkMode && styles.textWhite]}>
                       {user.name}
-                      {user.role === 'Admin' && (
+                      {user.id === loggedInUser?.id && (
                         <Text style={styles.youLabel}> (You)</Text>
                       )}
                     </Text>
@@ -500,6 +550,7 @@ export default function UserManagement({ navigation, onBack }) {
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
