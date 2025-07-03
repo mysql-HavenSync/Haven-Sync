@@ -18,7 +18,7 @@ function generateSubUserId(name, email) {
   return `HS-SUB-${firstName}-${emailPrefix}-${dateCode}`;
 }
 
-// ✅ FIXED: Add sub_user with proper error handling and correct logic
+// ✅ FIXED: Add sub_user with correct database structure
 exports.addsub_user = async (req, res) => {
   const { name, email, mainUserId, role } = req.body;
 
@@ -54,18 +54,16 @@ exports.addsub_user = async (req, res) => {
       return res.status(400).json({ message: 'Main user not found' });
     }
 
-    // ✅ Main user found:
-console.log('✅ Main user found:', mainUser[0]);
+    console.log('✅ Main user found:', mainUser[0]);
 
-// 🔧 Get parent_user_id, fallback to main user's own user_id if null
-let parentUserId = mainUser[0].parent_user_id;
-if (!parentUserId) {
-  console.warn('⚠️ parent_user_id is null, falling back to main user_id');
-  parentUserId = mainUser[0].user_id;
-}
+    // 🔧 Get parent_user_id, fallback to main user's own user_id if null
+    let parentUserId = mainUser[0].parent_user_id;
+    if (!parentUserId) {
+      console.warn('⚠️ parent_user_id is null, falling back to main user_id');
+      parentUserId = mainUser[0].user_id;
+    }
 
-console.log('🧾 Using parent_user_id:', parentUserId, 'for subuser insert');
-
+    console.log('🧾 Using parent_user_id:', parentUserId, 'for subuser insert');
 
     // Generate unique user_id for sub_user
     const subUserUserId = generateSubUserId(name, email);
@@ -76,16 +74,15 @@ console.log('🧾 Using parent_user_id:', parentUserId, 'for subuser insert');
     
     try {
       // ✅ FIXED: Insert sub_user into users table with correct parent_user_id
-      // The parent_user_id should be the same as the main user's parent_user_id (not the main user's user_id)
       await db.query(
         'INSERT INTO users (name, email, user_id, role, password, parent_user_id) VALUES (?, ?, ?, ?, ?, ?)',
         [name, email, subUserUserId, role || 'User', null, parentUserId]
       );
 
-      // ✅ FIXED: Create the relationship in the subuser table
-      // main_user_id should be the parent_user_id, sub_user_id should be the new sub_user's user_id
+      // ✅ FIXED: Create the relationship in the subuser table with correct column names
+      // Based on your DB structure: parent_user_id, sub_user_id, role
       await db.query(
-        'INSERT INTO subuser (main_user_id, sub_user_id, role) VALUES (?, ?, ?)',
+        'INSERT INTO subuser (parent_user_id, sub_user_id, role) VALUES (?, ?, ?)',
         [parentUserId, subUserUserId, role || 'User']
       );
 
@@ -139,7 +136,7 @@ console.log('🧾 Using parent_user_id:', parentUserId, 'for subuser insert');
   }
 };
 
-// ✅ FIXED: Get sub_users with better error handling
+// ✅ FIXED: Get sub_users with correct column names
 exports.getsub_users = async (req, res) => {
   console.log('🔍 Request user from JWT:', req.user);
   
@@ -160,14 +157,14 @@ exports.getsub_users = async (req, res) => {
       return res.status(404).json({ message: 'Main user not found' });
     }
 
-let parentUserId = mainUser[0].parent_user_id;
+    let parentUserId = mainUser[0].parent_user_id;
 
-if (!parentUserId) {
-  console.warn('⚠️ parent_user_id is null, falling back to main user_id');
-  parentUserId = mainUserId;
-}
+    if (!parentUserId) {
+      console.warn('⚠️ parent_user_id is null, falling back to main user_id');
+      parentUserId = mainUserId;
+    }
 
-    // ✅ FIXED: Query sub_user with better error handling
+    // ✅ FIXED: Query sub_user with correct column names from your DB structure
     const [subUsers] = await db.query(`
       SELECT 
         u.id,
@@ -179,7 +176,7 @@ if (!parentUserId) {
         s.created_at as added_date
       FROM subuser s
       INNER JOIN users u ON s.sub_user_id = u.user_id
-      WHERE s.main_user_id = ?
+      WHERE s.parent_user_id = ?
       ORDER BY s.created_at DESC
     `, [parentUserId]);
     
