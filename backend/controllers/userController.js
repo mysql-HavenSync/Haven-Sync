@@ -70,32 +70,29 @@ exports.addsub_user = async (req, res) => {
     console.log('🔧 Generated sub_user ID:', subUserUserId);
     
     // ✅ FIXED: Use database transaction for atomic operations
-    await db.query('START TRANSACTION');
-    
-    try {
-      // ✅ FIXED: Insert sub_user into users table with correct parent_user_id
-      await db.query(
-        'INSERT INTO users (name, email, user_id, role, password, parent_user_id) VALUES (?, ?, ?, ?, ?, ?)',
-        [name, email, subUserUserId, role || 'User', null, parentUserId]
-      );
+await db.query('START TRANSACTION');
 
-      // ✅ FIXED: Create the relationship in the subuser table with correct column names
-      // Based on your DB structure: parent_user_id, sub_user_id, role
-      await db.query(
-        'INSERT INTO subuser (parent_user_id, sub_user_id, role) VALUES (?, ?, ?)',
-        [parentUserId, subUserUserId, role || 'User']
-      );
+try {
+  // ✅ Insert into users table (REMOVE `role`)
+  await db.query(
+    'INSERT INTO users (name, email, user_id, password, parent_user_id) VALUES (?, ?, ?, ?, ?)',
+    [name, email, subUserUserId, null, parentUserId]
+  );
 
-      // Commit the transaction
-      await db.query('COMMIT');
-      console.log('✅ sub_user added successfully to both tables');
-      
-    } catch (insertError) {
-      // Rollback on error
-      await db.query('ROLLBACK');
-      console.error('❌ Insert error, transaction rolled back:', insertError);
-      throw insertError;
-    }
+  // ✅ Insert into subuser table (WITH role)
+  await db.query(
+    'INSERT INTO subuser (parent_user_id, sub_user_id, role) VALUES (?, ?, ?)',
+    [parentUserId, subUserUserId, role || 'User']
+  );
+
+  await db.query('COMMIT');
+  console.log('✅ sub_user added successfully to both tables');
+} catch (insertError) {
+  await db.query('ROLLBACK');
+  console.error('❌ Insert error, transaction rolled back:', insertError);
+  throw insertError;
+}
+
 
     res.json({ 
       message: 'sub_user added successfully',
