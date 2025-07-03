@@ -8,7 +8,8 @@ const auth = require('../middleware/auth'); // JWT auth middleware
 router.post('/add-subusers', auth, userController.addsubusers);
 
 // GET: Get subuserss for a main user (requires authentication)
-router.get('/subuserss', auth, userController.getsubuserss);
+// CHANGED: From '/subuserss' to '/subusers' to match frontend call
+router.get('/subusers', auth, userController.getsubuserss);
 
 // POST: Assign device to subusers
 router.post('/assign-device', auth, userController.assignDevice);
