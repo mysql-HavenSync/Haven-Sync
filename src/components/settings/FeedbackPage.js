@@ -73,103 +73,115 @@ export default function FeedbackPage({ navigation, onBack }) {
     Linking.openURL(mailto).catch(() => Alert.alert('Error', 'Unable to open email client'));
   };
 
-  // Single function declaration for sending feedback email
-  const sendFeedbackEmail = async () => {
-    try {
-      setIsSubmitting(true);
-      
-      const emailData = {
-        to: 'feedback@hexahavenintegrations.com',
-        subject: 'App Feedback',
-        body: `
-          Rating: ${rating > 0 ? `${rating}/5 stars` : 'No rating provided'}
-          
-          Feedback:
-          ${feedback}
-          
-          Device Information:
-          - Platform: ${Platform.OS}
-          - Version: ${Platform.Version}
-          - Timestamp: ${new Date().toISOString()}
-          ${attachments.length > 0 ? `- Attachments: ${attachments.length} file(s)` : ''}
-        `,
-        attachments: attachments.map(attachment => ({
-          filename: attachment.fileName || 'attachment',
-          uri: attachment.uri,
-          type: attachment.type
-        }))
-      };
+// Single function declaration for sending feedback email
+const loggedInUser = useSelector((state) => state.auth.user);
 
+const sendFeedbackEmail = async () => {
+  try {
+    setIsSubmitting(true);
 
-      const endpoints = ['/api/feedback/send-feedback-email' // ← your real working endpoint
-      ];
+    const emailData = {
+      to: 'feedback@hexahavenintegrations.com',
+      subject: 'App Feedback',
+      body: `
+        Rating: ${rating > 0 ? `${rating}/5 stars` : 'No rating provided'}
+        
+        Feedback:
+        ${feedback}
+        
+        Device Information:
+        - Platform: ${Platform.OS}
+        - Version: ${Platform.Version}
+        - Timestamp: ${new Date().toISOString()}
+        ${attachments.length > 0 ? `- Attachments: ${attachments.length} file(s)` : ''}
+      `,
+      attachments: attachments.map((attachment) => ({
+        filename: attachment.fileName || 'attachment',
+        uri: attachment.uri,
+        type: attachment.type
+      })),
+      user: {
+        name: loggedInUser?.name || 'Unknown',
+        email: loggedInUser?.email || 'unknown@user.com',
+        user_id: loggedInUser?.user_id || 'N/A',
+        role: loggedInUser?.role || 'User',
+        platform: Platform.OS,
+        version: Platform.Version,
+        rating: rating
+      }
+    };
 
+    const endpoints = ['/api/feedback/send-feedback-email'];
 
-      let response = null;
-      let lastError = null;
+    let response = null;
+    let lastError = null;
 
-      for (const endpoint of endpoints) {
-        try {
-          console.log(`Attempting to send to: ${endpoint}`);
-          response = await api.post(endpoint, emailData);
-          if ([200, 201].includes(response.status)) {
-            break;
-          }
-        } catch (error) {
-          lastError = error;
-          console.log(`Failed on ${endpoint}:`, error.response?.status || error.message);
-          continue;
+    for (const endpoint of endpoints) {
+      try {
+        console.log(`Attempting to send to: ${endpoint}`);
+        response = await api.post(endpoint, emailData);
+        if ([200, 201].includes(response.status)) {
+          break;
         }
+      } catch (error) {
+        lastError = error;
+        console.log(`Failed on ${endpoint}:`, error.response?.status || error.message);
+        continue;
       }
-
-      if (response && [200, 201].includes(response.status)) {
-        Alert.alert('Thank You!', 'Your feedback has been sent successfully.');
-        setFeedback('');
-        setRating(0);
-        setAttachments([]);
-        return true;
-      }
-      
-      throw lastError || new Error('All endpoints failed');
-    } catch (error) {
-      console.error('Email sending error:', error);
-      
-      // Enhanced error handling with fallback to email client
-      const isNetworkError = error.message === 'Network Error' || !error.response;
-      const is404Error = error.response?.status === 404;
-      
-      if (is404Error || isNetworkError) {
-        Alert.alert(
-          'Service Unavailable',
-          'The feedback service is currently unavailable. Would you like to send feedback via your email app instead?',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Open Email', onPress: () => openEmail('feedback') }
-          ]
-        );
-      } else {
-        Alert.alert(
-          'Failed to Send',
-          'Unable to send feedback at this time. Would you like to try sending via your email app?',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Retry', onPress: () => sendFeedbackEmail() },
-            { text: 'Open Email', onPress: () => openEmail('feedback') }
-          ]
-        );
-      }
-      return false;
-    } finally {
-      setIsSubmitting(false);
     }
-  };
 
-  const handleSubmitFeedback = () => {
-    if (!feedback.trim()) {
-      Alert.alert('Error', 'Please enter your feedback before submitting.');
-      return;
+    if (response && [200, 201].includes(response.status)) {
+      Alert.alert('Thank You!', 'Your feedback has been sent successfully.');
+      setFeedback('');
+      setRating(0);
+      setAttachments([]);
+      return true;
     }
-  };
+
+    throw lastError || new Error('All endpoints failed');
+  } catch (error) {
+    console.error('Email sending error:', error);
+
+    const isNetworkError = error.message === 'Network Error' || !error.response;
+    const is404Error = error.response?.status === 404;
+
+    if (is404Error || isNetworkError) {
+      Alert.alert(
+        'Service Unavailable',
+        'The feedback service is currently unavailable. Would you like to send feedback via your email app instead?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Open Email', onPress: () => openEmail('feedback') }
+        ]
+      );
+    } else {
+      Alert.alert(
+        'Failed to Send',
+        'Unable to send feedback at this time. Would you like to try sending via your email app?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Retry', onPress: () => sendFeedbackEmail() },
+          { text: 'Open Email', onPress: () => openEmail('feedback') }
+        ]
+      );
+    }
+
+    return false;
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
+const handleSubmitFeedback = async () => {
+  if (!feedback.trim()) {
+    Alert.alert('Error', 'Please enter your feedback before submitting.');
+    return;
+  }
+
+  await sendFeedbackEmail(); // ✅ now works
+};
+
 
   const ActionButton = ({ icon, text, onPress, bgColor }) => (
     <TouchableOpacity style={[styles.actionButton, darkMode && styles.actionButtonDark]} onPress={onPress}>
