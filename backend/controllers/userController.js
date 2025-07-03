@@ -19,7 +19,7 @@ function generateSubusersId(name, email) {
   return `HS-SUB-${firstName}-${emailPrefix}-${dateCode}`;
 }
 
-// ✅ FIXED: Add subusers with correct parent_user_id logic
+// ✅ FIXED: Add subusers with role validation to prevent subusers from creating admins
 exports.addsubusers = async (req, res) => {
   const { name, email, password, role } = req.body;
 
@@ -50,6 +50,38 @@ exports.addsubusers = async (req, res) => {
     }
 
     console.log('✅ Main user found:', mainUser[0]);
+
+    // ✅ NEW: Check if the current user is a subuser and prevent them from creating Admin accounts
+    const currentUserRole = req.user.role || mainUser[0].role;
+    const isCurrentUserSubuser = !!mainUser[0].parent_user_id; // If they have a parent_user_id, they're a subuser
+
+    console.log('🔍 Current user role:', currentUserRole);
+    console.log('🔍 Is current user a subuser:', isCurrentUserSubuser);
+
+    // ✅ ROLE VALIDATION: Only main users (Admins) can create Admin accounts
+    let assignedRole = role || 'User'; // Default to 'User' if no role specified
+
+    if (assignedRole === 'Admin' && isCurrentUserSubuser) {
+      console.log('❌ Subuser attempted to create Admin account');
+      return res.status(403).json({ 
+        message: 'Permission denied. Only main administrators can create Admin accounts. Subusers can only create User accounts.',
+        allowedRoles: ['User']
+      });
+    }
+
+    // ✅ ADDITIONAL VALIDATION: Only allow 'Admin' or 'User' roles
+    if (!['Admin', 'User'].includes(assignedRole)) {
+      return res.status(400).json({ 
+        message: 'Invalid role. Only "Admin" or "User" roles are allowed.',
+        allowedRoles: ['Admin', 'User']
+      });
+    }
+
+    // ✅ FORCE USER ROLE: If current user is a subuser, always assign 'User' role regardless of what they requested
+    if (isCurrentUserSubuser) {
+      assignedRole = 'User';
+      console.log('🔧 Forced role to User for subuser creation');
+    }
 
     // 🔧 FIXED: Determine the correct parent_user_id
     let parentUserId;
@@ -89,20 +121,20 @@ exports.addsubusers = async (req, res) => {
       // ✅ Hash the password
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // ✅ Insert into users table with password
+      // ✅ Insert into users table with password and validated role
       await db.query(
-        'INSERT INTO users (name, email, user_id, password, parent_user_id) VALUES (?, ?, ?, ?, ?)',
-        [name, email, subusersUserId, hashedPassword, parentUserId]
+        'INSERT INTO users (name, email, user_id, password, parent_user_id, role) VALUES (?, ?, ?, ?, ?, ?)',
+        [name, email, subusersUserId, hashedPassword, parentUserId, assignedRole]
       );
 
-      // ✅ FIXED: Insert into subusers table with correct column name (sub_user_id)
+      // ✅ FIXED: Insert into subusers table with correct column name (sub_user_id) and validated role
       await db.query(
         'INSERT INTO subusers (parent_user_id, sub_user_id, password, role) VALUES (?, ?, ?, ?)',
-        [parentUserId, subusersUserId, hashedPassword, role || 'User']
+        [parentUserId, subusersUserId, hashedPassword, assignedRole]
       );
 
       await db.query('COMMIT');
-      console.log('✅ subusers added successfully to both tables');
+      console.log('✅ subusers added successfully to both tables with role:', assignedRole);
 
       res.json({ 
         message: 'Subusers added successfully',
@@ -110,9 +142,10 @@ exports.addsubusers = async (req, res) => {
           user_id: subusersUserId,
           name,
           email,
-          role: role || 'User',
+          role: assignedRole,
           parent_user_id: parentUserId
-        }
+        },
+        info: isCurrentUserSubuser ? 'Note: Subusers can only create User accounts, not Admin accounts.' : null
       });
     } catch (insertError) {
       await db.query('ROLLBACK');
@@ -362,6 +395,7 @@ exports.removeSubuser = async (req, res) => {
     });
   }
 };
+
 // ✅ NEW: Get user details by user_id
 exports.getUserDetails = async (req, res) => {
   const { userId } = req.params;
