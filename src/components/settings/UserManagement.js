@@ -19,7 +19,7 @@ export default function UserManagement({ navigation, onBack }) {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [newUserData, setNewUserData] = useState({ name: '', email: '', role: 'User' });
+ const [newUserData, setNewUserData] = useState({ name: '', email: '', role: 'User', password: '' });
   const [otpCode, setOtpCode] = useState('');
   const [generatedOtp, setGeneratedOtp] = useState('');
   const token = useSelector(state => state.auth.token);
@@ -92,7 +92,7 @@ export default function UserManagement({ navigation, onBack }) {
   
   const closeAddUserModal = () => {
     setShowAddUserModal(false);
-    setNewUserData({ name: '', email: '', role: 'User' });
+    setNewUserData({ name: '', email: '', role: 'User',password: '' });
   };
 
   const closeOtpModal = () => {
@@ -108,7 +108,7 @@ export default function UserManagement({ navigation, onBack }) {
     Math.floor(100000 + Math.random() * 900000).toString();
 
   const handleSendOTP = async () => {
-    if (!newUserData.name.trim() || !newUserData.email.trim()) {
+    if (!newUserData.name.trim() || !newUserData.email.trim()|| !newUserData.password.trim()) {
       Alert.alert('Error', 'Please fill all fields');
       return;
     }
@@ -170,6 +170,7 @@ export default function UserManagement({ navigation, onBack }) {
           name: newUserData.name,
           email: newUserData.email,
           role: newUserData.role,
+          password: newUserData.password,
           mainUserId: mainUserId,
         },
         {
@@ -181,7 +182,7 @@ export default function UserManagement({ navigation, onBack }) {
       setShowOtpModal(false);
       setOtpCode('');
       setGeneratedOtp('');
-      setNewUserData({ name: '', email: '', role: 'User' });
+      setNewUserData({ name: '', email: '', role: 'User',password: ''  });
 
       // 🔄 Refresh user list
       fetchUsers();
@@ -356,6 +357,20 @@ export default function UserManagement({ navigation, onBack }) {
                   autoCapitalize="none"
                 />
               </View>
+<Text style={[styles.label, darkMode && styles.textWhite]}>Password</Text>
+<View style={[styles.inputContainer, darkMode && styles.inputContainerDark]}>
+  <View style={[styles.iconContainer, { backgroundColor: '#FFF3E0' }]}>
+    <FontAwesomeIcon icon={faLock} size={14} color="#FF9800" />
+  </View>
+  <TextInput
+    style={[styles.inputWithIcon, darkMode && styles.textWhite]}
+    placeholder="Enter password"
+    placeholderTextColor={darkMode ? '#999' : '#666'}
+    secureTextEntry={true}
+    value={newUserData.password}
+    onChangeText={(text) => setNewUserData({ ...newUserData, password: text })}
+  />
+</View>
 
               <Text style={[styles.label, darkMode && styles.textWhite]}>Role</Text>
               <View style={styles.roleContainer}>
