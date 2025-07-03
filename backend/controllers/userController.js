@@ -20,7 +20,9 @@ function generatesubusersId(name, email) {
 
 // ✅ FIXED: Add subusers with correct database structure
 exports.addsubusers = async (req, res) => {
-  const { name, email, mainUserId, role } = req.body;
+  const { name, email, password, role } = req.body;
+const jwtUserId = req.user.user_id;
+
 
   console.log('📝 Adding subusers:', { name, email, mainUserId, role });
   console.log('🔍 Request user from JWT:', req.user);
@@ -36,12 +38,7 @@ exports.addsubusers = async (req, res) => {
     console.log('🔍 JWT user_id:', jwtUserId);
     console.log('🔍 mainUserId from request:', mainUserId);
 
-    // ✅ SECURITY: Verify that the requester is authorized to add subusers for this mainUserId
-    if (jwtUserId !== mainUserId) {
-      console.log('❌ Authorization failed: JWT user_id does not match mainUserId');
-      return res.status(403).json({ message: 'You can only add subusers for your own account' });
-    }
-
+   
     // Check if email already exists in users table
     const [existingUser] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
     if (existingUser.length > 0) {
@@ -49,7 +46,8 @@ exports.addsubusers = async (req, res) => {
     }
 
     // Verify that the main user exists and get their parent_user_id
-    const [mainUser] = await db.query('SELECT * FROM users WHERE user_id = ?', [mainUserId]);
+    const [mainUser] = await db.query('SELECT * FROM users WHERE user_id = ?', [jwtUserId]);
+
     if (mainUser.length === 0) {
       return res.status(400).json({ message: 'Main user not found' });
     }

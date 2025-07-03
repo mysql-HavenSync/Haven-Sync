@@ -71,6 +71,7 @@ exports.signup = async (req, res) => {
     
     // Try inserting with explicit column names including role
     const insertQuery = 'INSERT INTO users (name, email, password, user_id, parent_user_id, role) VALUES (?, ?, ?, ?, ?, ?)';
+    
     console.log('🔍 DEBUG - Insert query:', insertQuery);
     console.log('🔍 DEBUG - Insert values:', [name, email, '[HIDDEN]', user_id, parent_user_id, userRole]);
 
