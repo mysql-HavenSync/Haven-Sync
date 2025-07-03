@@ -119,7 +119,49 @@ const sendFeedbackEmail = async () => {
     for (const endpoint of endpoints) {
       try {
         console.log(`Attempting to send to: ${endpoint}`);
-        response = await api.post(endpoint, emailData);
+        const formData = new FormData();
+
+formData.append('to', 'feedback@hexahavenintegrations.com');
+formData.append('subject', 'App Feedback');
+
+formData.append('body', `
+Rating: ${rating > 0 ? `${rating}/5 stars` : 'No rating provided'}
+
+Feedback:
+${feedback}
+
+Device Information:
+- Platform: ${Platform.OS}
+- Version: ${Platform.Version}
+- Timestamp: ${new Date().toISOString()}
+${attachments.length > 0 ? `- Attachments: ${attachments.length} file(s)` : ''}
+`);
+
+formData.append('user', JSON.stringify({
+  name: loggedInUser?.name || 'Unknown',
+  email: loggedInUser?.email || 'unknown@user.com',
+  user_id: loggedInUser?.user_id || 'N/A',
+  role: loggedInUser?.role || 'User',
+  platform: Platform.OS,
+  version: Platform.Version,
+  rating: rating
+}));
+
+attachments.forEach((file, index) => {
+  formData.append('attachments', {
+    uri: file.uri,
+    type: file.type,
+    name: file.fileName || `attachment_${index + 1}`
+  });
+});
+
+// Send with headers
+response = await api.post(endpoint, formData, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+});
+
         if ([200, 201].includes(response.status)) {
           break;
         }
