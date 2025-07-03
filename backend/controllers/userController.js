@@ -217,6 +217,111 @@ exports.getsubuserss = async (req, res) => {
     });
   }
 };
+
+// ✅ NEW: Remove/Delete subuser function
+exports.removeSubuser = async (req, res) => {
+  const { userId } = req.params;
+  const requestingUserId = req.user.user_id || req.user.id;
+
+  console.log('🗑️ Removing subuser:', userId);
+  console.log('🔍 Requested by user:', requestingUserId);
+
+  try {
+    // Verify that the user to be deleted exists
+    const [userToDelete] = await db.query('SELECT * FROM users WHERE user_id = ?', [userId]);
+    if (userToDelete.length === 0) {
+      return res.status(404).json({ message: 'User not found. They may have already been removed.' });
+    }
+
+    console.log('✅ User found:', userToDelete[0]);
+
+    // Verify that the requesting user has permission to delete this subuser
+    const [requestingUser] = await db.query('SELECT * FROM users WHERE user_id = ?', [requestingUserId]);
+    if (requestingUser.length === 0) {
+      return res.status(401).json({ message: 'Requesting user not found' });
+    }
+
+    // Check if the requesting user is the parent of the subuser or has admin privileges
+    const userParentId = userToDelete[0].parent_user_id;
+    const requestingUserParentId = requestingUser[0].parent_user_id;
+
+    let hasPermission = false;
+
+    if (!requestingUserParentId) {
+      // Requesting user is a main user, can delete their subusers
+      hasPermission = userParentId === requestingUserId;
+    } else {
+      // Requesting user is a subuser, can only delete subusers with the same parent
+      hasPermission = userParentId === requestingUserParentId;
+    }
+
+    if (!hasPermission) {
+      return res.status(403).json({ message: 'Permission denied. You can only remove subusers under your account.' });
+    }
+
+    // ✅ Use database transaction for atomic operations
+    await db.query('START TRANSACTION');
+
+    try {
+      // Delete from subusers table first (to avoid foreign key constraint issues)
+      await db.query('DELETE FROM subusers WHERE sub_user_id = ?', [userId]);
+      console.log('✅ Deleted from subusers table');
+
+      // Delete from users table
+      await db.query('DELETE FROM users WHERE user_id = ?', [userId]);
+      console.log('✅ Deleted from users table');
+
+      // Optional: Delete from user_devices table if exists
+      try {
+        await db.query('DELETE FROM user_devices WHERE user_id = ?', [userId]);
+        console.log('✅ Deleted from user_devices table');
+      } catch (deviceError) {
+        console.log('⚠️ No user_devices table or no records to delete');
+      }
+
+      await db.query('COMMIT');
+      console.log('✅ Subuser removed successfully');
+
+      res.json({ 
+        message: 'Subuser removed successfully',
+        removedUser: {
+          user_id: userId,
+          name: userToDelete[0].name,
+          email: userToDelete[0].email
+        }
+      });
+    } catch (deleteError) {
+      await db.query('ROLLBACK');
+      console.error('❌ Delete error, transaction rolled back:', deleteError);
+      throw deleteError;
+    }
+  } catch (err) {
+    console.error('❌ Error removing subuser:', err);
+    console.error('❌ Error details:', {
+      message: err.message,
+      code: err.code,
+      errno: err.errno,
+      sqlState: err.sqlState,
+      sqlMessage: err.sqlMessage
+    });
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to remove subuser';
+    if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+      errorMessage = 'Cannot delete user. They may have associated data that needs to be removed first.';
+    } else if (err.code === 'ER_NO_REFERENCED_ROW_2') {
+      errorMessage = 'Foreign key constraint failed during deletion.';
+    }
+    
+    res.status(500).json({ 
+      message: errorMessage, 
+      error: err.message,
+      code: err.code,
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+};
+
 // ✅ NEW: Get user details by user_id
 exports.getUserDetails = async (req, res) => {
   const { userId } = req.params;

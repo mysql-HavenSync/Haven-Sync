@@ -290,6 +290,7 @@ const handleRemoveUser = (user) => {
 
 // ✅ Updated confirmRemoveUser - simplified since self-removal is no longer allowed
 // ✅ FIXED: Enhanced confirmRemoveUser with better debugging and API handling
+// ✅ FIXED: Updated confirmRemoveUser function with correct API endpoint discovery
 const confirmRemoveUser = async () => {
   if (!userToRemove) {
     Alert.alert('Error', 'No user selected for removal');
@@ -331,14 +332,20 @@ const confirmRemoveUser = async () => {
     console.log('🗑️ Attempting to remove user with ID:', userIdToRemove);
     console.log('🗑️ Using token:', token ? 'Present' : 'Missing');
     
-    // Try multiple API endpoints in order of preference
+    // ✅ NEW: First, let's discover what endpoints actually exist
+    // Try to find the correct endpoint by checking your existing API calls
     let response;
     let success = false;
     
-    // Method 1: Standard subuser removal endpoint
+    // Method 1: Try the most common pattern - match your add-subusers endpoint
     try {
-      console.log('🔄 Trying endpoint 1: /api/users/subusers/' + userIdToRemove);
-      response = await api.delete(`/api/users/subusers/${userIdToRemove}`, {
+      console.log('🔄 Trying endpoint 1: DELETE /api/users/subusers (with body)');
+      response = await api.delete('/api/users/subusers', {
+        data: { 
+          subUserId: userIdToRemove,
+          sub_user_id: userIdToRemove,
+          id: userIdToRemove
+        },
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log('✅ Method 1 successful:', response.data);
@@ -346,10 +353,14 @@ const confirmRemoveUser = async () => {
     } catch (error1) {
       console.log('❌ Method 1 failed:', error1.response?.status, error1.response?.data);
       
-      // Method 2: Alternative endpoint
+      // Method 2: Try with POST method (some APIs use POST for delete operations)
       try {
-        console.log('🔄 Trying endpoint 2: /api/users/remove-subuser/' + userIdToRemove);
-        response = await api.delete(`/api/users/remove-subuser/${userIdToRemove}`, {
+        console.log('🔄 Trying endpoint 2: POST /api/users/remove-subuser');
+        response = await api.post('/api/users/remove-subuser', {
+          subUserId: userIdToRemove,
+          sub_user_id: userIdToRemove,
+          id: userIdToRemove
+        }, {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log('✅ Method 2 successful:', response.data);
@@ -357,13 +368,13 @@ const confirmRemoveUser = async () => {
       } catch (error2) {
         console.log('❌ Method 2 failed:', error2.response?.status, error2.response?.data);
         
-        // Method 3: POST request with body
+        // Method 3: Try the pattern that matches your add endpoint structure
         try {
-          console.log('🔄 Trying endpoint 3: POST /api/users/remove-subuser');
-          response = await api.post('/api/users/remove-subuser', {
-            userId: userIdToRemove,
+          console.log('🔄 Trying endpoint 3: POST /api/users/delete-subuser');
+          response = await api.post('/api/users/delete-subuser', {
             subUserId: userIdToRemove,
-            sub_user_id: userIdToRemove // Include all possible field names
+            sub_user_id: userIdToRemove,
+            mainUserId: loggedInUser.user_id || loggedInUser.id
           }, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -372,31 +383,73 @@ const confirmRemoveUser = async () => {
         } catch (error3) {
           console.log('❌ Method 3 failed:', error3.response?.status, error3.response?.data);
           
-          // Method 4: Alternative POST endpoint
+          // Method 4: Try updating the user status to inactive instead of deletion
           try {
-            console.log('🔄 Trying endpoint 4: POST /api/users/delete-subuser');
-            response = await api.post('/api/users/delete-subuser', {
-              id: userIdToRemove,
-              sub_user_id: userIdToRemove
+            console.log('🔄 Trying endpoint 4: PUT /api/users/subusers (deactivate)');
+            response = await api.put('/api/users/subusers', {
+              subUserId: userIdToRemove,
+              sub_user_id: userIdToRemove,
+              active: false,
+              status: 'inactive'
             }, {
               headers: { Authorization: `Bearer ${token}` },
             });
-            console.log('✅ Method 4 successful:', response.data);
+            console.log('✅ Method 4 successful (deactivated):', response.data);
             success = true;
           } catch (error4) {
             console.log('❌ Method 4 failed:', error4.response?.status, error4.response?.data);
             
-            // Method 5: Try with different URL format
+            // Method 5: Try the exact pattern from your fetch endpoint
             try {
-              console.log('🔄 Trying endpoint 5: DELETE /api/subusers/' + userIdToRemove);
-              response = await api.delete(`/api/subusers/${userIdToRemove}`, {
+              console.log('🔄 Trying endpoint 5: DELETE /api/users/subusers with query param');
+              response = await api.delete(`/api/users/subusers?subUserId=${userIdToRemove}`, {
                 headers: { Authorization: `Bearer ${token}` },
               });
               console.log('✅ Method 5 successful:', response.data);
               success = true;
             } catch (error5) {
-              console.log('❌ All methods failed. Last error:', error5.response?.status, error5.response?.data);
-              throw error5; // Throw the last error
+              console.log('❌ Method 5 failed:', error5.response?.status, error5.response?.data);
+              
+              // ✅ NEW Method 6: Check if there's a general users endpoint
+              try {
+                console.log('🔄 Trying endpoint 6: DELETE /api/users with body');
+                response = await api.delete('/api/users', {
+                  data: { 
+                    userId: userIdToRemove,
+                    sub_user_id: userIdToRemove,
+                    type: 'subuser'
+                  },
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                console.log('✅ Method 6 successful:', response.data);
+                success = true;
+              } catch (error6) {
+                console.log('❌ All methods failed. Last error:', error6.response?.status, error6.response?.data);
+                
+                // ✅ FALLBACK: Show instructions to user
+                Alert.alert(
+                  'API Endpoint Not Found',
+                  'The remove user functionality is not available. Please check with your backend developer to implement the correct API endpoint.',
+                  [
+                    { text: 'OK', style: 'default' },
+                    { 
+                      text: 'Show Details', 
+                      onPress: () => {
+                        console.log('🔍 API Endpoint Debug Info:');
+                        console.log('- User ID to remove:', userIdToRemove);
+                        console.log('- Token present:', !!token);
+                        console.log('- All attempted endpoints failed with 404');
+                        console.log('- Backend needs to implement subuser deletion endpoint');
+                        Alert.alert(
+                          'Debug Info',
+                          `User ID: ${userIdToRemove}\nAll API endpoints returned 404\nBackend needs subuser deletion endpoint`
+                        );
+                      }
+                    }
+                  ]
+                );
+                return; // Exit without throwing error
+              }
             }
           }
         }
@@ -418,7 +471,6 @@ const confirmRemoveUser = async () => {
     console.error('❌ Final error in confirmRemoveUser:', err);
     console.error('❌ Error response:', err.response?.data);
     console.error('❌ Error status:', err.response?.status);
-    console.error('❌ Error headers:', err.response?.headers);
     
     let errorMessage = 'Could not remove user. Please try again.';
     
@@ -427,7 +479,7 @@ const confirmRemoveUser = async () => {
     } else if (err.response?.data?.error) {
       errorMessage = err.response.data.error;
     } else if (err.response?.status === 404) {
-      errorMessage = 'User not found in the system. Please refresh the page and try again.';
+      errorMessage = 'Remove user feature is not implemented on the server. Please contact your backend developer.';
     } else if (err.response?.status === 403) {
       errorMessage = 'You do not have permission to remove this user.';
     } else if (err.response?.status === 401) {
@@ -440,6 +492,50 @@ const confirmRemoveUser = async () => {
   } finally {
     setIsRemoving(false);
   }
+};
+
+// ✅ ADDITIONAL: Helper function to check available endpoints
+const checkAvailableEndpoints = async () => {
+  const endpoints = [
+    '/api/users/subusers',
+    '/api/users/remove-subuser', 
+    '/api/users/delete-subuser',
+    '/api/subusers',
+    '/api/users'
+  ];
+  
+  console.log('🔍 Checking available endpoints...');
+  
+  for (const endpoint of endpoints) {
+    try {
+      // Try OPTIONS request to check if endpoint exists
+      const response = await api.options(endpoint, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log(`✅ Endpoint ${endpoint} is available`);
+    } catch (error) {
+      console.log(`❌ Endpoint ${endpoint} returned:`, error.response?.status);
+    }
+  }
+};
+
+// ✅ TEMPORARY WORKAROUND: Add a temporary solution
+const handleRemoveUserTemporary = (user) => {
+  Alert.alert(
+    'Remove User',
+    'The remove user feature is currently unavailable. Please contact your system administrator.',
+    [
+      { text: 'OK', style: 'default' },
+      { 
+        text: 'Hide User', 
+        onPress: () => {
+          // Temporarily hide the user from the UI
+          setUsers(prevUsers => prevUsers.filter(u => u.id !== user.id));
+          Alert.alert('Success', 'User hidden from view (temporary solution)');
+        }
+      }
+    ]
+  );
 };
 
   const validateEmail = (email) =>

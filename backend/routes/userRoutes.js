@@ -11,6 +11,9 @@ router.post('/add-subusers', auth, userController.addsubusers);
 // CHANGED: From '/subuserss' to '/subusers' to match frontend call
 router.get('/subusers', auth, userController.getsubuserss);
 
+// ✅ NEW: Delete/Remove subuser endpoint
+router.delete('/subusers/:userId', auth, userController.removeSubuser);
+
 // ✅ NEW: Get user details by user_id
 router.get('/user-details/:userId', auth, userController.getUserDetails);
 
