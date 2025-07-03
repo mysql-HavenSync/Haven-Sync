@@ -11,12 +11,14 @@ import {
   Linking,
   Platform,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowLeft, faStar } from '@fortawesome/free-solid-svg-icons';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
+import api from '../../api';
 
 export default function FeedbackPage({ navigation, onBack }) {
   const darkMode = useSelector(state => state.profile.darkMode);
@@ -24,6 +26,7 @@ export default function FeedbackPage({ navigation, onBack }) {
   const [feedback, setFeedback] = useState('');
   const [attachments, setAttachments] = useState([]);
   const [showMediaModal, setShowMediaModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleBack = () => {
     if (onBack) {
@@ -167,9 +170,64 @@ Regards`;
     });
   };
 
+  const submitFeedbackToAPI = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      // Prepare feedback data
+      const feedbackData = {
+        rating: rating,
+        feedback: feedback,
+        timestamp: new Date().toISOString(),
+        platform: Platform.OS,
+        version: Platform.Version,
+        hasAttachments: attachments.length > 0,
+        attachmentCount: attachments.length,
+      };
+
+      // If you have file attachments, you might need to handle them separately
+      // For now, we'll just send the feedback data
+      const response = await api.post('/feedback', feedbackData);
+
+      if (response.status === 200 || response.status === 201) {
+        Alert.alert('Thank You!', 'Your feedback has been submitted successfully.');
+        setFeedback('');
+        setRating(0);
+        setAttachments([]);
+        return true;
+      } else {
+        throw new Error('Failed to submit feedback');
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      
+      // Check if it's a network error
+      if (error.message === 'Network Error' || !error.response) {
+        Alert.alert(
+          'Network Error',
+          'Unable to connect to the server. Please check your internet connection and try again.',
+          [
+            { text: 'OK', style: 'default' }
+          ]
+        );
+      } else {
+        // Server error or other API error
+        Alert.alert(
+          'Submission Failed',
+          'Unable to submit feedback at this time. Please try again later or use the email option.',
+          [
+            { text: 'OK', style: 'default' }
+          ]
+        );
+      }
+      return false;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSubmitFeedback = () => {
     if (feedback.trim()) {
-      // You can also send this feedback via email or API
       const subject = 'App Feedback';
       const ratingText = rating > 0 ? `Rating: ${rating}/5 stars\n\n` : '';
       const body = `${ratingText}Feedback:\n${feedback}`;
@@ -183,18 +241,39 @@ Regards`;
           {
             text: 'Email',
             onPress: () => {
-              Linking.openURL(mailto).catch(() => {
-                Alert.alert('Error', 'Unable to open email client');
-              });
+              Linking.openURL(mailto)
+                .then(() => {
+                  setFeedback('');
+                  setRating(0);
+                  setAttachments([]);
+                })
+                .catch(() => {
+                  Alert.alert('Error', 'Unable to open email client');
+                });
             },
           },
           {
             text: 'Submit Directly',
-            onPress: () => {
-              Alert.alert('Thank You!', 'Your feedback has been submitted successfully.');
-              setFeedback('');
-              setRating(0);
-              setAttachments([]);
+            onPress: async () => {
+              const success = await submitFeedbackToAPI();
+              if (!success) {
+                // If API submission fails, offer email as backup
+                Alert.alert(
+                  'Try Email Instead?',
+                  'Would you like to send your feedback via email?',
+                  [
+                    {
+                      text: 'Send Email',
+                      onPress: () => {
+                        Linking.openURL(mailto).catch(() => {
+                          Alert.alert('Error', 'Unable to open email client');
+                        });
+                      },
+                    },
+                    { text: 'Cancel', style: 'cancel' }
+                  ]
+                );
+              }
             },
           },
           {
@@ -316,12 +395,14 @@ Regards`;
             multiline
             numberOfLines={6}
             textAlignVertical="top"
+            editable={!isSubmitting}
           />
 
           {/* Attachments */}
           <TouchableOpacity 
             style={[styles.attachmentButton, darkMode && styles.attachmentButtonDark]}
             onPress={selectAttachment}
+            disabled={isSubmitting}
           >
             <Icon name="photo-camera" size={20} color={darkMode ? '#4caf50' : '#666'} />
             <Text style={[styles.attachmentButtonText, darkMode && styles.textWhite]}>
@@ -339,7 +420,7 @@ Regards`;
                   <Text style={[styles.attachmentName, darkMode && styles.textWhite]} numberOfLines={1}>
                     {attachment.fileName || `Attachment ${index + 1}`}
                   </Text>
-                  <TouchableOpacity onPress={() => removeAttachment(index)}>
+                  <TouchableOpacity onPress={() => removeAttachment(index)} disabled={isSubmitting}>
                     <Icon name="close" size={16} color="#ff4444" />
                   </TouchableOpacity>
                 </View>
@@ -348,10 +429,24 @@ Regards`;
           )}
 
           <TouchableOpacity 
-            style={[styles.submitButton, darkMode && styles.submitButtonDark]}
+            style={[
+              styles.submitButton, 
+              darkMode && styles.submitButtonDark,
+              isSubmitting && styles.submitButtonDisabled
+            ]}
             onPress={handleSubmitFeedback}
+            disabled={isSubmitting}
           >
-            <Text style={styles.submitButtonText}>Submit Feedback</Text>
+            {isSubmitting ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color="#fff" />
+                <Text style={[styles.submitButtonText, { marginLeft: 8 }]}>
+                  Submitting...
+                </Text>
+              </View>
+            ) : (
+              <Text style={styles.submitButtonText}>Submit Feedback</Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -369,7 +464,7 @@ Regards`;
               Add Media
             </Text>
             <Text style={[styles.modalSubtitle, darkMode && styles.textGray]}>
-              Choose how you want to add media to your bug report
+              Choose how you want to add media to your feedback
             </Text>
 
             <TouchableOpacity 
@@ -650,10 +745,19 @@ const styles = StyleSheet.create({
   submitButtonDark: {
     backgroundColor: '#4caf50',
   },
+  submitButtonDisabled: {
+    backgroundColor: '#999',
+    opacity: 0.7,
+  },
   submitButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // Modal Styles
