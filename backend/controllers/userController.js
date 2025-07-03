@@ -19,7 +19,7 @@ function generateSubusersId(name, email) {
   return `HS-SUB-${firstName}-${emailPrefix}-${dateCode}`;
 }
 
-// ✅ FIXED: Add subusers with correct database structure
+// ✅ FIXED: Add subusers with correct parent_user_id logic
 exports.addsubusers = async (req, res) => {
   const { name, email, password, role } = req.body;
 
@@ -51,14 +51,32 @@ exports.addsubusers = async (req, res) => {
 
     console.log('✅ Main user found:', mainUser[0]);
 
-    // 🔧 Get parent_user_id, fallback to main user's own user_id if null
-    let parentUserId = mainUser[0].parent_user_id;
-    if (!parentUserId) {
-      console.warn('⚠️ parent_user_id is null, falling back to main user_id');
+    // 🔧 FIXED: Determine the correct parent_user_id
+    let parentUserId;
+    
+    if (mainUser[0].parent_user_id) {
+      // If current user has a parent_user_id, they are a subuser
+      // New subuser should have the same parent as the current user
+      parentUserId = mainUser[0].parent_user_id;
+      console.log('📋 Current user is a subuser, using their parent_user_id:', parentUserId);
+    } else {
+      // If current user has no parent_user_id, they are the main user
+      // New subuser's parent should be the current user
       parentUserId = mainUser[0].user_id;
+      console.log('📋 Current user is main user, using their user_id as parent:', parentUserId);
     }
 
-    console.log('🧾 Using parent_user_id:', parentUserId, 'for subusers insert');
+    // ✅ IMPORTANT: Verify that the parent_user_id exists in the users table
+    const [parentUser] = await db.query('SELECT user_id FROM users WHERE user_id = ?', [parentUserId]);
+    if (parentUser.length === 0) {
+      console.error('❌ Parent user not found in database:', parentUserId);
+      return res.status(400).json({ 
+        message: 'Parent user not found. Please contact support.',
+        debug: `Parent ID: ${parentUserId}` 
+      });
+    }
+
+    console.log('✅ Parent user verified:', parentUserId);
 
     // Generate unique user_id for subusers
     const subusersUserId = generateSubusersId(name, email);
@@ -114,7 +132,7 @@ exports.addsubusers = async (req, res) => {
     // Provide more specific error messages
     let errorMessage = 'Failed to add subusers';
     if (err.code === 'ER_NO_REFERENCED_ROW_2') {
-      errorMessage = 'Foreign key constraint failed. Please check user relationships.';
+      errorMessage = 'Foreign key constraint failed. Parent user not found in database.';
     } else if (err.code === 'ER_DUP_ENTRY') {
       errorMessage = 'Duplicate entry. This user may already exist.';
     } else if (err.code === 'ER_BAD_NULL_ERROR') {
