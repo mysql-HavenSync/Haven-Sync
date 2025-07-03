@@ -15,7 +15,7 @@ import {
   Modal,
   Linking,
 } from 'react-native';
-import { useSelector } from 'react-redux';
+
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import Icon from 'react-native-vector-icons/MaterialIcons';
