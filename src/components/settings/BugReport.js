@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import {
   View,
   StyleSheet,
@@ -20,10 +21,11 @@ import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import api from '../../api';
-const loggedInUser = useSelector(state => state.auth.user);
+
 
 export default function BugReport({ navigation, onBack }) {
   const darkMode = useSelector(state => state.profile.darkMode);
+  const loggedInUser = useSelector(state => state.auth.user);
   const [selectedIssues, setSelectedIssues] = useState([]);
   const [description, setDescription] = useState('');
   const [attachedMedia, setAttachedMedia] = useState([]);
