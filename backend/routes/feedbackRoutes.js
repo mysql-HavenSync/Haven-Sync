@@ -7,6 +7,14 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('❌ SMTP connection failed:', error);
+  } else {
+    console.log('✅ SMTP server is ready to take messages');
+  }
+});
+
 // ✅ SMTP config using existing feedback sender
 const transporter = nodemailer.createTransport({
   host: 'smtp.hostinger.com', // or use a valid SMTP host
