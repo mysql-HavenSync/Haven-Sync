@@ -73,29 +73,103 @@ export default function FeedbackPage({ navigation, onBack }) {
     Linking.openURL(mailto).catch(() => Alert.alert('Error', 'Unable to open email client'));
   };
 
-  const submitFeedbackToAPI = async () => {
+  // Fixed: Single function declaration for sending feedback email
+  const sendFeedbackEmail = async () => {
     try {
       setIsSubmitting(true);
-      const response = await api.post('/feedback', {
-        rating, feedback, timestamp: new Date().toISOString(),
-        platform: Platform.OS, version: Platform.Version,
-        hasAttachments: attachments.length > 0, attachmentCount: attachments.length,
-      });
+      
+      const emailData = {
+        to: 'feedback@hexahavenintegrations.com',
+        subject: 'App Feedback',
+        body: `
+          Rating: ${rating > 0 ? `${rating}/5 stars` : 'No rating provided'}
+          
+          Feedback:
+          ${feedback}
+          
+          Device Information:
+          - Platform: ${Platform.OS}
+          - Version: ${Platform.Version}
+          - Timestamp: ${new Date().toISOString()}
+          ${attachments.length > 0 ? `- Attachments: ${attachments.length} file(s)` : ''}
+        `,
+        attachments: attachments.map(attachment => ({
+          filename: attachment.fileName || 'attachment',
+          uri: attachment.uri,
+          type: attachment.type
+        }))
+      };
 
-      if ([200, 201].includes(response.status)) {
-        Alert.alert('Thank You!', 'Your feedback has been submitted successfully.');
-        setFeedback(''); setRating(0); setAttachments([]);
+      // Try multiple possible endpoint variations
+      const endpoints = [
+        '/send-feedback-email',
+        '/api/send-feedback-email',
+        '/feedback/send-email',
+        '/email/send-feedback'
+      ];
+
+      let response = null;
+      let lastError = null;
+
+      for (const endpoint of endpoints) {
+        try {
+          console.log(`Attempting to send to: ${endpoint}`);
+          response = await api.post(endpoint, emailData);
+          if ([200, 201].includes(response.status)) {
+            break;
+          }
+        } catch (error) {
+          lastError = error;
+          console.log(`Failed on ${endpoint}:`, error.response?.status || error.message);
+          continue;
+        }
+      }
+
+      if (response && [200, 201].includes(response.status)) {
+        Alert.alert('Thank You!', 'Your feedback has been sent successfully.');
+        setFeedback('');
+        setRating(0);
+        setAttachments([]);
         return true;
       }
-      throw new Error('Failed to submit feedback');
+      
+      throw lastError || new Error('All endpoints failed');
     } catch (error) {
+      console.error('Email sending error:', error);
+      
+      // Enhanced error handling
       const isNetworkError = error.message === 'Network Error' || !error.response;
-      Alert.alert(
-        isNetworkError ? 'Network Error' : 'Submission Failed',
-        isNetworkError 
-          ? 'Unable to connect to the server. Please check your internet connection and try again.'
-          : 'Unable to submit feedback at this time. Please try again later or use the email option.'
-      );
+      const is404Error = error.response?.status === 404;
+      
+      if (is404Error) {
+        Alert.alert(
+          'Service Unavailable',
+          'The feedback service is currently unavailable. Would you like to send feedback via email instead?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Send Email', onPress: () => openEmail('feedback') }
+          ]
+        );
+      } else if (isNetworkError) {
+        Alert.alert(
+          'Connection Error',
+          'Unable to connect to the server. Please check your internet connection and try again.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Retry', onPress: () => sendFeedbackEmail() },
+            { text: 'Send Email', onPress: () => openEmail('feedback') }
+          ]
+        );
+      } else {
+        Alert.alert(
+          'Failed to Send',
+          'Unable to send feedback at this time. Would you like to try sending via email?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Send Email', onPress: () => openEmail('feedback') }
+          ]
+        );
+      }
       return false;
     } finally {
       setIsSubmitting(false);
@@ -108,28 +182,8 @@ export default function FeedbackPage({ navigation, onBack }) {
       return;
     }
 
-    Alert.alert('Submit Feedback', 'How would you like to submit your feedback?', [
-      {
-        text: 'Email',
-        onPress: () => {
-          openEmail('feedback');
-          setFeedback(''); setRating(0); setAttachments([]);
-        }
-      },
-      {
-        text: 'Submit Directly',
-        onPress: async () => {
-          const success = await submitFeedbackToAPI();
-          if (!success) {
-            Alert.alert('Try Email Instead?', 'Would you like to send your feedback via email?', [
-              { text: 'Send Email', onPress: () => openEmail('feedback') },
-              { text: 'Cancel', style: 'cancel' }
-            ]);
-          }
-        }
-      },
-      { text: 'Cancel', style: 'cancel' }
-    ]);
+    // Directly send feedback via email without showing options
+    sendFeedbackEmail();
   };
 
   const ActionButton = ({ icon, text, onPress, bgColor }) => (
@@ -229,10 +283,10 @@ export default function FeedbackPage({ navigation, onBack }) {
             {isSubmitting ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="small" color="#fff" />
-                <Text style={[styles.submitButtonText, { marginLeft: 8 }]}>Submitting...</Text>
+                <Text style={[styles.submitButtonText, { marginLeft: 8 }]}>Sending...</Text>
               </View>
             ) : (
-              <Text style={styles.submitButtonText}>Submit Feedback</Text>
+              <Text style={styles.submitButtonText}>Send Feedback</Text>
             )}
           </TouchableOpacity>
         </View>
