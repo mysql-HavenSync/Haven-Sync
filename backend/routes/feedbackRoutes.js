@@ -32,11 +32,21 @@ transporter.verify((error, success) => {
 // ✅ Feedback route
 router.post('/send-feedback-email', upload.array('attachments', 5), async (req, res) => {
   try {
-    const { to, subject, body, user } = req.body;
+    const { to, subject, body } = req.body;
+
+    // 🛠 Parse the `user` string into an object
+    let user;
+    try {
+      user = typeof req.body.user === 'string' ? JSON.parse(req.body.user) : req.body.user;
+    } catch (err) {
+      return res.status(400).json({ message: 'Invalid user format' });
+    }
 
     if (!user || !user.email || !user.name) {
       return res.status(400).json({ message: 'Missing user details' });
     }
+
+    // Continue with the rest of your logic...
 
     const message = `
 📝 Feedback from HavenSync App
