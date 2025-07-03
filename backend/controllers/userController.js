@@ -74,10 +74,13 @@ await db.query('START TRANSACTION');
 
 try {
   // ✅ Insert into users table (REMOVE `role`)
-  await db.query(
-    'INSERT INTO users (name, email, user_id, password, parent_user_id) VALUES (?, ?, ?, ?, ?)',
-    [name, email, subusersUserId, null, parentUserId]
-  );
+  const hashedPassword = await bcrypt.hash(password, 10); // ✅ Hash frontend password
+
+await db.query(
+  'INSERT INTO users (name, email, user_id, password, parent_user_id) VALUES (?, ?, ?, ?, ?)',
+  [name, email, subusersUserId, hashedPassword, parentUserId]
+);
+
 
   // ✅ Insert into subusers table (WITH role)
   await db.query(
