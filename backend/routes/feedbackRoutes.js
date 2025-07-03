@@ -9,7 +9,7 @@ const upload = multer({ storage });
 
 // ✅ SMTP config using existing feedback sender
 const transporter = nodemailer.createTransport({
-  host: 'smtp.hexahavenintegrations.com', // or use a valid SMTP host
+  host: 'smtp.hostinger.com', // or use a valid SMTP host
   port: 587,
   secure: false, // upgrade later with STARTTLS
   auth: {
