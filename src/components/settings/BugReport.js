@@ -28,6 +28,8 @@ export default function BugReport({ navigation, onBack }) {
   const [attachedMedia, setAttachedMedia] = useState([]);
   const [showMediaModal, setShowMediaModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+
 
   const issueTypes = [
     { id: 'crash', title: 'App Crash', icon: 'error-outline', color: '#ff4444' },
@@ -388,7 +390,7 @@ ${attachedMedia.length > 0 ? 'Media Files:\n' + attachedMedia.map(media => `- ${
       await api.post('/api/feedback/send-feedback-email', {
   to: 'feedback@hexahavenintegrations.com', // or create bugreport@ if you want
   subject: 'Bug Report - HavenSync App',
-  body: bugDescription, // Or whatever your text is
+  body: description,// Or whatever your text is
   attachments: attachedMedia.map(file => ({
     filename: file.fileName || 'attachment',
     uri: file.uri,
