@@ -58,7 +58,7 @@ ${body}
 `;
 
     const mailOptions = {
-      from: `"HavenSync App" <${process.env.EMAIL_USER}>`,
+      from: `"HavenSync App" <${process.env.SMTP_USER}>`,
       to: to || 'feedback@hexahavenintegrations.com',
       subject: subject || 'New Feedback Submission',
       text: message,
