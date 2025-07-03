@@ -1,8 +1,9 @@
 const db = require('../db');
+const bcrypt = require('bcryptjs'); // ✅ ADD: Missing bcrypt import
 const sendMail = require('../utils/sendMail');
 
 // Helper function to generate unique user_id for subusers
-function generatesubusersId(name, email) {
+function generateSubusersId(name, email) {
   const firstName = name.trim().split(' ')[0].toUpperCase();
   const emailPrefix = email.trim().split('@')[0].slice(0, 3).toUpperCase();
 
@@ -21,24 +22,20 @@ function generatesubusersId(name, email) {
 // ✅ FIXED: Add subusers with correct database structure
 exports.addsubusers = async (req, res) => {
   const { name, email, password, role } = req.body;
-const jwtUserId = req.user.user_id;
 
-
-  console.log('📝 Adding subusers:', { name, email, mainUserId, role });
+  console.log('📝 Adding subusers:', { name, email, role });
   console.log('🔍 Request user from JWT:', req.user);
 
   try {
     // Validate required fields
-    if (!name || !email || !mainUserId) {
-      return res.status(400).json({ message: 'Name, email, and mainUserId are required' });
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Name, email, and password are required' });
     }
 
     // ✅ FIXED: Get the JWT user_id properly
     const jwtUserId = req.user.user_id || req.user.id;
     console.log('🔍 JWT user_id:', jwtUserId);
-    console.log('🔍 mainUserId from request:', mainUserId);
 
-   
     // Check if email already exists in users table
     const [existingUser] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
     if (existingUser.length > 0) {
@@ -64,47 +61,46 @@ const jwtUserId = req.user.user_id;
     console.log('🧾 Using parent_user_id:', parentUserId, 'for subusers insert');
 
     // Generate unique user_id for subusers
-    const subusersUserId = generatesubusersId(name, email);
+    const subusersUserId = generateSubusersId(name, email);
     console.log('🔧 Generated subusers ID:', subusersUserId);
     
     // ✅ FIXED: Use database transaction for atomic operations
-await db.query('START TRANSACTION');
+    await db.query('START TRANSACTION');
 
-try {
-  // ✅ Insert into users table (REMOVE `role`)
-  const hashedPassword = await bcrypt.hash(password, 10); // ✅ Hash frontend password
+    try {
+      // ✅ Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-await db.query(
-  'INSERT INTO users (name, email, user_id, password, parent_user_id) VALUES (?, ?, ?, ?, ?)',
-  [name, email, subusersUserId, hashedPassword, parentUserId]
-);
+      // ✅ Insert into users table with password
+      await db.query(
+        'INSERT INTO users (name, email, user_id, password, parent_user_id) VALUES (?, ?, ?, ?, ?)',
+        [name, email, subusersUserId, hashedPassword, parentUserId]
+      );
 
+      // ✅ FIXED: Insert into subusers table with correct column name (sub_user_id)
+      await db.query(
+        'INSERT INTO subusers (parent_user_id, sub_user_id, password, role) VALUES (?, ?, ?, ?)',
+        [parentUserId, subusersUserId, hashedPassword, role || 'User']
+      );
 
-  // ✅ Insert into subusers table (WITH role)
-  await db.query(
-    'INSERT INTO subusers (parent_user_id, subusers_id, role) VALUES (?, ?, ?)',
-    [parentUserId, subusersUserId, role || 'User']
-  );
+      await db.query('COMMIT');
+      console.log('✅ subusers added successfully to both tables');
 
-  await db.query('COMMIT');
-  console.log('✅ subusers added successfully to both tables');
-} catch (insertError) {
-  await db.query('ROLLBACK');
-  console.error('❌ Insert error, transaction rolled back:', insertError);
-  throw insertError;
-}
-
-
-    res.json({ 
-      message: 'subusers added successfully',
-      subusers: {
-        user_id: subusersUserId,
-        name,
-        email,
-        role: role || 'User',
-        parent_user_id: parentUserId
-      }
-    });
+      res.json({ 
+        message: 'Subusers added successfully',
+        subusers: {
+          user_id: subusersUserId,
+          name,
+          email,
+          role: role || 'User',
+          parent_user_id: parentUserId
+        }
+      });
+    } catch (insertError) {
+      await db.query('ROLLBACK');
+      console.error('❌ Insert error, transaction rolled back:', insertError);
+      throw insertError;
+    }
   } catch (err) {
     console.error('❌ Error adding subusers:', err);
     console.error('❌ Error details:', {
@@ -162,18 +158,18 @@ exports.getsubuserss = async (req, res) => {
       parentUserId = mainUserId;
     }
 
-    // ✅ FIXED: Query subusers with correct column names from your DB structure
+    // ✅ FIXED: Query subusers with correct column names (sub_user_id)
     const [subuserss] = await db.query(`
       SELECT 
         u.id,
         u.name,
         u.email,
         u.user_id,
-        u.role,
+        s.role,
         u.created_at,
         s.created_at as added_date
       FROM subusers s
-      INNER JOIN users u ON s.subusers_id = u.user_id
+      INNER JOIN users u ON s.sub_user_id = u.user_id
       WHERE s.parent_user_id = ?
       ORDER BY s.created_at DESC
     `, [parentUserId]);
@@ -241,9 +237,9 @@ exports.sendsubusersOtp = async (req, res) => {
   }
 
   try {
-    const subject = 'HavenSync - subusers Verification OTP';
+    const subject = 'HavenSync - Subusers Verification OTP';
     const message = `
-      <h2>HavenSync subusers Verification</h2>
+      <h2>HavenSync Subusers Verification</h2>
       <p>Your verification OTP is: <strong>${otp}</strong></p>
       <p>This code will expire in 5 minutes.</p>
       <p>If you didn't request this verification, please ignore this email.</p>
