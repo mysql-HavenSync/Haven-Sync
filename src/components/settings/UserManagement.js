@@ -40,7 +40,7 @@ export default function UserManagement({ navigation, onBack }) {
       
       // ✅ Try to fetch subusers, but don't fail if API call fails
       try {
-        const res = await api.get('/api/users/subuserss', {
+        const res = await api.get('/api/users/subusers', {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log('✅ API Response:', res.data);
@@ -163,7 +163,10 @@ export default function UserManagement({ navigation, onBack }) {
       }
 
       console.log('🔄 Adding subusers with mainUserId:', mainUserId);
-        console.log('✅ Password entered:', newUserData.password);
+console.log('✅ Password entered:', newUserData.password);
+console.log('✅ Email entered:', newUserData.email); // 👈 Add this line
+console.log('📦 Sending new user data:', newUserData);
+
 
       await api.post(
         '/api/users/add-subusers',
