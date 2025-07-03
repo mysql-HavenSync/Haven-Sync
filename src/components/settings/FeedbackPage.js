@@ -173,22 +173,8 @@ export default function FeedbackPage({ navigation, onBack }) {
       return;
     }
 
-    // If no attachments, use email client (faster)
-    if (attachments.length === 0) {
-      openEmail('feedback');
-      return;
-    }
-
-    // If attachments exist, try backend first
-    Alert.alert(
-      'Send with Attachments',
-      'Your feedback includes photos/videos. We\'ll try to send through our service first.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Send with Attachments', onPress: () => sendFeedbackEmail() },
-        { text: 'Send Text Only', onPress: () => openEmail('feedback') }
-      ]
-    );
+    // Directly send feedback via email without showing options
+    sendFeedbackEmail();
   };
 
   const ActionButton = ({ icon, text, onPress, bgColor }) => (
