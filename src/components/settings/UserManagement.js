@@ -24,69 +24,110 @@ export default function UserManagement({ navigation, onBack }) {
   const [generatedOtp, setGeneratedOtp] = useState('');
   const token = useSelector(state => state.auth.token);
 
-  const fetchUsers = async () => {
-    try {
-      console.log('🔄 Fetching users with token:', token);
-      console.log('👤 LoggedInUser structure:', loggedInUser);
-      
-      // ✅ Check if loggedInUser exists before proceeding
-      if (!loggedInUser) {
-        console.error('❌ No logged in user found');
-        Alert.alert('Error', 'User session expired. Please login again.');
-        return;
-      }
+// Fixed fetchUsers function and related code
+const fetchUsers = async () => {
+  try {
+    console.log('🔄 Fetching users with token:', token);
+    console.log('👤 LoggedInUser structure:', loggedInUser);
+    
+    // ✅ Check if loggedInUser exists before proceeding
+    if (!loggedInUser) {
+      console.error('❌ No logged in user found');
+      Alert.alert('Error', 'User session expired. Please login again.');
+      return;
+    }
 
-      let subuserss = [];
+    let subuserss = [];
+    
+    // ✅ FIXED: Always try to fetch subusers and handle errors properly
+    try {
+      console.log('🔄 Making API call to fetch subusers...');
+      const res = await api.get('/api/users/subusers', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       
-      // ✅ Try to fetch subusers, but don't fail if API call fails
-      try {
-        const res = await api.get('/api/users/subusers', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        console.log('✅ API Response:', res.data);
-        subuserss = res.data.subuserss || [];
-      } catch (err) {
-        console.warn('⚠️ Failed to fetch subusers (this is okay for new users):', err.response?.data || err.message);
-        // Don't show error alert for subusers, just continue with empty array
+      console.log('✅ API Response received:', res.data);
+      console.log('🔍 Subusers data:', res.data.subuserss);
+      
+      // ✅ FIXED: Handle the response properly
+      if (res.data && res.data.subuserss) {
+        subuserss = res.data.subuserss;
+        console.log('✅ Subusers parsed successfully:', subuserss.length, 'users');
+      } else {
+        console.warn('⚠️ No subuserss array in response');
         subuserss = [];
       }
-
-      // ✅ Always include the main user first
-      const mainUser = {
-        id: loggedInUser?.id || loggedInUser?.user_id || 'main_user', // Use multiple fallbacks
-        user_id: loggedInUser?.user_id || loggedInUser?.id,
-        name: loggedInUser?.name || 'Main User',
-        email: loggedInUser?.email || 'No email',
-        role: 'Admin', // Main user is always admin
-        active: true,
-        addedBy: 'Self',
-        created_at: new Date().toISOString(),
-      };
-
-      const allUsers = [mainUser, ...subuserss];
-      
-      setUsers(allUsers);
-      console.log('👥 All users set:', allUsers);
     } catch (err) {
-      console.error('❌ Critical error in fetchUsers:', err.response?.data || err.message);
-      // Only show error if it's a critical error, not for missing subusers
+      console.error('❌ Error fetching subusers:', err.response?.data || err.message);
+      console.error('❌ Error status:', err.response?.status);
+      console.error('❌ Error details:', err.response);
+      
+      // Only show error alert for unexpected errors (not 404)
       if (err.response?.status !== 404) {
-        Alert.alert('Error', 'Could not load user data. Please try again.');
+        Alert.alert('Warning', 'Could not load subusers. Please try again.');
       }
+      subuserss = [];
     }
-  };
 
-  // 🔄 Load existing users
-  useEffect(() => {
-    console.log('🔄 UseEffect triggered with loggedInUser:', loggedInUser);
-    console.log('🔄 UseEffect triggered with token:', !!token);
+    // ✅ Always include the main user first
+    const mainUser = {
+      id: loggedInUser?.id || loggedInUser?.user_id || 'main_user',
+      user_id: loggedInUser?.user_id || loggedInUser?.id,
+      name: loggedInUser?.name || 'Main User',
+      email: loggedInUser?.email || 'No email',
+      role: 'Admin', // Main user is always admin
+      active: true,
+      addedBy: 'Self',
+      created_at: new Date().toISOString(),
+    };
+
+    const allUsers = [mainUser, ...subuserss];
     
+    console.log('👥 Setting all users:', allUsers);
+    console.log('📊 Total users count:', allUsers.length);
+    
+    setUsers(allUsers);
+    
+    // ✅ Additional debug logging
+    console.log('✅ Users state updated successfully');
+    console.log('📋 Final users list:', allUsers.map(u => ({ name: u.name, email: u.email, role: u.role })));
+    
+  } catch (err) {
+    console.error('❌ Critical error in fetchUsers:', err);
+    Alert.alert('Error', 'Could not load user data. Please try again.');
+  }
+};
+
+// ✅ FIXED: Enhanced handleVerifyOTP with proper refresh
+/* Duplicate handleVerifyOTP removed to fix redeclaration error */
+
+// ✅ FIXED: Also refresh on component focus (when navigating back)
+useEffect(() => {
+  const unsubscribe = navigation.addListener('focus', () => {
+    console.log('📱 Screen focused, refreshing users...');
     if (loggedInUser && token) {
       fetchUsers();
-    } else {
-      console.warn('⚠️ Missing loggedInUser or token:', { loggedInUser: !!loggedInUser, token: !!token });
     }
-  }, [loggedInUser, token]);
+  });
+
+  return unsubscribe;
+}, [navigation, loggedInUser, token]);
+
+// ✅ FIXED: Enhanced initial load
+useEffect(() => {
+  console.log('🔄 UseEffect triggered with loggedInUser:', loggedInUser);
+  console.log('🔄 UseEffect triggered with token:', !!token);
+  
+  if (loggedInUser && token) {
+    console.log('🚀 Initial fetch users...');
+    fetchUsers();
+  } else {
+    console.warn('⚠️ Missing loggedInUser or token:', { 
+      loggedInUser: !!loggedInUser, 
+      token: !!token 
+    });
+  }
+}, [loggedInUser, token]);
 
   const handleAddUser = () => setShowAddUserModal(true);
   
