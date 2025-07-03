@@ -19,6 +19,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
+import api from '../../api';
 
 export default function BugReport({ navigation, onBack }) {
   const darkMode = useSelector(state => state.profile.darkMode);
@@ -26,6 +27,7 @@ export default function BugReport({ navigation, onBack }) {
   const [description, setDescription] = useState('');
   const [attachedMedia, setAttachedMedia] = useState([]);
   const [showMediaModal, setShowMediaModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const issueTypes = [
     { id: 'crash', title: 'App Crash', icon: 'error-outline', color: '#ff4444' },
@@ -329,24 +331,95 @@ export default function BugReport({ navigation, onBack }) {
     );
   };
 
-  const handleSubmitReport = () => {
-    if (selectedIssues.length > 0 && description.trim()) {
+  const handleSubmitReport = async () => {
+    if (selectedIssues.length === 0 || !description.trim()) {
+      Alert.alert('Incomplete Report', 'Please select at least one issue type and provide a description.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
       const selectedTitles = selectedIssues.map(id => 
         issueTypes.find(issue => issue.id === id)?.title
-      ).join(', ');
-      
-      const mediaCount = attachedMedia.length;
-      const mediaText = mediaCount > 0 ? ` with ${mediaCount} media file${mediaCount > 1 ? 's' : ''}` : '';
-      
+      ).filter(Boolean);
+
+      const reportData = {
+        to: 'bugreport@hexahavenintegrations.com',
+        subject: 'Bug Report - Mobile App',
+        issues: selectedTitles,
+        description: description.trim(),
+        mediaCount: attachedMedia.length,
+        timestamp: new Date().toISOString(),
+        platform: Platform.OS,
+        mediaFiles: attachedMedia.map(media => ({
+          fileName: media.fileName,
+          type: media.type,
+          fileSize: media.fileSize
+        }))
+      };
+
+      // Create email body
+      const emailBody = `
+Bug Report Details:
+==================
+
+Issue Types: ${selectedTitles.join(', ')}
+
+Description:
+${description.trim()}
+
+Additional Information:
+- Platform: ${Platform.OS}
+- Timestamp: ${new Date().toLocaleString()}
+- Media Files Attached: ${attachedMedia.length}
+
+${attachedMedia.length > 0 ? 'Media Files:\n' + attachedMedia.map(media => `- ${media.fileName} (${media.type})`).join('\n') : ''}
+      `;
+
+      const emailData = {
+        to: reportData.to,
+        subject: reportData.subject,
+        body: emailBody,
+        attachments: attachedMedia // Include media files if your API supports it
+      };
+
+      // Send email via API
+      const response = await api.post('/send-bug-report', emailData);
+
+      if (response.data.success) {
+        Alert.alert(
+          'Report Submitted Successfully!', 
+          'Thank you for reporting the issue(s). Our team will investigate and get back to you soon.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                // Reset form
+                setSelectedIssues([]);
+                setDescription('');
+                setAttachedMedia([]);
+                // Navigate back
+                handleBack();
+              }
+            }
+          ]
+        );
+      } else {
+        throw new Error(response.data.message || 'Failed to send report');
+      }
+    } catch (error) {
+      console.error('Error submitting bug report:', error);
       Alert.alert(
-        'Report Submitted', 
-        `Thank you for reporting these issues: ${selectedTitles}${mediaText}. Our team will investigate them.`
+        'Submission Failed',
+        'There was an error submitting your bug report. Please try again or contact support directly at bugreport@hexahavenintegrations.com',
+        [
+          { text: 'Retry', onPress: handleSubmitReport },
+          { text: 'Cancel', style: 'cancel' }
+        ]
       );
-      setSelectedIssues([]);
-      setDescription('');
-      setAttachedMedia([]);
-    } else {
-      Alert.alert('Incomplete Report', 'Please select at least one issue type and provide a description.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -490,16 +563,16 @@ export default function BugReport({ navigation, onBack }) {
           style={[
             styles.submitButton, 
             darkMode && styles.submitButtonDark,
-            selectedIssues.length === 0 && styles.submitButtonDisabled
+            (selectedIssues.length === 0 || isSubmitting) && styles.submitButtonDisabled
           ]}
           onPress={handleSubmitReport}
-          disabled={selectedIssues.length === 0}
+          disabled={selectedIssues.length === 0 || isSubmitting}
         >
           <Text style={[
             styles.submitButtonText,
-            selectedIssues.length === 0 && styles.submitButtonTextDisabled
+            (selectedIssues.length === 0 || isSubmitting) && styles.submitButtonTextDisabled
           ]}>
-            Submit Report ({selectedIssues.length})
+            {isSubmitting ? 'Submitting...' : `Submit Report (${selectedIssues.length})`}
           </Text>
         </TouchableOpacity>
       </ScrollView>
