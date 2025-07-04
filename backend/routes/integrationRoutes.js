@@ -2,10 +2,10 @@
 const express = require('express');
 const router = express.Router();
 const integrationController = require('../controllers/integrationController');
-const authMiddleware = require('../middleware/authMiddleware');
+const auth = require('../middleware/auth');
 
 // Apply authentication middleware to all routes
-router.use(authMiddleware);
+router.use(auth);
 
 // Get user's integration settings
 router.get('/', integrationController.getUserIntegrations);

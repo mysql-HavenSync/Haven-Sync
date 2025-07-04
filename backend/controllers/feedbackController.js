@@ -142,18 +142,18 @@ module.exports = feedbackController;
 const express = require('express');
 const router = express.Router();
 const feedbackController = require('../controllers/feedbackController');
-const authMiddleware = require('../middleware/authMiddleware'); // Adjust path
+const auth = require('../middleware/auth'); // Adjust path
 const adminMiddleware = require('../middleware/adminMiddleware'); // If you have admin middleware
 
 // Public route - submit feedback (can be used without auth)
 router.post('/submit', feedbackController.submitFeedback);
 
 // Protected routes - require authentication
-router.get('/my-feedback', authMiddleware, feedbackController.getUserFeedback);
+router.get('/my-feedback', auth, feedbackController.getUserFeedback);
 
 // Admin routes - require admin privileges
-router.get('/all', authMiddleware, adminMiddleware, feedbackController.getAllFeedback);
-router.patch('/:id/status', authMiddleware, adminMiddleware, feedbackController.updateFeedbackStatus);
+router.get('/all', auth, adminMiddleware, feedbackController.getAllFeedback);
+router.patch('/:id/status', auth, adminMiddleware, feedbackController.updateFeedbackStatus);
 
 module.exports = router;
 

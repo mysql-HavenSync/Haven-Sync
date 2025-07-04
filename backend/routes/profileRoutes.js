@@ -2,12 +2,12 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const authMiddleware = require('../middleware/auth');
+const auth = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 
 // ✅ GET profile
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const userEmail = req.user.email;
     const [rows] = await db.query(
@@ -27,7 +27,7 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // ✅ PUT profile (CREATE or UPDATE)
-router.put('/', authMiddleware, async (req, res) => {
+router.put('/', auth, async (req, res) => {
   try {
     const userEmail = req.user.email;
     const { name, dob, phone, avatar } = req.body;
@@ -67,7 +67,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.post('/upload-avatar', authMiddleware, upload.single('avatar'), (req, res) => {
+router.post('/upload-avatar', auth, upload.single('avatar'), (req, res) => {
   const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
   res.json({ success: true, url: imageUrl });
 });
