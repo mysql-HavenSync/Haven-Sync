@@ -191,16 +191,30 @@ export default function HexaEditProfile() {
     setFormData({ ...formData, [field]: value });
   };
 
-  const handleSave = () => {
-    // Animate save action
-    cardTranslateY.value = withSequence(
-      withTiming(-10, { duration: 150 }),
-      withTiming(0, { duration: 150 })
-    );
-    
+  const handleSave = async () => {
+  // Animate save action
+  cardTranslateY.value = withSequence(
+    withTiming(-10, { duration: 150 }),
+    withTiming(0, { duration: 150 })
+  );
+
+  try {
+    // Send data to backend to update MySQL `user_profiles`
+    await api.put('/api/profile', formData, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    // Update Redux state
     dispatch(updateProfile(formData));
     setIsEditing(false);
-  };
+    Alert.alert('Success', 'Profile updated successfully');
+  } catch (err) {
+    console.error('❌ Failed to save profile:', err.response?.data || err.message);
+    Alert.alert('Error', 'Failed to update profile. Please try again.');
+  }
+};
 
   const handleEditToggle = () => {
     // Button press animation
