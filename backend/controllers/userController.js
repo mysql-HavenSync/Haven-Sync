@@ -291,29 +291,6 @@ const requestingUserId = req.user.user_id || req.user.id;
   }
 };
 
-  try {
-    // ✅ FIXED: Handle both string user_id and numeric id
-    let userToDelete;
-    let actualUserId;
-
-    // Check if userId is a number (database id) or string (user_id)
-    if (!isNaN(userId)) {
-      // If it's a number, query by id column
-      console.log('🔍 Querying by database id:', userId);
-      const [userByDbId] = await db.query('SELECT * FROM users WHERE id = ?', [parseInt(userId)]);
-      if (userByDbId.length > 0) {
-        userToDelete = userByDbId;
-        actualUserId = userByDbId[0].user_id;
-      }
-    } else {
-      // If it's a string, query by user_id column
-      console.log('🔍 Querying by user_id:', userId);
-      const [userByUserId] = await db.query('SELECT * FROM users WHERE user_id = ?', [userId]);
-      if (userByUserId.length > 0) {
-        userToDelete = userByUserId;
-        actualUserId = userId;
-      }
-    }
 
     if (!userToDelete || userToDelete.length === 0) {
       console.log('❌ User not found with identifier:', userId);

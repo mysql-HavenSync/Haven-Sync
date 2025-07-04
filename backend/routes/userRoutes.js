@@ -15,6 +15,8 @@ router.get('/subusers', auth, userController.getsubusers);
 router.delete('/subusers/:userId', auth, userController.removeSubuser);
 
 // ✅ NEW: Get user details by user_id
+console.log('🧪 typeof auth:', typeof auth); // should be 'function'
+console.log('🧪 typeof getUserDetails:', typeof userController.getUserDetails); // should be 'function'
 router.get('/user-details/:userId', auth, userController.getUserDetails);
 
 // POST: Assign device to subusers
