@@ -179,7 +179,6 @@ exports.addsubusers = async (req, res) => {
       details: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
   }
-};
 
 // ✅ FIXED: Get subusers with correct column names and data structure
 exports.getsubusers = async (req, res) => {
@@ -256,90 +255,189 @@ exports.getsubusers = async (req, res) => {
   }
 };
 
+// ✅ NEW: Remove/Delete subuser function
+// ✅ FIXED: Remove/Delete subuser function
 exports.removeSubuser = async (req, res) => {
-  const userId = req.params.userId; // Can be numeric (id) or string (user_id)
-  const requestingUserId = req.user.user_id || req.user.id;
+const userId = req.params.userId; // This is the subuser's user_id or id
+const requestingUserId = req.user.user_id || req.user.id;
+
 
   console.log('🗑️ Removing subuser with userId:', userId);
   console.log('🔍 Requested by user:', requestingUserId);
+  console.log('🔍 userId type:', typeof userId);
 
-  let connection;
   try {
+    // 1. Get subuser's email first
+    const [subUserRows] = await db.query('SELECT email FROM users WHERE id = ?', [subUserId]);
+    if (subUserRows.length === 0) {
+      return res.status(404).json({ message: 'Sub-user not found' });
+    }
+
+    const subUserEmail = subUserRows[0].email;
+
+    // 2. Delete profile if exists
+    await db.query('DELETE FROM user_profiles WHERE email = ?', [subUserEmail]);
+
+    // 3. Delete subuser entry from users table
+    await db.query('DELETE FROM users WHERE id = ?', [subUserId]);
+
+    // 4. Also delete from subusers table (if you're using a mapping table)
+    await db.query('DELETE FROM subusers WHERE subusers_id = ?', [subUserId]);
+
+    res.json({ message: 'Sub-user and associated profile deleted successfully' });
+  } catch (err) {
+    console.error('❌ Error deleting sub-user:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
+  try {
+    // ✅ FIXED: Handle both string user_id and numeric id
     let userToDelete;
     let actualUserId;
 
-    // 1. Get user to delete by either ID or user_id
+    // Check if userId is a number (database id) or string (user_id)
     if (!isNaN(userId)) {
-      const [rows] = await db.query('SELECT * FROM users WHERE id = ?', [parseInt(userId)]);
-      if (rows.length === 0) return res.status(404).json({ message: 'User not found' });
-      userToDelete = rows[0];
-      actualUserId = userToDelete.user_id;
+      // If it's a number, query by id column
+      console.log('🔍 Querying by database id:', userId);
+      const [userByDbId] = await db.query('SELECT * FROM users WHERE id = ?', [parseInt(userId)]);
+      if (userByDbId.length > 0) {
+        userToDelete = userByDbId;
+        actualUserId = userByDbId[0].user_id;
+      }
     } else {
-      const [rows] = await db.query('SELECT * FROM users WHERE user_id = ?', [userId]);
-      if (rows.length === 0) return res.status(404).json({ message: 'User not found' });
-      userToDelete = rows[0];
-      actualUserId = userToDelete.user_id;
+      // If it's a string, query by user_id column
+      console.log('🔍 Querying by user_id:', userId);
+      const [userByUserId] = await db.query('SELECT * FROM users WHERE user_id = ?', [userId]);
+      if (userByUserId.length > 0) {
+        userToDelete = userByUserId;
+        actualUserId = userId;
+      }
     }
 
-    // 2. Prevent main user deletion
-    if (!userToDelete.parent_user_id) {
+    if (!userToDelete || userToDelete.length === 0) {
+      console.log('❌ User not found with identifier:', userId);
+      return res.status(404).json({ message: 'User not found. They may have already been removed.' });
+    }
+
+    const userRecord = userToDelete[0];
+    console.log('✅ User found:', userRecord);
+    console.log('✅ Actual user_id to delete:', actualUserId);
+
+    // ✅ FIXED: Prevent deletion of main admin users
+    if (!userRecord.parent_user_id) {
+      console.log('❌ Attempted to delete main user/admin');
       return res.status(403).json({ message: 'Cannot remove main admin users. Only subusers can be removed.' });
     }
 
-    // 3. Permission check
+    // Verify that the requesting user has permission to delete this subuser
     const [requestingUser] = await db.query('SELECT * FROM users WHERE user_id = ?', [requestingUserId]);
-    const userParentId = userToDelete.parent_user_id;
-    const reqParentId = requestingUser[0]?.parent_user_id;
-    const hasPermission = reqParentId
-      ? userParentId === reqParentId
-      : userParentId === requestingUserId;
+    if (requestingUser.length === 0) {
+      return res.status(401).json({ message: 'Requesting user not found' });
+    }
+
+    // Check if the requesting user is the parent of the subuser or has admin privileges
+    const userParentId = userRecord.parent_user_id;
+    const requestingUserParentId = requestingUser[0].parent_user_id;
+
+    let hasPermission = false;
+
+    if (!requestingUserParentId) {
+      // Requesting user is a main user, can delete their subusers
+      hasPermission = userParentId === requestingUserId;
+      console.log('🔍 Main user permission check:', { userParentId, requestingUserId, hasPermission });
+    } else {
+      // Requesting user is a subuser, can only delete subusers with the same parent
+      hasPermission = userParentId === requestingUserParentId;
+      console.log('🔍 Subuser permission check:', { userParentId, requestingUserParentId, hasPermission });
+    }
 
     if (!hasPermission) {
+      console.log('❌ Permission denied for user removal');
       return res.status(403).json({ message: 'Permission denied. You can only remove subusers under your account.' });
     }
+// ✅ Get subuser's email using actualUserId (user_id, not DB id)
+const [userEmailRow] = await db.query(
+  'SELECT email FROM users WHERE user_id = ?',
+  [actualUserId]
+);
 
-    // 4. Start transaction
+if (userEmailRow.length > 0) {
+  const emailToDelete = userEmailRow[0].email;
+
+  // ✅ Delete the user profile using email
+  const [deleteProfileResult] = await db.query(
+    'DELETE FROM user_profiles WHERE email = ?',
+    [emailToDelete]
+  );
+  console.log('🧹 Deleted from user_profiles, rows:', deleteProfileResult.affectedRows);
+}
+
+
+    // ✅ Use database transaction for atomic operations
     await db.query('START TRANSACTION');
 
-    // 5. Delete from dependent tables first
-    await db.query('DELETE FROM user_profiles WHERE email = ?', [userToDelete.email]);
-    await db.query('DELETE FROM user_devices WHERE user_id = ?', [actualUserId]);
-    await db.query('DELETE FROM subusers WHERE sub_user_id = ?', [actualUserId]);
-    await db.query('DELETE FROM users WHERE user_id = ?', [actualUserId]);
+    try {
+      // Delete from subusers table first (to avoid foreign key constraint issues)
+      const [subusersDeleteResult] = await db.query('DELETE FROM subusers WHERE sub_user_id = ?', [actualUserId]);
+      console.log('✅ Deleted from subusers table, affected rows:', subusersDeleteResult.affectedRows);
 
-    await db.query('COMMIT');
-    console.log('✅ Subuser deleted:', actualUserId);
+      // Delete from users table
+      const [usersDeleteResult] = await db.query('DELETE FROM users WHERE user_id = ?', [actualUserId]);
+      console.log('✅ Deleted from users table, affected rows:', usersDeleteResult.affectedRows);
 
-    return res.status(200).json({
-      message: 'Subuser removed successfully',
-      removedUser: {
-        id: userToDelete.id,
-        user_id: actualUserId,
-        name: userToDelete.name,
-        email: userToDelete.email
+      // Optional: Delete from user_devices table if exists
+      try {
+        const [devicesDeleteResult] = await db.query('DELETE FROM user_devices WHERE user_id = ?', [actualUserId]);
+        console.log('✅ Deleted from user_devices table, affected rows:', devicesDeleteResult.affectedRows);
+      } catch (deviceError) {
+        console.log('⚠️ No user_devices table or no records to delete:', deviceError.message);
       }
-    });
 
-  } catch (err) {
-    await db.query('ROLLBACK');
-    console.error('❌ Failed to remove subuser:', err);
+      await db.query('COMMIT');
+      console.log('✅ Subuser removed successfully');
 
-    // Specific MySQL error handling
-    let message = 'Failed to remove subuser';
-    if (err.code === 'ER_ROW_IS_REFERENCED_2') {
-      message = 'Cannot delete user due to associated records in other tables.';
+      res.json({ 
+        message: 'Subuser removed successfully',
+        removedUser: {
+          id: userRecord.id,
+          user_id: actualUserId,
+          name: userRecord.name,
+          email: userRecord.email
+        }
+      });
+    } catch (deleteError) {
+      await db.query('ROLLBACK');
+      console.error('❌ Delete error, transaction rolled back:', deleteError);
+      throw deleteError;
     }
-
-    return res.status(500).json({
-      message,
+  } catch (err) {
+    console.error('❌ Error removing subuser:', err);
+    console.error('❌ Error details:', {
+      message: err.message,
+      code: err.code,
+      errno: err.errno,
+      sqlState: err.sqlState,
+      sqlMessage: err.sqlMessage
+    });
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to remove subuser';
+    if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+      errorMessage = 'Cannot delete user. They may have associated data that needs to be removed first.';
+    } else if (err.code === 'ER_NO_REFERENCED_ROW_2') {
+      errorMessage = 'Foreign key constraint failed during deletion.';
+    }
+    
+    res.status(500).json({ 
+      message: errorMessage, 
       error: err.message,
-      code: err.code
+      code: err.code,
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
   }
 };
 
-
-  
 // ✅ NEW: Get user details by user_id
 exports.getUserDetails = async (req, res) => {
   const { userId } = req.params;
