@@ -4,7 +4,7 @@ const router = express.Router();
 const db = require('../db');
 const authMiddleware = require('../middleware/auth');
 
-router.get('/profile', authMiddleware, async (req, res) => {
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const userEmail = req.user.email;
 

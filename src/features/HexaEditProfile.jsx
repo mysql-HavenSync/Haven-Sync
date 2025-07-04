@@ -1,6 +1,7 @@
 // src/features/HexaEditProfile.jsx
 
 import React, { useState, useEffect } from 'react';
+import api from '../api'; 
 import {
   View,
   Text,
@@ -42,12 +43,14 @@ import Animated, {
 } from 'react-native-reanimated';
 import DatePicker from 'react-native-date-picker';
 
+
 const { width } = Dimensions.get('window');
 
 export default function HexaEditProfile() {
   const dispatch = useDispatch();
   const profile = useSelector(state => state.profile);
   const isDark = useSelector(state => state.profile.darkMode);
+  const token = useSelector(state => state.auth.token);
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
@@ -63,6 +66,27 @@ export default function HexaEditProfile() {
   const fieldAnimations = useSharedValue(0);
   const modalScale = useSharedValue(0);
   const modalOpacity = useSharedValue(0);
+
+  useEffect(() => {
+  const loadProfile = async () => {
+    try {
+      const res = await api.get('/api/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (res.data) {
+        dispatch(updateProfile(res.data));
+      }
+    } catch (err) {
+      console.error('❌ Failed to load profile:', err.response?.data || err.message);
+    }
+  };
+
+  loadProfile();
+}, []);
+
 
   useEffect(() => {
   setFormData(profile);
