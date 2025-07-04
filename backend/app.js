@@ -43,7 +43,11 @@ app.use('/api/feedback', require('./routes/feedbackRoutes'));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // ⬇️ Register avatar upload route
 const uploadAvatarRoute = require('./routes/uploadAvatar');
+const profileRoutes = require('./routes/profileRoutes');
+
 app.use('/api/profile', uploadAvatarRoute); // URL will be /api/profile/upload-avatar
+app.use('/api/profile', profileRoutes);  // ✅ handles GET /api/profile
+
 
 // ✅ Test route
 app.get('/', (req, res) => {
