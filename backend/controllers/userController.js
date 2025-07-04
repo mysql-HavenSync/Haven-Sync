@@ -258,9 +258,9 @@ exports.getsubusers = async (req, res) => {
 // ✅ NEW: Remove/Delete subuser function
 // ✅ FIXED: Remove/Delete subuser function
 exports.removeSubuser = async (req, res) => {
-  const subUserId = req.params.userId;
-  const { userId } = req.params;
-  const requestingUserId = req.user.user_id || req.user.id;
+const userId = req.params.userId; // This is the subuser's user_id or id
+const requestingUserId = req.user.user_id || req.user.id;
+
 
   console.log('🗑️ Removing subuser with userId:', userId);
   console.log('🔍 Requested by user:', requestingUserId);
