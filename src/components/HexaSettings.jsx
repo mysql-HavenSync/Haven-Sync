@@ -368,7 +368,7 @@ export default function HexaSettings({ navigation, onClose }) {
       {/* App Version */}
       <View style={[styles.settingsFooter, darkMode && styles.settingsFooterDark]}>
         <Text style={[styles.versionText, darkMode && styles.versionTextDark]}>
-          HexaApp v1.0.0
+          HavenSync v1.0(1)
         </Text>
       </View>
     </SafeAreaView>

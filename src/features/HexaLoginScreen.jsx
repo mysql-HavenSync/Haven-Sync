@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { setUser, setToken } from '../redux/slices/authSlice';
 import { useDispatch } from 'react-redux'; 
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -205,7 +205,6 @@ export default function HexaLoginScreen({ navigation }) {
   };
 
 const handleLogin = async () => {
-   
   console.log('📡 Sending login request with:', email, password);
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.trim() === '') {
@@ -220,9 +219,18 @@ const handleLogin = async () => {
 
     console.log('✅ Login success:', res.data);
 
-    // ✅ Save token and user to Redux
-    dispatch(setToken(res.data.token));
-    dispatch(setUser(res.data.user));
+    const token = res.data.token;
+    const user = res.data.user;
+
+    // ✅ Save to Redux
+    dispatch(setToken(token));
+    dispatch(setUser(user));
+
+    // ✅ Also store in AsyncStorage
+    await AsyncStorage.setItem('token', token);
+    await AsyncStorage.setItem('user', JSON.stringify(user));
+
+    console.log('🛡️ Token stored in AsyncStorage:', token);
 
     setLoginStatus('success');
 
@@ -246,6 +254,7 @@ const handleLogin = async () => {
     setIsLoading(false);
   }
 };
+
 
 
   const getGradientColors = () => {

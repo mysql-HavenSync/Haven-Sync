@@ -1,7 +1,6 @@
 require('dotenv').config();
 require('./services/mqttClient');
 
-
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -10,12 +9,12 @@ const pool = require('./db');
 const path = require('path');
 const app = express();
 
-
 // ✅ Routes
 const authRoutes = require('./routes/authRoutes');
 const mqttRoutes = require('./routes/mqttRoutes');
 const userRoutes = require('./routes/userRoutes'); 
 const feedbackRoutes = require('./routes/feedbackRoutes');
+const integrationRoutes = require('./routes/integrationRoutes'); // 🔥 ADD THIS LINE
 
 // ✅ Check MySQL DB connection
 pool.getConnection((err, conn) => {
@@ -27,27 +26,27 @@ pool.getConnection((err, conn) => {
   }
 });
 
-
-
 // ✅ Middleware
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-
+// ✅ Route registrations
 app.use('/api/auth', authRoutes);
 app.use('/api/mqtt', mqttRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/feedback', require('./routes/feedbackRoutes'));
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/integrations', integrationRoutes);
+
 // ⬇️ Serve static files (uploaded images)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // ⬇️ Register avatar upload route
 const uploadAvatarRoute = require('./routes/uploadAvatar');
 const profileRoutes = require('./routes/profileRoutes');
 
 app.use('/api/profile', uploadAvatarRoute); // URL will be /api/profile/upload-avatar
 app.use('/api/profile', profileRoutes);  // ✅ handles GET /api/profile
-
 
 // ✅ Test route
 app.get('/', (req, res) => {

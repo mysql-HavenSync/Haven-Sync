@@ -3,6 +3,31 @@
   "reactNativePath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\react-native",
   "reactNativeVersion": "0.76",
   "dependencies": {
+    "@react-native-async-storage/async-storage": {
+      "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-async-storage\\async-storage",
+      "name": "@react-native-async-storage/async-storage",
+      "platforms": {
+        "ios": {
+          "podspecPath": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-async-storage\\async-storage\\RNCAsyncStorage.podspec",
+          "version": "2.2.0",
+          "configurations": [],
+          "scriptPhases": []
+        },
+        "android": {
+          "sourceDir": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-async-storage\\async-storage\\android",
+          "packageImportPath": "import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;",
+          "packageInstance": "new AsyncStoragePackage()",
+          "buildTypes": [],
+          "libraryName": "rnasyncstorage",
+          "componentDescriptors": [],
+          "cmakeListsPath": "C:/Users/Sathish/Haven-Sync/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cxxModuleCMakeListsModuleName": null,
+          "cxxModuleCMakeListsPath": null,
+          "cxxModuleHeaderName": null,
+          "isPureCxxDependency": false
+        }
+      }
+    },
     "@react-native-community/blur": {
       "root": "C:\\Users\\Sathish\\Haven-Sync\\node_modules\\@react-native-community\\blur",
       "name": "@react-native-community/blur",
