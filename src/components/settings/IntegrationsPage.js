@@ -231,7 +231,7 @@ console.log('🛡️ Using token:', token ? 'Token exists' : 'No token');
       const token = await AsyncStorage.getItem('authToken');
       
       // Create OAuth URL with callback
-      const oauthUrl = `${API_BASE_URL}/integrations/${service}/oauth?redirect_uri=yourapp://oauth-callback`;
+      const oauthUrl = `${API_BASE_URL}/integrations/${service}/oauth?redirect_uri=havensync://integration/success`;
       
       // Open OAuth URL
       const supported = await Linking.canOpenURL(oauthUrl);
