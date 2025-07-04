@@ -179,7 +179,6 @@ exports.addsubusers = async (req, res) => {
       details: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
   }
-};
 
 // ✅ FIXED: Get subusers with correct column names and data structure
 exports.getsubusers = async (req, res) => {
@@ -259,12 +258,38 @@ exports.getsubusers = async (req, res) => {
 // ✅ NEW: Remove/Delete subuser function
 // ✅ FIXED: Remove/Delete subuser function
 exports.removeSubuser = async (req, res) => {
+  const subUserId = req.params.userId;
   const { userId } = req.params;
   const requestingUserId = req.user.user_id || req.user.id;
 
   console.log('🗑️ Removing subuser with userId:', userId);
   console.log('🔍 Requested by user:', requestingUserId);
   console.log('🔍 userId type:', typeof userId);
+
+  try {
+    // 1. Get subuser's email first
+    const [subUserRows] = await db.query('SELECT email FROM users WHERE id = ?', [subUserId]);
+    if (subUserRows.length === 0) {
+      return res.status(404).json({ message: 'Sub-user not found' });
+    }
+
+    const subUserEmail = subUserRows[0].email;
+
+    // 2. Delete profile if exists
+    await db.query('DELETE FROM user_profiles WHERE email = ?', [subUserEmail]);
+
+    // 3. Delete subuser entry from users table
+    await db.query('DELETE FROM users WHERE id = ?', [subUserId]);
+
+    // 4. Also delete from subusers table (if you're using a mapping table)
+    await db.query('DELETE FROM subusers WHERE subusers_id = ?', [subUserId]);
+
+    res.json({ message: 'Sub-user and associated profile deleted successfully' });
+  } catch (err) {
+    console.error('❌ Error deleting sub-user:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
 
   try {
     // ✅ FIXED: Handle both string user_id and numeric id
