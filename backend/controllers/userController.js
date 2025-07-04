@@ -270,21 +270,23 @@ const requestingUserId = req.user.user_id || req.user.id;
 
   try {
     // 1. Get subuser's email first
-    const [subUserRows] = await db.query('SELECT email FROM users WHERE id = ?', [subUserId]);
-    if (subUserRows.length === 0) {
-      return res.status(404).json({ message: 'Sub-user not found' });
-    }
+// ✅ Get subuser's email using actualUserId (user_id, not DB id)
+const [userEmailRow] = await db.query(
+  'SELECT email FROM users WHERE user_id = ?',
+  [actualUserId]
+);
 
-    const subUserEmail = subUserRows[0].email;
+if (userEmailRow.length > 0) {
+  const emailToDelete = userEmailRow[0].email;
 
-    // 2. Delete profile if exists
-    await db.query('DELETE FROM user_profiles WHERE email = ?', [subUserEmail]);
+  // ✅ Delete the user profile using email
+  const [deleteProfileResult] = await db.query(
+    'DELETE FROM user_profiles WHERE email = ?',
+    [emailToDelete]
+  );
+  console.log('🧹 Deleted from user_profiles, rows:', deleteProfileResult.affectedRows);
+}
 
-    // 3. Delete subuser entry from users table
-    await db.query('DELETE FROM users WHERE id = ?', [subUserId]);
-
-    // 4. Also delete from subusers table (if you're using a mapping table)
-    await db.query('DELETE FROM subusers WHERE subusers_id = ?', [subUserId]);
 
     res.json({ message: 'Sub-user and associated profile deleted successfully' });
   } catch (err) {
