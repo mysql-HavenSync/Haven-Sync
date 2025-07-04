@@ -20,6 +20,7 @@ MERGED from [:react-native-picker_picker] C:\Users\Sathish\Haven-Sync\node_modul
 MERGED from [:react-native-ble-plx] C:\Users\Sathish\Haven-Sync\node_modules\react-native-ble-plx\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-bluetooth-status] C:\Users\Sathish\Haven-Sync\node_modules\react-native-bluetooth-status\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-10:12
 MERGED from [:react-native-date-picker] C:\Users\Sathish\Haven-Sync\node_modules\react-native-date-picker\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
+MERGED from [:react-native-device-info] C:\Users\Sathish\Haven-Sync\node_modules\react-native-device-info\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-fast-image] C:\Users\Sathish\Haven-Sync\node_modules\react-native-fast-image\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-geolocation-service] C:\Users\Sathish\Haven-Sync\node_modules\react-native-geolocation-service\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-image-picker] C:\Users\Sathish\Haven-Sync\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-19:12
@@ -138,6 +139,7 @@ MERGED from [androidx.localbroadcastmanager:localbroadcastmanager:1.0.0] C:\User
 MERGED from [androidx.print:print:1.0.0] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\431ad7e7f6ece80e4db66cba8332063a\transformed\print-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\65a320ceacdfb7a9dd9b7cc608b74021\transformed\core-runtime-2.2.0\AndroidManifest.xml:17:1-22:12
 MERGED from [net.time4j:time4j-android:4.8-2021a] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\cb9903322f0005903fdfe3168cf7074d\transformed\time4j-android-4.8-2021a\AndroidManifest.xml:2:1-13:12
+MERGED from [com.android.installreferrer:installreferrer:1.1.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\25ecdcb7e475dcd76e872a0028b16349\transformed\installreferrer-1.1.2\AndroidManifest.xml:2:1-13:12
 MERGED from [io.github.thanosfisherman.wifiutils:wifiutils:1.6.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\98a3011a5ba5012f129cc2fd6aac15d6\transformed\wifiutils-1.6.6\AndroidManifest.xml:2:1-18:12
 MERGED from [com.facebook.fbjni:fbjni:0.6.0] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\20f184a26198060dc77e5c28aedc184a\transformed\fbjni-0.6.0\AndroidManifest.xml:2:1-7:12
 MERGED from [com.facebook.soloader:soloader:0.12.1] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\226cb7236c140f99b14be60ac46516be\transformed\soloader-0.12.1\AndroidManifest.xml:2:1-17:12
@@ -303,6 +305,8 @@ MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\
 MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\3ac24861f3c2991d1a712093c02c7f6b\transformed\transport-runtime-2.2.6\AndroidManifest.xml:25:5-39:19
 MERGED from [net.time4j:time4j-android:4.8-2021a] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\cb9903322f0005903fdfe3168cf7074d\transformed\time4j-android-4.8-2021a\AndroidManifest.xml:11:5-20
 MERGED from [net.time4j:time4j-android:4.8-2021a] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\cb9903322f0005903fdfe3168cf7074d\transformed\time4j-android-4.8-2021a\AndroidManifest.xml:11:5-20
+MERGED from [com.android.installreferrer:installreferrer:1.1.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\25ecdcb7e475dcd76e872a0028b16349\transformed\installreferrer-1.1.2\AndroidManifest.xml:11:5-20
+MERGED from [com.android.installreferrer:installreferrer:1.1.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\25ecdcb7e475dcd76e872a0028b16349\transformed\installreferrer-1.1.2\AndroidManifest.xml:11:5-20
 MERGED from [io.github.thanosfisherman.wifiutils:wifiutils:1.6.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\98a3011a5ba5012f129cc2fd6aac15d6\transformed\wifiutils-1.6.6\AndroidManifest.xml:15:5-16:19
 MERGED from [io.github.thanosfisherman.wifiutils:wifiutils:1.6.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\98a3011a5ba5012f129cc2fd6aac15d6\transformed\wifiutils-1.6.6\AndroidManifest.xml:15:5-16:19
 MERGED from [com.facebook.soloader:soloader:0.12.1] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\226cb7236c140f99b14be60ac46516be\transformed\soloader-0.12.1\AndroidManifest.xml:11:5-15:19
@@ -398,6 +402,8 @@ MERGED from [:react-native-bluetooth-status] C:\Users\Sathish\Haven-Sync\node_mo
 MERGED from [:react-native-bluetooth-status] C:\Users\Sathish\Haven-Sync\node_modules\react-native-bluetooth-status\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-date-picker] C:\Users\Sathish\Haven-Sync\node_modules\react-native-date-picker\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-date-picker] C:\Users\Sathish\Haven-Sync\node_modules\react-native-date-picker\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-device-info] C:\Users\Sathish\Haven-Sync\node_modules\react-native-device-info\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-device-info] C:\Users\Sathish\Haven-Sync\node_modules\react-native-device-info\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-fast-image] C:\Users\Sathish\Haven-Sync\node_modules\react-native-fast-image\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-fast-image] C:\Users\Sathish\Haven-Sync\node_modules\react-native-fast-image\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-geolocation-service] C:\Users\Sathish\Haven-Sync\node_modules\react-native-geolocation-service\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
@@ -634,6 +640,8 @@ MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\Sathish\.gradle\cac
 MERGED from [androidx.arch.core:core-runtime:2.2.0] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\65a320ceacdfb7a9dd9b7cc608b74021\transformed\core-runtime-2.2.0\AndroidManifest.xml:20:5-44
 MERGED from [net.time4j:time4j-android:4.8-2021a] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\cb9903322f0005903fdfe3168cf7074d\transformed\time4j-android-4.8-2021a\AndroidManifest.xml:7:5-9:41
 MERGED from [net.time4j:time4j-android:4.8-2021a] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\cb9903322f0005903fdfe3168cf7074d\transformed\time4j-android-4.8-2021a\AndroidManifest.xml:7:5-9:41
+MERGED from [com.android.installreferrer:installreferrer:1.1.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\25ecdcb7e475dcd76e872a0028b16349\transformed\installreferrer-1.1.2\AndroidManifest.xml:5:5-7:41
+MERGED from [com.android.installreferrer:installreferrer:1.1.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\25ecdcb7e475dcd76e872a0028b16349\transformed\installreferrer-1.1.2\AndroidManifest.xml:5:5-7:41
 MERGED from [io.github.thanosfisherman.wifiutils:wifiutils:1.6.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\98a3011a5ba5012f129cc2fd6aac15d6\transformed\wifiutils-1.6.6\AndroidManifest.xml:5:5-7:41
 MERGED from [io.github.thanosfisherman.wifiutils:wifiutils:1.6.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\98a3011a5ba5012f129cc2fd6aac15d6\transformed\wifiutils-1.6.6\AndroidManifest.xml:5:5-7:41
 MERGED from [com.facebook.fbjni:fbjni:0.6.0] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\20f184a26198060dc77e5c28aedc184a\transformed\fbjni-0.6.0\AndroidManifest.xml:5:5-44
@@ -916,6 +924,10 @@ ADDED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\S
 		ADDED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\3ac24861f3c2991d1a712093c02c7f6b\transformed\transport-runtime-2.2.6\AndroidManifest.xml:34:13-37
 	android:name
 		ADDED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\3ac24861f3c2991d1a712093c02c7f6b\transformed\transport-runtime-2.2.6\AndroidManifest.xml:33:13-132
+uses-permission#com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE
+ADDED from [com.android.installreferrer:installreferrer:1.1.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\25ecdcb7e475dcd76e872a0028b16349\transformed\installreferrer-1.1.2\AndroidManifest.xml:9:5-110
+	android:name
+		ADDED from [com.android.installreferrer:installreferrer:1.1.2] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\25ecdcb7e475dcd76e872a0028b16349\transformed\installreferrer-1.1.2\AndroidManifest.xml:9:22-107
 meta-data#com.facebook.soloader.enabled
 ADDED from [com.facebook.soloader:soloader:0.12.1] C:\Users\Sathish\.gradle\caches\8.10.2\transforms\226cb7236c140f99b14be60ac46516be\transformed\soloader-0.12.1\AndroidManifest.xml:12:9-14:37
 	android:value

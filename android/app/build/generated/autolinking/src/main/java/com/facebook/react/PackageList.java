@@ -28,6 +28,8 @@ import com.bleplx.BlePlxPackage;
 import com.solinor.bluetoothstatus.RNBluetoothManagerPackage;
 // react-native-date-picker
 import com.henninghall.date_picker.DatePickerPackage;
+// react-native-device-info
+import com.learnium.RNDeviceInfo.RNDeviceInfo;
 // react-native-fast-image
 import com.dylanvann.fastimage.FastImageViewPackage;
 // react-native-geolocation-service
@@ -110,6 +112,7 @@ public class PackageList {
       new BlePlxPackage(),
       new RNBluetoothManagerPackage(),
       new DatePickerPackage(),
+      new RNDeviceInfo(),
       new FastImageViewPackage(),
       new RNFusedLocationPackage(),
       new RNGestureHandlerPackage(),

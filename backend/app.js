@@ -7,6 +7,9 @@ const cors = require('cors');
 const morgan = require('morgan');
 const db = require('./db');
 const pool = require('./db');
+const path = require('path');
+const app = express();
+
 
 // ✅ Routes
 const authRoutes = require('./routes/authRoutes');
@@ -24,7 +27,7 @@ pool.getConnection((err, conn) => {
   }
 });
 
-const app = express();
+
 
 // ✅ Middleware
 app.use(cors());
@@ -32,12 +35,15 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 
-
-
 app.use('/api/auth', authRoutes);
 app.use('/api/mqtt', mqttRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/feedback', require('./routes/feedbackRoutes'));
+// ⬇️ Serve static files (uploaded images)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// ⬇️ Register avatar upload route
+const uploadAvatarRoute = require('./routes/uploadAvatar');
+app.use('/api/profile', uploadAvatarRoute); // URL will be /api/profile/upload-avatar
 
 // ✅ Test route
 app.get('/', (req, res) => {

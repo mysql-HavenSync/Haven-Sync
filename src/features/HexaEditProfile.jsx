@@ -84,6 +84,30 @@ export default function HexaEditProfile() {
     }
   }, [imageModalVisible]);
 
+  const uploadAvatar = async (fileUri) => {
+  const formDataData = new FormData();
+  formDataData.append('avatar', {
+    uri: fileUri,
+    name: 'avatar.jpg',
+    type: 'image/jpeg',
+  });
+
+  try {
+    const res = await api.post('/api/profile/upload-avatar', formDataData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    if (res.data.success) {
+      setFormData(prev => ({ ...prev, avatar: res.data.url }));
+    } else {
+      Alert.alert('Upload Failed', 'Could not upload avatar');
+    }
+  } catch (err) {
+    console.error('Avatar upload error:', err);
+    Alert.alert('Upload Error', err.message);
+  }
+};
+
   // Animated styles
   const avatarAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -183,7 +207,8 @@ export default function HexaEditProfile() {
     
     const handleResponse = (response) => {
       if (!response.didCancel && !response.error && response.assets) {
-        setFormData({ ...formData, avatar: response.assets[0].uri });
+        uploadAvatar(response.assets[0].uri);
+
       }
     };
 
