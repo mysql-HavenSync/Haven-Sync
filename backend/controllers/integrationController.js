@@ -11,10 +11,10 @@ exports.getUserIntegrations = async (req, res) => {
     const userId = req.user.id;
     
     const [integrations] = await db.query(
-      'SELECT * FROM user_integrations WHERE user_id = ?',
+      'SELECT * FROM users_integrations WHERE user_id = ?',
       [userId]
     );
-    
+    console.log('📄 Raw DB integrations:', integrations);
     // Default integrations if none exist
     const defaultIntegrations = {
       google: { connected: false, name: 'Google Assistant', config: {} },
@@ -25,22 +25,24 @@ exports.getUserIntegrations = async (req, res) => {
     
     // Convert array to object format
     const userIntegrations = { ...defaultIntegrations };
-    integrations.forEach(integration => {
-      userIntegrations[integration.service_name] = {
-        connected: integration.is_connected,
-        name: integration.display_name,
-        config: JSON.parse(integration.config || '{}'),
-        connectedAt: integration.connected_at,
-        lastSync: integration.last_sync
-      };
-    });
-    
+    if (integrations && Array.isArray(integrations)) {
+  integrations.forEach(integration => {
+    userIntegrations[integration.service_name] = {
+      connected: integration.is_connected,
+      name: integration.display_name,
+      config: JSON.parse(integration.config || '{}'),
+      connectedAt: integration.connected_at,
+      lastSync: integration.last_sync
+    };
+  });
+}
+
     res.json({
       success: true,
       integrations: userIntegrations
     });
   } catch (error) {
-    console.error('❌ Error in getUserIntegrations:', err);
+    console.error('❌ Error in getUserIntegrations:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch integrations',
@@ -69,7 +71,7 @@ exports.toggleIntegration = async (req, res) => {
       if (connectionResult.success) {
         // Save/update in database
         await db.query(
-          `INSERT INTO user_integrations 
+          `INSERT INTO users_integrations 
            (user_id, service_name, display_name, is_connected, config, connected_at) 
            VALUES (?, ?, ?, ?, ?, NOW()) 
            ON DUPLICATE KEY UPDATE 
@@ -103,7 +105,7 @@ exports.toggleIntegration = async (req, res) => {
       if (disconnectionResult.success) {
         // Update database
         await db.query(
-          'UPDATE user_integrations SET is_connected = ?, disconnected_at = NOW() WHERE user_id = ? AND service_name = ?',
+          'UPDATE users_integrations SET is_connected = ?, disconnected_at = NOW() WHERE user_id = ? AND service_name = ?',
           [false, userId, service]
         );
         
@@ -321,7 +323,7 @@ exports.syncDevices = async (req, res) => {
     
     // Get integration config
     const [integration] = await db.query(
-      'SELECT * FROM user_integrations WHERE user_id = ? AND service_name = ? AND is_connected = true',
+      'SELECT * FROM users_integrations WHERE user_id = ? AND service_name = ? AND is_connected = true',
       [userId, service]
     );
     
@@ -338,7 +340,7 @@ exports.syncDevices = async (req, res) => {
     if (syncResult.success) {
       // Update last sync time
       await db.query(
-        'UPDATE user_integrations SET last_sync = NOW() WHERE user_id = ? AND service_name = ?',
+        'UPDATE users_integrations SET last_sync = NOW() WHERE user_id = ? AND service_name = ?',
         [userId, service]
       );
     }
