@@ -6,11 +6,10 @@ const authMiddleware = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 
-// ✅ GET profile data
+// ✅ GET profile
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const userEmail = req.user.email;
-
     const [rows] = await db.query(
       'SELECT email, name, dob, phone, avatar FROM user_profiles WHERE email = ?',
       [userEmail]
@@ -27,8 +26,7 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-
-// ✅ PUT update profile
+// ✅ PUT profile (CREATE or UPDATE)
 router.put('/', authMiddleware, async (req, res) => {
   try {
     const userEmail = req.user.email;
@@ -37,13 +35,11 @@ router.put('/', authMiddleware, async (req, res) => {
     const [existing] = await db.query('SELECT id FROM user_profiles WHERE email = ?', [userEmail]);
 
     if (existing.length > 0) {
-      // Update existing profile
       await db.query(
         'UPDATE user_profiles SET name = ?, dob = ?, phone = ?, avatar = ? WHERE email = ?',
         [name, dob, phone, avatar, userEmail]
       );
     } else {
-      // Insert new profile
       await db.query(
         'INSERT INTO user_profiles (email, name, dob, phone, avatar) VALUES (?, ?, ?, ?, ?)',
         [userEmail, name, dob, phone, avatar]
