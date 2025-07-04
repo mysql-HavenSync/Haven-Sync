@@ -179,6 +179,7 @@ exports.addsubusers = async (req, res) => {
       details: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
   }
+};
 
 // ✅ FIXED: Get subusers with correct column names and data structure
 exports.getsubusers = async (req, res) => {
@@ -254,6 +255,7 @@ exports.getsubusers = async (req, res) => {
     });
   }
 };
+
 
 // ✅ NEW: Remove/Delete subuser function
 // ✅ FIXED: Remove/Delete subuser function
