@@ -50,7 +50,7 @@ export default function HexaEditProfile() {
   const isDark = useSelector(state => state.profile.darkMode);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(profile);
+  const [formData, setFormData] = useState({});
   const [dobPickerVisible, setDobPickerVisible] = useState(false);
   const [imageModalVisible, setImageModalVisible] = useState(false);
 
@@ -63,6 +63,11 @@ export default function HexaEditProfile() {
   const fieldAnimations = useSharedValue(0);
   const modalScale = useSharedValue(0);
   const modalOpacity = useSharedValue(0);
+
+  useEffect(() => {
+  setFormData(profile);
+}, [profile]);
+
 
   useEffect(() => {
     if (isEditing) {
