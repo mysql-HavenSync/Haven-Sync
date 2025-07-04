@@ -356,6 +356,23 @@ exports.removeSubuser = async (req, res) => {
       console.log('❌ Permission denied for user removal');
       return res.status(403).json({ message: 'Permission denied. You can only remove subusers under your account.' });
     }
+// ✅ Get subuser's email using actualUserId (user_id, not DB id)
+const [userEmailRow] = await db.query(
+  'SELECT email FROM users WHERE user_id = ?',
+  [actualUserId]
+);
+
+if (userEmailRow.length > 0) {
+  const emailToDelete = userEmailRow[0].email;
+
+  // ✅ Delete the user profile using email
+  const [deleteProfileResult] = await db.query(
+    'DELETE FROM user_profiles WHERE email = ?',
+    [emailToDelete]
+  );
+  console.log('🧹 Deleted from user_profiles, rows:', deleteProfileResult.affectedRows);
+}
+
 
     // ✅ Use database transaction for atomic operations
     await db.query('START TRANSACTION');
