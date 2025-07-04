@@ -133,10 +133,7 @@ export default function HexaSettings({ navigation, onClose }) {
           ]
         );
         break;
-      case 'integrations':
-        // Navigate directly to IntegrationsPage
-        handleNavigateToPage('IntegrationsPage');
-        break;
+    
     }
   };
 
@@ -171,10 +168,7 @@ export default function HexaSettings({ navigation, onClose }) {
         iconColor: darkMode ? '#74B9FF' : '#3182CE',
         backgroundColor: darkMode ? 'rgba(116, 185, 255, 0.15)' : 'rgba(49, 130, 206, 0.1)',
       },
-      integrations: {
-        iconColor: darkMode ? '#A29BFE' : '#805AD5',
-        backgroundColor: darkMode ? 'rgba(162, 155, 254, 0.15)' : 'rgba(128, 90, 213, 0.1)',
-      },
+    
       logout: {
         iconColor: '#FF4757',
         backgroundColor: darkMode ? 'rgba(255, 71, 87, 0.15)' : 'rgba(255, 71, 87, 0.1)',
@@ -223,14 +217,7 @@ export default function HexaSettings({ navigation, onClose }) {
       hasSwitch: false,
       navigateDirectly: true
     },
-    {
-      id: 'integrations',
-      title: 'Third Party Integrations',
-      icon: faPlug,
-      hasSwitch: false,
-      subtitle: 'Google, Alexa, Apple, Samsung',
-      navigateDirectly: true
-    },
+   
     {
       id: 'logout',
       title: 'Logout',

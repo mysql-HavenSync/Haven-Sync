@@ -36,7 +36,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/mqtt', mqttRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/feedback', feedbackRoutes);
-app.use('/api/integrations', integrationRoutes);
+
 
 // ⬇️ Serve static files (uploaded images)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

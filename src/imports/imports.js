@@ -14,7 +14,6 @@ export { default as UserManagement } from '../components/settings/UserManagement
 export { default as FeedbackPage } from '../components/settings/FeedbackPage';
 export { default as BugReport } from '../components/settings/BugReport';
 export { default as AboutPage } from '../components/settings/AboutPage';
-export { default as IntegrationsPage } from '../components/settings/IntegrationsPage';
 export {default as HexaDevices} from '../features/HexaDevices';
 export {default as DeviceDetails} from '../components/DeviceDetail';
 

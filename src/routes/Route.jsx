@@ -84,10 +84,7 @@ const SettingsStack = () => {
         name="AboutPage"
         component={Components.AboutPage}
       />
-      <Stack.Screen
-        name="IntegrationsPage"
-        component={Components.IntegrationsPage}
-      />
+  
     </Stack.Navigator>
   );
 };
