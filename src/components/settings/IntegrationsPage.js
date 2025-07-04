@@ -228,7 +228,7 @@ console.log('🛡️ Using token:', token ? 'Token exists' : 'No token');
   const handleOAuthConnection = async (service) => {
     try {
       const serviceInfo = integrationsList.find(s => s.id === service);
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await AsyncStorage.getItem('token');
       
       // Create OAuth URL with callback
       const oauthUrl = `${API_BASE_URL}/integrations/${service}/oauth?redirect_uri=havensync://integration/success`;
@@ -264,7 +264,7 @@ console.log('🛡️ Using token:', token ? 'Token exists' : 'No token');
 
   const performToggleIntegration = async (service, action) => {
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await AsyncStorage.getItem('token');
       console.log(`Performing ${action} for ${service}`);
       
       const response = await fetch(`${API_BASE_URL}/integrations/${service}/${action}`, {
@@ -359,7 +359,7 @@ console.log('🛡️ Using token:', token ? 'Token exists' : 'No token');
     setSyncing(prev => ({ ...prev, [service]: true }));
     
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await AsyncStorage.getItem('token');
       console.log(`Syncing ${service}`);
       
       const response = await fetch(`${API_BASE_URL}/integrations/${service}/sync`, {

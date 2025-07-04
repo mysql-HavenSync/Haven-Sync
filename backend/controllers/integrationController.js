@@ -51,86 +51,33 @@ exports.getUserIntegrations = async (req, res) => {
   }
 };
 
-// Toggle integration connection
+
 exports.toggleIntegration = async (req, res) => {
+  const { service, action } = req.body;
+  const userId = req.user.id;
+
+  if (!service || !['connect', 'disconnect'].includes(action)) {
+    return res.status(400).json({ success: false, message: 'Invalid service or action' });
+  }
+
+  const connected = action === 'connect';
+
   try {
-    const userId = req.user.id;
-    const { service, action } = req.body; // action: 'connect' or 'disconnect'
-    
-    if (!['google', 'alexa', 'homekit', 'smartthings'].includes(service)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid service name'
-      });
-    }
-    
-    if (action === 'connect') {
-      // Handle connection logic
-      const connectionResult = await connectToService(service, userId, req.body);
-      
-      if (connectionResult.success) {
-        // Save/update in database
-        await db.query(
-          `INSERT INTO users_integrations 
-           (user_id, service_name, display_name, is_connected, config, connected_at) 
-           VALUES (?, ?, ?, ?, ?, NOW()) 
-           ON DUPLICATE KEY UPDATE 
-           is_connected = ?, config = ?, connected_at = NOW()`,
-          [
-            userId, service, connectionResult.displayName, true, 
-            JSON.stringify(connectionResult.config),
-            true, JSON.stringify(connectionResult.config)
-          ]
-        );
-        
-        res.json({
-          success: true,
-          message: `Successfully connected to ${connectionResult.displayName}`,
-          integration: {
-            service,
-            connected: true,
-            config: connectionResult.config
-          }
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          message: connectionResult.message
-        });
-      }
-    } else if (action === 'disconnect') {
-      // Handle disconnection
-      const disconnectionResult = await disconnectFromService(service, userId);
-      
-      if (disconnectionResult.success) {
-        // Update database
-        await db.query(
-          'UPDATE users_integrations SET is_connected = ?, disconnected_at = NOW() WHERE user_id = ? AND service_name = ?',
-          [false, userId, service]
-        );
-        
-        res.json({
-          success: true,
-          message: `Successfully disconnected from ${service}`,
-          integration: {
-            service,
-            connected: false
-          }
-        });
-      } else {
-        res.status(400).json({
-          success: false,
-          message: disconnectionResult.message
-        });
-      }
-    }
-  } catch (error) {
-    console.error('Error toggling integration:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to toggle integration',
-      error: error.message
+    // Insert or update integration status
+    await db.query(
+      'INSERT INTO users_integrations (user_id, service, connected) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE connected = ?',
+      [userId, service, connected, connected]
+    );
+
+    res.json({
+      success: true,
+      message: `Integration ${connected ? 'connected' : 'disconnected'} successfully`,
+      service,
+      connected
     });
+  } catch (error) {
+    console.error('🔴 DB error in toggleIntegration:', error);
+    res.status(500).json({ success: false, message: 'Database error' });
   }
 };
 
