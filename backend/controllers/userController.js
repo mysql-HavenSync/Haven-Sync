@@ -179,6 +179,7 @@ exports.addsubusers = async (req, res) => {
       details: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
   }
+}; // ✅ FIXED: Added missing closing brace
 
 // ✅ FIXED: Get subusers with correct column names and data structure
 exports.getsubusers = async (req, res) => {
@@ -255,41 +256,14 @@ exports.getsubusers = async (req, res) => {
   }
 };
 
-// ✅ NEW: Remove/Delete subuser function
 // ✅ FIXED: Remove/Delete subuser function
 exports.removeSubuser = async (req, res) => {
-const userId = req.params.userId; // This is the subuser's user_id or id
-const requestingUserId = req.user.user_id || req.user.id;
-
+  const userId = req.params.userId; // This is the subuser's user_id or id
+  const requestingUserId = req.user.user_id || req.user.id;
 
   console.log('🗑️ Removing subuser with userId:', userId);
   console.log('🔍 Requested by user:', requestingUserId);
   console.log('🔍 userId type:', typeof userId);
-
-  try {
-    // 1. Get subuser's email first
-    const [subUserRows] = await db.query('SELECT email FROM users WHERE id = ?', [subUserId]);
-    if (subUserRows.length === 0) {
-      return res.status(404).json({ message: 'Sub-user not found' });
-    }
-
-    const subUserEmail = subUserRows[0].email;
-
-    // 2. Delete profile if exists
-    await db.query('DELETE FROM user_profiles WHERE email = ?', [subUserEmail]);
-
-    // 3. Delete subuser entry from users table
-    await db.query('DELETE FROM users WHERE id = ?', [subUserId]);
-
-    // 4. Also delete from subusers table (if you're using a mapping table)
-    await db.query('DELETE FROM subusers WHERE subusers_id = ?', [subUserId]);
-
-    res.json({ message: 'Sub-user and associated profile deleted successfully' });
-  } catch (err) {
-    console.error('❌ Error deleting sub-user:', err);
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-};
 
   try {
     // ✅ FIXED: Handle both string user_id and numeric id
@@ -356,23 +330,23 @@ const requestingUserId = req.user.user_id || req.user.id;
       console.log('❌ Permission denied for user removal');
       return res.status(403).json({ message: 'Permission denied. You can only remove subusers under your account.' });
     }
-// ✅ Get subuser's email using actualUserId (user_id, not DB id)
-const [userEmailRow] = await db.query(
-  'SELECT email FROM users WHERE user_id = ?',
-  [actualUserId]
-);
 
-if (userEmailRow.length > 0) {
-  const emailToDelete = userEmailRow[0].email;
+    // ✅ Get subuser's email using actualUserId (user_id, not DB id)
+    const [userEmailRow] = await db.query(
+      'SELECT email FROM users WHERE user_id = ?',
+      [actualUserId]
+    );
 
-  // ✅ Delete the user profile using email
-  const [deleteProfileResult] = await db.query(
-    'DELETE FROM user_profiles WHERE email = ?',
-    [emailToDelete]
-  );
-  console.log('🧹 Deleted from user_profiles, rows:', deleteProfileResult.affectedRows);
-}
+    if (userEmailRow.length > 0) {
+      const emailToDelete = userEmailRow[0].email;
 
+      // ✅ Delete the user profile using email
+      const [deleteProfileResult] = await db.query(
+        'DELETE FROM user_profiles WHERE email = ?',
+        [emailToDelete]
+      );
+      console.log('🧹 Deleted from user_profiles, rows:', deleteProfileResult.affectedRows);
+    }
 
     // ✅ Use database transaction for atomic operations
     await db.query('START TRANSACTION');
