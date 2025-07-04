@@ -6,11 +6,11 @@ const authMiddleware = require('../middleware/auth');
 
 router.get('/profile', authMiddleware, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userEmail = req.user.email;
 
     const [rows] = await db.query(
-      'SELECT email, name, dob, phone, avatar FROM user_profiles WHERE id = ?',
-      [userId]
+      'SELECT email, name, dob, phone, avatar FROM user_profiles WHERE email = ?',
+      [userEmail]
     );
 
     if (rows.length === 0) {
@@ -23,5 +23,6 @@ router.get('/profile', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 module.exports = router;

@@ -113,6 +113,12 @@ exports.login = async (req, res) => {
     const user = users[0];
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: 'Incorrect password' });
+    // ✅ Create user profile if not exists
+await db.query(`
+  INSERT IGNORE INTO user_profiles (id, email, name)
+  VALUES (?, ?, ?)
+`, [user.id, user.email, user.name]);
+
 
     // ✅ FIXED: Ensure role is included in JWT payload
     const token = jwt.sign({ 
