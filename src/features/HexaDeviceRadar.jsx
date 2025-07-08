@@ -4,6 +4,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import NetInfo from '@react-native-community/netinfo';
 import BluetoothStateManager from 'react-native-bluetooth-status';
 import { PermissionsAndroid } from 'react-native';
+import { BleManager } from 'react-native-ble-plx';
+import { Buffer } from 'buffer'; // Required for base64
 import {
   View,
   Text,
@@ -37,6 +39,8 @@ import { addDevice } from '../redux/slices/switchSlice';
 // Updated imports - replace the old libraries
 import { Camera, useCameraDevices, useCodeScanner } from 'react-native-vision-camera';
 import { useFocusEffect } from '@react-navigation/native';
+
+const manager = new BleManager();
 
 const AnimatedSuccessPopup = ({ visible, message, onDashboard, onAnother }) => {
   const scale = useRef(new Animated.Value(0.9)).current;
@@ -113,10 +117,13 @@ export default function ManualDeviceSetup() {
   const [hasPermission, setHasPermission] = useState(null);
   const [isActive, setIsActive] = useState(false);
   const [permissionChecked, setPermissionChecked] = useState(false);
-  
+  const [showPassword, setShowPassword] = useState(false);
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const fadeAnim = new Animated.Value(1);
+  const [nearbyDevices, setNearbyDevices] = useState([]);
+  const [showDevicePicker, setShowDevicePicker] = useState(false);
+
   
   // Vision Camera setup with error handling
   const devices = useCameraDevices();
@@ -367,6 +374,58 @@ const addAnotherDevice = () => {
     }
     return true;
   };
+  const sendCredentialsOverBLE = async (deviceId, ssid, pass) => {
+  const targetName = deviceId; // example: 'HEXA3CHN-ABC123'
+
+  const subscription = manager.onStateChange(async (state) => {
+    if (state === 'PoweredOn') {
+      manager.startDeviceScan(null, null, async (error, scannedDevice) => {
+        if (error) {
+          Alert.alert('Scan Error', error.message);
+          return;
+        }
+  // ✅ Collect nearby BLE devices for fallback UI
+  if (scannedDevice?.name && !nearbyDevices.some(d => d.name === scannedDevice.name)) {
+    setNearbyDevices(prev => [...prev, { id: scannedDevice.id, name: scannedDevice.name }]);
+  }
+
+        if (scannedDevice?.name === targetName) {
+          manager.stopDeviceScan();
+
+          try {
+            await scannedDevice.connect();
+            await scannedDevice.discoverAllServicesAndCharacteristics();
+
+            const services = await scannedDevice.services();
+            const service = services.find(s => s.uuid.toLowerCase() === '12345678-1234-1234-1234-123456789abc');
+            const characteristics = await service.characteristics();
+            const characteristic = characteristics.find(c => c.uuid.toLowerCase() === 'abcd1234-ab12-cd34-ef56-1234567890ab');
+
+            const payload = JSON.stringify({ ssid, pass, deviceId });
+            const encoded = Buffer.from(payload).toString('base64');
+
+            await characteristic.writeWithResponse(encoded);
+            await scannedDevice.disconnect();
+
+            Alert.alert('✅ Success', 'WiFi credentials sent to device!');
+          } catch (err) {
+            console.error('BLE Error:', err);
+            Alert.alert('BLE Error', err.message || 'BLE write failed');
+          }
+        }
+      });
+
+      // Timeout after 20 seconds
+      setTimeout(() => {
+        manager.stopDeviceScan();
+        Alert.alert('⏰ Timeout', 'Device not found within 20s.');
+      }, 20000);
+
+      subscription.remove();
+    }
+  }, true);
+};
+
 
   const handleDeviceSetup = async () => {
     if (!validateInputs()) return;
@@ -382,7 +441,12 @@ const addAnotherDevice = () => {
     ).start();
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Send WiFi + deviceId to ESP32 over BLE before proceeding
+await sendCredentialsOverBLE(deviceId, wifiSSID, wifiPassword);
+
+// Optional delay after BLE write
+await new Promise(resolve => setTimeout(resolve, 1000));
+
 
       const deviceTemplate = deviceRegistry[deviceType];
       if (!deviceTemplate) {
@@ -607,15 +671,24 @@ const addAnotherDevice = () => {
 
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>WiFi Password</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    value={wifiPassword}
-                    onChangeText={setWifiPassword}
-                    placeholder="WiFi password (optional)"
-                    placeholderTextColor="#aaa"
-                    secureTextEntry
-                    editable={!connecting}
-                  />
+                  <View style={styles.passwordInputContainer}>
+  <TextInput
+    style={[styles.textInput, { flex: 1, borderWidth: 0 }]}
+    value={wifiPassword}
+    onChangeText={setWifiPassword}
+    placeholder="WiFi password (optional)"
+    placeholderTextColor="#aaa"
+    secureTextEntry={!showPassword}
+    editable={!connecting}
+  />
+  <TouchableOpacity
+    style={styles.eyeButton}
+    onPress={() => setShowPassword(prev => !prev)}
+  >
+    <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color="#aaa" />
+  </TouchableOpacity>
+</View>
+
                 </View>
               </View>
 
@@ -753,6 +826,19 @@ successButtonSecondary: {
   borderRadius: 10,
   alignItems: 'center',
 },
+passwordInputContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#34495e',
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: '#4a5a6a',
+  paddingRight: 10,
+},
+eyeButton: {
+  padding: 8,
+},
+
 successButtonText: {
   fontSize: 16,
   fontWeight: '600',

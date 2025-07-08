@@ -63,9 +63,13 @@ app.get('/devices', async (req, res) => {
   }
 });
 
-// ✅ Use PORT=3001 for local, or Railway's assigned port
-const PORT = process.env.PORT || 3000;
+const { setupWebSocket } = require('./services/wsServer');
+const http = require('http');
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Server running on port ${PORT}`);
+const server = http.createServer(app);
+setupWebSocket(server); // initialize WebSocket over same server
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Express + WebSocket server running on port ${PORT}`);
 });
