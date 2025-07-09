@@ -378,24 +378,26 @@ export default function ManualDeviceSetup() {
     return true;
   };
 
-  const sendCredentialsOverBLE = async (deviceId, ssid, pass) => {
+const sendCredentialsOverBLE = (deviceId, ssid, pass) => {
+  return new Promise((resolve, reject) => {
     const targetName = deviceId;
+    
+    
 
     const subscription = manager.onStateChange(async (state) => {
       if (state === 'PoweredOn') {
+        console.log('🔍 Starting BLE scan...');
         manager.startDeviceScan(null, null, async (error, scannedDevice) => {
           if (error) {
-            Alert.alert('Scan Error', error.message);
+            console.log('❌ BLE Scan error:', error.message);
+            subscription.remove();
+            reject(new Error('BLE scan failed: ' + error.message));
             return;
           }
 
-          if (scannedDevice?.name && !nearbyDevices.some(d => d.name === scannedDevice.name)) {
-            setNearbyDevices(prev => [...prev, { id: scannedDevice.id, name: scannedDevice.name }]);
-          }
-
           if (scannedDevice?.name === targetName) {
+            console.log(`📡 Found device: ${scannedDevice.name}`);
             manager.stopDeviceScan();
-            clearTimeout(timeoutHandle); 
 
             try {
               await scannedDevice.connect();
@@ -403,8 +405,13 @@ export default function ManualDeviceSetup() {
 
               const services = await scannedDevice.services();
               const service = services.find(s => s.uuid.toLowerCase() === '12345678-1234-1234-1234-123456789abc');
+
+              if (!service) throw new Error('Service UUID not found');
+
               const characteristics = await service.characteristics();
               const characteristic = characteristics.find(c => c.uuid.toLowerCase() === 'abcd1234-ab12-cd34-ef56-1234567890ab');
+
+              if (!characteristic) throw new Error('Characteristic UUID not found');
 
               const payload = JSON.stringify({ ssid, pass, deviceId });
               const encoded = Buffer.from(payload).toString('base64');
@@ -412,25 +419,58 @@ export default function ManualDeviceSetup() {
               await characteristic.writeWithResponse(encoded);
               await scannedDevice.disconnect();
 
-              Alert.alert('✅ Success', 'WiFi credentials sent to device!');
+              console.log('✅ BLE credentials sent successfully');
+              subscription.remove();
+              resolve(true);
+
             } catch (err) {
-              console.error('BLE Error:', err);
-              Alert.alert('BLE Error', err.message || 'BLE write failed');
-            } finally {
-              subscription.remove(); // ✅ Correct place to remove it
+              console.error('❌ BLE send error:', err);
+              subscription.remove();
+              reject(new Error('BLE write failed: ' + err.message));
             }
           }
         });
 
-        // Add fallback timeout
-       timeoutHandle = setTimeout(() => {
+        // Timeout after 20s
+        setTimeout(() => {
           manager.stopDeviceScan();
-          Alert.alert('⏰ Timeout', 'Device not found within 20s.');
-          subscription.remove(); // ✅ Or here, safely
+          subscription.remove();
+          reject(new Error('Timeout: BLE device not found'));
         }, 20000);
       }
     }, true);
-  };
+  });
+};
+
+const handleDeviceSelect = async (selectedDevice) => {
+  setShowDevicePicker(false);
+  manager.stopDeviceScan();
+
+  try {
+    const device = await manager.connectToDevice(selectedDevice.id);
+    await device.discoverAllServicesAndCharacteristics();
+
+    const services = await device.services();
+    const service = services.find(s => s.uuid.toLowerCase() === '12345678-1234-1234-1234-123456789abc');
+    if (!service) throw new Error('Service not found');
+
+    const characteristics = await service.characteristics();
+    const characteristic = characteristics.find(c => c.uuid.toLowerCase() === 'abcd1234-ab12-cd34-ef56-1234567890ab');
+    if (!characteristic) throw new Error('Characteristic not found');
+
+    const payload = JSON.stringify({ ssid: wifiSSID, pass: wifiPassword, deviceId });
+    const encoded = Buffer.from(payload).toString('base64');
+
+    await characteristic.writeWithResponse(encoded);
+    await device.disconnect();
+
+    console.log('✅ Credentials sent to device:', selectedDevice.name);
+    Alert.alert('Success', `Credentials sent to ${selectedDevice.name}`);
+  } catch (error) {
+    console.error('❌ Error sending to selected device:', error.message);
+    Alert.alert('BLE Error', error.message);
+  }
+};
 
 // Updated handleDeviceSetup function with better error handling
 const handleDeviceSetup = async () => {
@@ -478,16 +518,17 @@ const handleDeviceSetup = async () => {
     } else {
       console.warn('⚠️  API endpoint test failed, but continuing...');
     }
-if (wifiPassword.trim()) {
-  try {
-    console.log('📡 Sending WiFi credentials via BLE...');
-    await sendCredentialsOverBLE(deviceId.trim(), wifiSSID.trim(), wifiPassword.trim());
-    console.log('✅ BLE credentials sent successfully');
-  } catch (bleError) {
-    console.error('❌ BLE Error:', bleError);
-    throw new Error('Failed to send WiFi credentials over BLE. Please try again.');
-  }
+
+try {
+  console.log('📡 Sending WiFi credentials via BLE...');
+  await sendCredentialsOverBLE(deviceId.trim(), wifiSSID.trim(), wifiPassword.trim());
+} catch (bleError) {
+  console.warn('❌ BLE error:', bleError.message);
+  Alert.alert('BLE Error', bleError.message);
+  setConnecting(false);
+  return;
 }
+
 
     // Try device registration
     console.log('📱 Attempting device registration...');

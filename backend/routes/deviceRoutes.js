@@ -101,7 +101,7 @@ router.post('/register', authMiddleware, async (req, res) => {
     console.error('💥 Database error in device registration:', error);
     res.status(500).json({ 
       message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Database error'
+        error: error.message || 'Database error'
     });
   }
 });
