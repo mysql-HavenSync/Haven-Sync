@@ -1,6 +1,5 @@
-// BleHelper.js
+// utils/BleHelper.js
 import { BleManager } from 'react-native-ble-plx';
-import BluetoothStateManager from 'react-native-bluetooth-status';
 
 export default class BleHelper {
   constructor() {
@@ -9,15 +8,16 @@ export default class BleHelper {
     this.isScanning = false;
   }
 
+  // ✅ Check BLE state using BleManager
   async checkBluetoothState() {
-    const state = await BluetoothStateManager.getState();
-    if (state !== 'on') {
-      const enabled = await BluetoothStateManager.enable();
-      if (!enabled) throw new Error('Bluetooth not enabled');
+    const state = await this.manager.state();
+    if (state !== 'PoweredOn') {
+      throw new Error('Bluetooth is not powered on');
     }
     return true;
   }
 
+  // ✅ Scan and find BLE device by name
   async scanAndFindDevice(targetDeviceId, onDeviceFound, onProgress) {
     const bluetoothEnabled = await this.checkBluetoothState();
     if (!bluetoothEnabled) {
@@ -25,55 +25,50 @@ export default class BleHelper {
     }
 
     return new Promise((resolve, reject) => {
-      let scanSubscription;
       let foundDevice = null;
       let scanTimer;
 
       const cleanup = () => {
-        if (scanSubscription) scanSubscription.remove();
+        this.manager.stopDeviceScan();
+        this.isScanning = false;
         if (scanTimer) clearTimeout(scanTimer);
-        if (this.isScanning) {
-          this.manager.stopDeviceScan();
-          this.isScanning = false;
-        }
       };
 
-      // Timeout
+      // ⏳ Set a timeout to stop scanning
       scanTimer = setTimeout(() => {
         cleanup();
         reject(new Error(`Device "${targetDeviceId}" not found within ${this.scanTimeout / 1000} seconds`));
       }, this.scanTimeout);
 
-      // BLE state listener
+      // 🚀 Start BLE scan
       this.isScanning = true;
-      scanSubscription = this.manager.onStateChange((state) => {
-        if (state === 'PoweredOn') {
-          this.manager.startDeviceScan(null, null, (error, scannedDevice) => {
-            if (error) {
-              console.error('❌ Scan error:', error);
-              cleanup();
-              reject(error);
-              return;
-            }
+      this.manager.startDeviceScan(null, null, (error, scannedDevice) => {
+        if (error) {
+          console.error('❌ BLE scan error:', error);
+          cleanup();
+          reject(error);
+          return;
+        }
 
-            if (onProgress && scannedDevice?.name) onProgress(scannedDevice.name);
-            if (onDeviceFound && scannedDevice?.name) {
-              onDeviceFound({
-                id: scannedDevice.id,
-                name: scannedDevice.name,
-                rssi: scannedDevice.rssi
-              });
-            }
+        if (onProgress && scannedDevice?.name) {
+          onProgress(scannedDevice.name);
+        }
 
-            if (scannedDevice?.name === targetDeviceId) {
-              console.log('✅ Target device found:', scannedDevice.name);
-              foundDevice = scannedDevice;
-              cleanup();
-              resolve(foundDevice);
-            }
+        if (onDeviceFound && scannedDevice?.name) {
+          onDeviceFound({
+            id: scannedDevice.id,
+            name: scannedDevice.name,
+            rssi: scannedDevice.rssi
           });
         }
-      }, true);
+
+        if (scannedDevice?.name === targetDeviceId) {
+          console.log('✅ Found target device:', scannedDevice.name);
+          foundDevice = scannedDevice;
+          cleanup();
+          resolve(foundDevice);
+        }
+      });
     });
   }
 }

@@ -2,7 +2,6 @@ import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import React, { useState, useEffect, useRef } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import NetInfo from '@react-native-community/netinfo';
-import BluetoothStateManager from 'react-native-bluetooth-status';
 import { PermissionsAndroid } from 'react-native';
 import { BleManager } from 'react-native-ble-plx';
 import { Buffer } from 'buffer'; 
@@ -138,46 +137,30 @@ export default function ManualDeviceSetup() {
     navigation.navigate('HexaDashboard');
   };
 
-  useEffect(() => {
-    const checkConnectivity = async () => {
-      const netInfo = await NetInfo.fetch();
-      const bluetoothEnabled = await BluetoothStateManager.getState();
-      console.log('🔍 BluetoothStateManager:', BluetoothStateManager);
+useEffect(() => {
+  const checkConnectivity = async () => {
+    const netInfo = await NetInfo.fetch();
+    if (!netInfo.isConnected || netInfo.type !== 'wifi') {
+      Alert.alert(
+        'WiFi Required',
+        'Please turn on WiFi to continue device setup.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
 
-      if (!netInfo.isConnected || netInfo.type !== 'wifi') {
-        Alert.alert(
-          'WiFi Required',
-          'Please turn on WiFi to continue device setup.',
-          [{ text: 'OK' }]
-        );
-      }
+  const subscription = manager.onStateChange((state) => {
+    console.log('🔧 BLE state:', state);
+    if (state !== 'PoweredOn') {
+      Alert.alert('Bluetooth Required', 'Please enable Bluetooth to continue.');
+    }
+  }, true);
 
-      if (bluetoothEnabled !== 'on') {
-        Alert.alert(
-          'Bluetooth Required',
-          'Please turn on Bluetooth to connect to your device.',
-          [{ text: 'OK' }]
-        );
-      }
-    };
+  checkConnectivity();
 
-    // Ask for necessary permissions on Android
-    const requestPermissions = async () => {
-      if (Platform.OS === 'android') {
-        try {
-          await PermissionsAndroid.requestMultiple([
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-            PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-            PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-          ]);
-        } catch (err) {
-          console.warn('Permission error', err);
-        }
-      }
-    };
+  return () => subscription.remove();
+}, []);
 
-    requestPermissions().then(checkConnectivity);
-  }, []);
 
   const addAnotherDevice = () => {
     setShowSuccessPopup(false);
