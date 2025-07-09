@@ -42,18 +42,23 @@ app.get('/test', (req, res) => {
 app.use('/api/devices', deviceRoutes);
 console.log('📱 Device routes registered at /api/devices');
 
-// List all registered routes (for debugging)
-app._router.stack.forEach((middleware) => {
-  if (middleware.route) {
-    console.log(`🛣️  Route: ${middleware.route.methods} ${middleware.route.path}`);
-  } else if (middleware.name === 'router') {
-    middleware.handle.stack.forEach((handler) => {
-      if (handler.route) {
-        console.log(`🛣️  Router Route: ${Object.keys(handler.route.methods)} /api/devices${handler.route.path}`);
-      }
-    });
-  }
-});
+// List all registered routes (safe)
+if (app._router && app._router.stack) {
+  app._router.stack.forEach((middleware) => {
+    if (middleware.route) {
+      console.log(`🛣️  Route: ${Object.keys(middleware.route.methods)} ${middleware.route.path}`);
+    } else if (middleware.name === 'router' && middleware.handle.stack) {
+      middleware.handle.stack.forEach((handler) => {
+        if (handler.route) {
+          console.log(`🛣️  Router Route: ${Object.keys(handler.route.methods)} /api/devices${handler.route.path}`);
+        }
+      });
+    }
+  });
+} else {
+  console.warn('⚠️ No routes found at startup');
+}
+
 
 
 // 404 handler
