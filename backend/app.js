@@ -1,75 +1,87 @@
-require('dotenv').config();
-require('./services/mqttClient');
-
 const express = require('express');
 const cors = require('cors');
-const morgan = require('morgan');
-const db = require('./db');
-const pool = require('./db');
+const bodyParser = require('body-parser');
 const path = require('path');
+require('dotenv').config();
+
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// ✅ Routes
-const authRoutes = require('./routes/authRoutes');
-const mqttRoutes = require('./routes/mqttRoutes');
-const userRoutes = require('./routes/userRoutes'); 
-const feedbackRoutes = require('./routes/feedbackRoutes');
-
-
-// ✅ Check MySQL DB connection
-pool.getConnection((err, conn) => {
-  if (err) {
-    console.error('❌ Failed to connect to MySQL DB:', err.code, err.message);
-  } else {
-    console.log('✅ MySQL DB connected successfully!');
-    conn.release();
-  }
-});
-
-// ✅ Middleware
+// Middleware
 app.use(cors());
-app.use(morgan('dev'));
+app.use(bodyParser.json());
 app.use(express.json());
 
-// ✅ Route registrations
-app.use('/api/auth', authRoutes);
-app.use('/api/mqtt', mqttRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/feedback', feedbackRoutes);
-
-
-// ⬇️ Serve static files (uploaded images)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// ⬇️ Register avatar upload route
-const uploadAvatarRoute = require('./routes/uploadAvatar');
-const profileRoutes = require('./routes/profileRoutes');
-
-app.use('/api/profile', uploadAvatarRoute); // URL will be /api/profile/upload-avatar
-app.use('/api/profile', profileRoutes);  // ✅ handles GET /api/profile
-
-// ✅ Test route
-app.get('/', (req, res) => {
-  res.send('HavenSync Backend is Live!');
+// Debug: Log all incoming requests
+app.use((req, res, next) => {
+  console.log(`📥 ${req.method} ${req.url}`);
+  console.log('📋 Headers:', req.headers);
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log('📦 Body:', req.body);
+  }
+  next();
 });
 
-// ✅ Example device API
-app.get('/devices', async (req, res) => {
-  try {
-    const [rows] = await db.query('SELECT * FROM devices');
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: 'Database error', details: err.message });
+// Import routes with error handling
+let deviceRoutes;
+try {
+  console.log('🔍 Loading deviceRoutes...');
+  deviceRoutes = require('./routes/deviceRoutes');
+  console.log('📱 Device routes file loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading device routes:', error);
+  process.exit(1);
+}
+
+// Basic test route
+app.get('/test', (req, res) => {
+  res.json({ message: 'Server is running!' });
+});
+
+// Use routes
+app.use('/api/devices', deviceRoutes);
+console.log('📱 Device routes registered at /api/devices');
+
+// List all registered routes (for debugging)
+app._router.stack.forEach((middleware) => {
+  if (middleware.route) {
+    console.log(`🛣️  Route: ${middleware.route.methods} ${middleware.route.path}`);
+  } else if (middleware.name === 'router') {
+    middleware.handle.stack.forEach((handler) => {
+      if (handler.route) {
+        console.log(`🛣️  Router Route: ${Object.keys(handler.route.methods)} /api/devices${handler.route.path}`);
+      }
+    });
   }
 });
 
-const { setupWebSocket } = require('./services/wsServer');
-const http = require('http');
-
-const server = http.createServer(app);
-setupWebSocket(server); // initialize WebSocket over same server
-
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Express + WebSocket server running on port ${PORT}`);
+// 404 handler
+app.use((req, res) => {
+  console.log(`❌ 404 - Route not found: ${req.method} ${req.url}`);
+  res.status(404).json({ 
+    message: 'Route not found',
+    requested: `${req.method} ${req.url}`,
+    availableRoutes: [
+      'GET /test',
+      'POST /api/devices/register',
+      'GET /api/devices/test'
+    ]
+  });
 });
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('💥 Server error:', err);
+  res.status(500).json({ 
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🔍 Test endpoint: http://localhost:${PORT}/test`);
+  console.log(`📱 Device register endpoint: http://localhost:${PORT}/api/devices/register`);
+});
+
+module.exports = app;

@@ -33,7 +33,7 @@ import {
   faPlug,
 } from '@fortawesome/free-solid-svg-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { addDevice } from '../redux/slices/switchSlice';
 // Updated imports - replace the old libraries
@@ -41,6 +41,10 @@ import { Camera, useCameraDevices, useCodeScanner } from 'react-native-vision-ca
 import { useFocusEffect } from '@react-navigation/native';
 
 const manager = new BleManager();
+
+manager.onStateChange((state) => {
+  console.log("🔧 BLE State:", state); // will print in log
+});
 
 const AnimatedSuccessPopup = ({ visible, message, onDashboard, onAnother }) => {
   const scale = useRef(new Animated.Value(0.9)).current;
@@ -89,7 +93,6 @@ const AnimatedSuccessPopup = ({ visible, message, onDashboard, onAnother }) => {
   );
 };
 
-
 const { width, height } = Dimensions.get('window');
 
 // Simplified device registry - using only 3-channel as default
@@ -102,9 +105,9 @@ const deviceRegistry = {
   },
 };
 
-
 export default function ManualDeviceSetup() {
   const [setupMethod, setSetupMethod] = useState(null);
+  const token = useSelector(state => state.auth.token);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [deviceId, setDeviceId] = useState('');
   const [deviceName, setDeviceName] = useState('');
@@ -124,59 +127,60 @@ export default function ManualDeviceSetup() {
   const [nearbyDevices, setNearbyDevices] = useState([]);
   const [showDevicePicker, setShowDevicePicker] = useState(false);
 
-  
   // Vision Camera setup with error handling
   const devices = useCameraDevices();
   const device = devices?.back || devices?.find(d => d.position === 'back');
-const goToDashboard = () => {
-  setShowSuccessPopup(false);
-  resetForm();
-  navigation.navigate('HexaDashboard');
-};
-useEffect(() => {
-  const checkConnectivity = async () => {
-    const netInfo = await NetInfo.fetch();
-    const bluetoothEnabled = await BluetoothStateManager.getState();
 
-    if (!netInfo.isConnected || netInfo.type !== 'wifi') {
-      Alert.alert(
-        'WiFi Required',
-        'Please turn on WiFi to continue device setup.',
-        [{ text: 'OK' }]
-      );
-    }
-
-    if (bluetoothEnabled !== 'on') {
-      Alert.alert(
-        'Bluetooth Required',
-        'Please turn on Bluetooth to connect to your device.',
-        [{ text: 'OK' }]
-      );
-    }
+  const goToDashboard = () => {
+    setShowSuccessPopup(false);
+    resetForm();
+    navigation.navigate('HexaDashboard');
   };
 
-  // Ask for necessary permissions on Android
-  const requestPermissions = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-        ]);
-      } catch (err) {
-        console.warn('Permission error', err);
+  useEffect(() => {
+    const checkConnectivity = async () => {
+      const netInfo = await NetInfo.fetch();
+      const bluetoothEnabled = await BluetoothStateManager.getState();
+
+      if (!netInfo.isConnected || netInfo.type !== 'wifi') {
+        Alert.alert(
+          'WiFi Required',
+          'Please turn on WiFi to continue device setup.',
+          [{ text: 'OK' }]
+        );
       }
-    }
+
+      if (bluetoothEnabled !== 'on') {
+        Alert.alert(
+          'Bluetooth Required',
+          'Please turn on Bluetooth to connect to your device.',
+          [{ text: 'OK' }]
+        );
+      }
+    };
+
+    // Ask for necessary permissions on Android
+    const requestPermissions = async () => {
+      if (Platform.OS === 'android') {
+        try {
+          await PermissionsAndroid.requestMultiple([
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+            PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+          ]);
+        } catch (err) {
+          console.warn('Permission error', err);
+        }
+      }
+    };
+
+    requestPermissions().then(checkConnectivity);
+  }, []);
+
+  const addAnotherDevice = () => {
+    setShowSuccessPopup(false);
+    resetForm();
   };
-
-  requestPermissions().then(checkConnectivity);
-}, []);
-
-const addAnotherDevice = () => {
-  setShowSuccessPopup(false);
-  resetForm();
-};
 
   const codeScanner = useCodeScanner({
     codeTypes: ['qr', 'code-128', 'code-39', 'ean-13'],
@@ -351,13 +355,12 @@ const addAnotherDevice = () => {
   };
 
   const toggleFlash = () => {
-  if (device?.hasTorch === false) {
-    Alert.alert('Flash Unavailable', 'This device does not have a flash unit.');
-    return;
-  }
-  setFlashEnabled(prev => !prev);
-};
-
+    if (device?.hasTorch === false) {
+      Alert.alert('Flash Unavailable', 'This device does not have a flash unit.');
+      return;
+    }
+    setFlashEnabled(prev => !prev);
+  };
 
   const validateInputs = () => {
     if (!deviceId.trim()) {
@@ -374,114 +377,278 @@ const addAnotherDevice = () => {
     }
     return true;
   };
+
   const sendCredentialsOverBLE = async (deviceId, ssid, pass) => {
-  const targetName = deviceId; // example: 'HEXA3CHN-ABC123'
+    const targetName = deviceId;
 
-  const subscription = manager.onStateChange(async (state) => {
-    if (state === 'PoweredOn') {
-      manager.startDeviceScan(null, null, async (error, scannedDevice) => {
-        if (error) {
-          Alert.alert('Scan Error', error.message);
-          return;
-        }
-  // ✅ Collect nearby BLE devices for fallback UI
-  if (scannedDevice?.name && !nearbyDevices.some(d => d.name === scannedDevice.name)) {
-    setNearbyDevices(prev => [...prev, { id: scannedDevice.id, name: scannedDevice.name }]);
-  }
-
-        if (scannedDevice?.name === targetName) {
-          manager.stopDeviceScan();
-
-          try {
-            await scannedDevice.connect();
-            await scannedDevice.discoverAllServicesAndCharacteristics();
-
-            const services = await scannedDevice.services();
-            const service = services.find(s => s.uuid.toLowerCase() === '12345678-1234-1234-1234-123456789abc');
-            const characteristics = await service.characteristics();
-            const characteristic = characteristics.find(c => c.uuid.toLowerCase() === 'abcd1234-ab12-cd34-ef56-1234567890ab');
-
-            const payload = JSON.stringify({ ssid, pass, deviceId });
-            const encoded = Buffer.from(payload).toString('base64');
-
-            await characteristic.writeWithResponse(encoded);
-            await scannedDevice.disconnect();
-
-            Alert.alert('✅ Success', 'WiFi credentials sent to device!');
-          } catch (err) {
-            console.error('BLE Error:', err);
-            Alert.alert('BLE Error', err.message || 'BLE write failed');
+    const subscription = manager.onStateChange(async (state) => {
+      if (state === 'PoweredOn') {
+        manager.startDeviceScan(null, null, async (error, scannedDevice) => {
+          if (error) {
+            Alert.alert('Scan Error', error.message);
+            return;
           }
-        }
-      });
 
-      // Timeout after 20 seconds
-      setTimeout(() => {
-        manager.stopDeviceScan();
-        Alert.alert('⏰ Timeout', 'Device not found within 20s.');
-      }, 20000);
+          if (scannedDevice?.name && !nearbyDevices.some(d => d.name === scannedDevice.name)) {
+            setNearbyDevices(prev => [...prev, { id: scannedDevice.id, name: scannedDevice.name }]);
+          }
 
-      subscription.remove();
+          if (scannedDevice?.name === targetName) {
+            manager.stopDeviceScan();
+
+            try {
+              await scannedDevice.connect();
+              await scannedDevice.discoverAllServicesAndCharacteristics();
+
+              const services = await scannedDevice.services();
+              const service = services.find(s => s.uuid.toLowerCase() === '12345678-1234-1234-1234-123456789abc');
+              const characteristics = await service.characteristics();
+              const characteristic = characteristics.find(c => c.uuid.toLowerCase() === 'abcd1234-ab12-cd34-ef56-1234567890ab');
+
+              const payload = JSON.stringify({ ssid, pass, deviceId });
+              const encoded = Buffer.from(payload).toString('base64');
+
+              await characteristic.writeWithResponse(encoded);
+              await scannedDevice.disconnect();
+
+              Alert.alert('✅ Success', 'WiFi credentials sent to device!');
+            } catch (err) {
+              console.error('BLE Error:', err);
+              Alert.alert('BLE Error', err.message || 'BLE write failed');
+            } finally {
+              subscription.remove(); // ✅ Correct place to remove it
+            }
+          }
+        });
+
+        // Add fallback timeout
+        setTimeout(() => {
+          manager.stopDeviceScan();
+          Alert.alert('⏰ Timeout', 'Device not found within 20s.');
+          subscription.remove(); // ✅ Or here, safely
+        }, 20000);
+      }
+    }, true);
+  };
+
+// Updated handleDeviceSetup function with better error handling
+const handleDeviceSetup = async () => {
+  if (!validateInputs()) return;
+
+  setConnecting(true);
+  
+  // Animate pulse effect
+  Animated.loop(
+    Animated.sequence([
+      Animated.timing(fadeAnim, { toValue: 0.5, duration: 1000, useNativeDriver: true }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+    ])
+  ).start();
+
+  try {
+    const baseUrl = 'https://haven-sync-production.up.railway.app';
+    
+    // First, test server connectivity
+    console.log('🔍 Testing server connectivity...');
+    const serverTest = await fetch(`${baseUrl}/`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!serverTest.ok) {
+      throw new Error(`Server not reachable: ${serverTest.status}`);
     }
-  }, true);
+
+    console.log('✅ Server is reachable');  
+
+    // Test API endpoint
+    console.log('🔍 Testing API endpoint...');
+    const apiTest = await fetch(`${baseUrl}/api`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (apiTest.ok) {
+      console.log('✅ API endpoint is working');
+    } else {
+      console.warn('⚠️  API endpoint test failed, but continuing...');
+    }
+// Send credentials via BLE if password is provided
+    if (wifiPassword.trim()) {
+      try {
+        console.log('📡 Sending WiFi credentials via BLE...');
+       
+      } catch (bleError) {
+        console.warn('⚠️  BLE error (non-critical):', bleError);
+        // Don't fail the whole process if BLE fails
+      }
+    }
+    // Try device registration
+    console.log('📱 Attempting device registration...');
+    const registrationPayload = {
+      device_id: deviceId.trim(),
+      device_name: deviceName.trim(),
+      device_type: deviceType,
+      device_uid: deviceId.trim(),
+      group_id: null,
+    };
+
+    console.log('📦 Registration payload:', registrationPayload);
+
+    const response = await fetch(`${baseUrl}/api/devices/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(registrationPayload),
+    });
+
+    console.log('📡 Response status:', response.status);
+    console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+
+    const responseText = await response.text();
+    console.log('📡 Response body:', responseText);
+
+    let responseData;
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (parseError) {
+      console.warn('⚠️  Could not parse response as JSON:', parseError);
+      
+      // If we can't parse as JSON but status is OK, assume success
+      if (response.ok) {
+        responseData = { 
+          message: 'Device registered successfully',
+          device: { id: deviceId, device_name: deviceName }
+        };
+      } else {
+        // If status is not OK and we can't parse, it's likely an error page
+        throw new Error(`Server returned non-JSON response: ${response.status} - ${responseText.substring(0, 200)}...`);
+      }
+    }
+
+    if (!response.ok) {
+      // Handle specific error cases
+      if (response.status === 404) {
+        throw new Error('API endpoint not found. Please check server configuration.');
+      } else if (response.status === 401) {
+        throw new Error('Authentication failed. Please log in again.');
+      } else if (response.status === 409) {
+        throw new Error('Device already registered. Please use a different device ID.');
+      } else {
+        throw new Error(responseData.message || `Server error: ${response.status}`);
+      }
+    }
+
+    console.log('✅ Device registration successful:', responseData);
+
+
+
+    // Create the device object for local storage
+    const deviceTemplate = deviceRegistry[deviceType];
+    if (!deviceTemplate) {
+      throw new Error(`Unknown device type: ${deviceType}`);
+    }
+
+    const newDevice = {
+      id: deviceId.trim(),
+      name: deviceName.trim(),
+      deviceId: deviceId.trim(),
+      type: deviceType,
+      icon: deviceTemplate.icon,
+      isOn: false,
+      isConnected: true,
+      switches: Array(deviceTemplate.channels.switches).fill(false),
+      regulators: Array(deviceTemplate.channels.regulators).fill(50),
+      wifiSSID: wifiSSID.trim(),
+      configuredAt: new Date().toISOString(),
+      status: 'online',
+      signalStrength: -45,
+      ...deviceTemplate.defaultProps
+    };
+
+    console.log('💾 Adding device to local storage:', newDevice);
+    dispatch(addDevice(newDevice));
+    
+    setConnecting(false);
+    setShowSuccessPopup(true);
+    
+  } catch (error) {
+    console.error('💥 Device setup error:', error);
+    setConnecting(false);
+    
+    // Provide more helpful error messages
+    let userMessage = 'Unable to configure device. Please try again.';
+    
+    if (error.message.includes('Network request failed')) {
+      userMessage = 'Network error. Please check your internet connection and try again.';
+    } else if (error.message.includes('API endpoint not found')) {
+      userMessage = 'Server configuration issue. Please contact support.';
+    } else if (error.message.includes('Authentication failed')) {
+      userMessage = 'Please log out and log back in, then try again.';
+    } else if (error.message.includes('Device already registered')) {
+      userMessage = 'This device is already registered. Please use a different device ID.';
+    } else if (error.message.includes('Server not reachable')) {
+      userMessage = 'Cannot reach the server. Please check your internet connection.';
+    } else if (error.message.includes('Server returned non-JSON response')) {
+      userMessage = 'Server error. Please try again later or contact support.';
+    }
+    
+    Alert.alert('Setup Failed', userMessage);
+  }
 };
 
-
-  const handleDeviceSetup = async () => {
-    if (!validateInputs()) return;
-
-    setConnecting(true);
-    
-    // Animate pulse effect
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(fadeAnim, { toValue: 0.5, duration: 1000, useNativeDriver: true }),
-        Animated.timing(fadeAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
-      ])
-    ).start();
-
-    try {
-      // Send WiFi + deviceId to ESP32 over BLE before proceeding
-await sendCredentialsOverBLE(deviceId, wifiSSID, wifiPassword);
-
-// Optional delay after BLE write
-await new Promise(resolve => setTimeout(resolve, 1000));
-
-
-      const deviceTemplate = deviceRegistry[deviceType];
-      if (!deviceTemplate) {
-        throw new Error(`Unknown device type: ${deviceType}`);
-      }
-
-      const newDevice = {
-        id: deviceId.trim(),
-        name: deviceName.trim(),
-        deviceId: deviceId.trim(),
-        type: deviceType,
-        icon: deviceTemplate.icon, // This should now be the actual icon, not undefined
-        isOn: false,
-        isConnected: true,
-        switches: Array(deviceTemplate.channels.switches).fill(false),
-        regulators: Array(deviceTemplate.channels.regulators).fill(50),
-        wifiSSID: wifiSSID.trim(),
-        configuredAt: new Date().toISOString(),
-        status: 'online',
-        signalStrength: -45,
-        ...deviceTemplate.defaultProps,
-      };
-
-      dispatch(addDevice(newDevice));
-      setConnecting(false);
-      
-      setShowSuccessPopup(true);
-
-
-    } catch (error) {
-      console.error('Device setup error:', error);
-      setConnecting(false);
-      Alert.alert('Setup Failed', 'Unable to configure device. Please try again.');
+// Add a function to skip server registration for testing
+const proceedWithLocalDevice = () => {
+  try {
+    const deviceTemplate = deviceRegistry[deviceType];
+    if (!deviceTemplate) {
+      throw new Error(`Unknown device type: ${deviceType}`);
     }
-  };
+
+    const newDevice = {
+      id: deviceId.trim(),
+      name: deviceName.trim(),
+      deviceId: deviceId.trim(),
+      type: deviceType,
+      icon: deviceTemplate.icon,
+      isOn: false,
+      isConnected: true,
+      switches: Array(deviceTemplate.channels.switches).fill(false),
+      regulators: Array(deviceTemplate.channels.regulators).fill(50),
+      wifiSSID: wifiSSID.trim(),
+      configuredAt: new Date().toISOString(),
+      status: 'online',
+      signalStrength: -45,
+      ...deviceTemplate.defaultProps
+    };
+
+    console.log('💾 Adding device to local storage (offline mode):', newDevice);
+    dispatch(addDevice(newDevice));
+    
+    setConnecting(false);
+    setShowSuccessPopup(true);
+    
+    // Send credentials via BLE if password is provided
+    if (wifiPassword.trim()) {
+      try {
+        sendCredentialsOverBLE(deviceId, wifiSSID, wifiPassword);
+      } catch (bleError) {
+        console.warn('⚠️  BLE error (non-critical):', bleError);
+      }
+    }
+  } catch (error) {
+    console.error('💥 Local device creation error:', error);
+    setConnecting(false);
+    Alert.alert('Setup Failed', 'Unable to create device locally. Please try again.');
+  }
+};
 
   const resetForm = () => {
     setSetupMethod(null);
@@ -547,10 +714,10 @@ await new Promise(resolve => setTimeout(resolve, 1000));
               {hasPermission && device && (
                 <TouchableOpacity onPress={toggleFlash} style={styles.qrButton}>
                   <Icon
-  name={flashEnabled ? 'flashlight' : 'flashlight-outline'}
-  size={20}
-  color={flashEnabled ? '#72BCD9' : '#fff'}
-/>
+                    name={flashEnabled ? 'flashlight' : 'flashlight-outline'}
+                    size={20}
+                    color={flashEnabled ? '#72BCD9' : '#fff'}
+                  />
                 </TouchableOpacity>
               )}
               <TouchableOpacity onPress={closeQRScanner} style={styles.qrButton}>
@@ -672,23 +839,22 @@ await new Promise(resolve => setTimeout(resolve, 1000));
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>WiFi Password</Text>
                   <View style={styles.passwordInputContainer}>
-  <TextInput
-    style={[styles.textInput, { flex: 1, borderWidth: 0 }]}
-    value={wifiPassword}
-    onChangeText={setWifiPassword}
-    placeholder="WiFi password (optional)"
-    placeholderTextColor="#aaa"
-    secureTextEntry={!showPassword}
-    editable={!connecting}
-  />
-  <TouchableOpacity
-    style={styles.eyeButton}
-    onPress={() => setShowPassword(prev => !prev)}
-  >
-    <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color="#aaa" />
-  </TouchableOpacity>
-</View>
-
+                    <TextInput
+                      style={[styles.textInput, { flex: 1, borderWidth: 0 }]}
+                      value={wifiPassword}
+                      onChangeText={setWifiPassword}
+                      placeholder="WiFi password (optional)"
+                      placeholderTextColor="#aaa"
+                      secureTextEntry={!showPassword}
+                      editable={!connecting}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeButton}
+                      onPress={() => setShowPassword(prev => !prev)}
+                    >
+                      <Icon name={showPassword ? 'eye-off' : 'eye'} size={20} color="#aaa" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
 
@@ -706,31 +872,32 @@ await new Promise(resolve => setTimeout(resolve, 1000));
           </ScrollView>
         </View>
       </Modal>
-      <Modal visible={showSuccessPopup} transparent animationType="fade">
-  <View style={styles.modalOverlay}>
-    <View style={styles.successModal}>
-      <Text style={styles.successTitle}>Success!</Text>
-      <Text style={styles.successMessage}>
-        {deviceName} has been successfully configured.
-      </Text>
-      <View style={styles.successActions}>
-        <TouchableOpacity onPress={goToDashboard}>
-          <Text style={styles.successActionText}>GO TO DASHBOARD</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={addAnotherDevice}>
-          <Text style={styles.successActionText}>ADD ANOTHER DEVICE</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </View>
-</Modal>
-<AnimatedSuccessPopup
-  visible={showSuccessPopup}
-  message={`${deviceName} has been successfully configured.`}
-  onDashboard={goToDashboard}
-  onAnother={addAnotherDevice}
-/>
 
+      <Modal visible={showSuccessPopup} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.successModal}>
+            <Text style={styles.successTitle}>Success!</Text>
+            <Text style={styles.successMessage}>
+              {deviceName} has been successfully configured.
+            </Text>
+            <View style={styles.successActions}>
+              <TouchableOpacity onPress={goToDashboard}>
+                <Text style={styles.successActionText}>GO TO DASHBOARD</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={addAnotherDevice}>
+                <Text style={styles.successActionText}>ADD ANOTHER DEVICE</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <AnimatedSuccessPopup
+        visible={showSuccessPopup}
+        message={`${deviceName} has been successfully configured.`}
+        onDashboard={goToDashboard}
+        onAnother={addAnotherDevice}
+      />
     </View>
   );
 }
