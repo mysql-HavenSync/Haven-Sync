@@ -14,7 +14,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
 app.use('/api/auth', authRoutes);
-app.use('/api/devices', deviceRoutes);
+
 
 // Debug: Log all incoming requests
 app.use((req, res, next) => {
