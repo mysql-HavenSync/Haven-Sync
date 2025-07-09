@@ -5,7 +5,8 @@ import NetInfo from '@react-native-community/netinfo';
 import BluetoothStateManager from 'react-native-bluetooth-status';
 import { PermissionsAndroid } from 'react-native';
 import { BleManager } from 'react-native-ble-plx';
-import { Buffer } from 'buffer'; // Required for base64
+import { Buffer } from 'buffer'; 
+import BleHelper from '../utils/BleHelper';
 import {
   View,
   Text,
@@ -39,7 +40,7 @@ import { addDevice } from '../redux/slices/switchSlice';
 // Updated imports - replace the old libraries
 import { Camera, useCameraDevices, useCodeScanner } from 'react-native-vision-camera';
 import { useFocusEffect } from '@react-navigation/native';
-
+const ble = new BleHelper(); 
 const manager = new BleManager();
 
 manager.onStateChange((state) => {
@@ -141,6 +142,7 @@ export default function ManualDeviceSetup() {
     const checkConnectivity = async () => {
       const netInfo = await NetInfo.fetch();
       const bluetoothEnabled = await BluetoothStateManager.getState();
+      console.log('🔍 BluetoothStateManager:', BluetoothStateManager);
 
       if (!netInfo.isConnected || netInfo.type !== 'wifi') {
         Alert.alert(
@@ -378,69 +380,39 @@ export default function ManualDeviceSetup() {
     return true;
   };
 
-const sendCredentialsOverBLE = (deviceId, ssid, pass) => {
-  return new Promise((resolve, reject) => {
-    const targetName = deviceId;
-    
-    
+const sendCredentialsOverBLE = async (deviceId, ssid, pass) => {
+  try {
+    const device = await ble.scanAndFindDevice(
+      deviceId,
+      (found) => console.log('🔍 Found:', found),
+      (progressName) => console.log('🔄 Scanning:', progressName)
+    );
 
-    const subscription = manager.onStateChange(async (state) => {
-      if (state === 'PoweredOn') {
-        console.log('🔍 Starting BLE scan...');
-        manager.startDeviceScan(null, null, async (error, scannedDevice) => {
-          if (error) {
-            console.log('❌ BLE Scan error:', error.message);
-            subscription.remove();
-            reject(new Error('BLE scan failed: ' + error.message));
-            return;
-          }
+    console.log('✅ Device ready to connect:', device);
 
-          if (scannedDevice?.name === targetName) {
-            console.log(`📡 Found device: ${scannedDevice.name}`);
-            manager.stopDeviceScan();
+    await device.connect();
+    await device.discoverAllServicesAndCharacteristics();
 
-            try {
-              await scannedDevice.connect();
-              await scannedDevice.discoverAllServicesAndCharacteristics();
+    const services = await device.services();
+    const service = services.find(s => s.uuid.toLowerCase() === '12345678-1234-1234-1234-123456789abc');
+    if (!service) throw new Error('Service UUID not found');
 
-              const services = await scannedDevice.services();
-              const service = services.find(s => s.uuid.toLowerCase() === '12345678-1234-1234-1234-123456789abc');
+    const characteristics = await service.characteristics();
+    const characteristic = characteristics.find(c => c.uuid.toLowerCase() === 'abcd1234-ab12-cd34-ef56-1234567890ab');
+    if (!characteristic) throw new Error('Characteristic UUID not found');
 
-              if (!service) throw new Error('Service UUID not found');
+    const payload = JSON.stringify({ ssid, pass, deviceId });
+    const encoded = Buffer.from(payload).toString('base64');
+    await characteristic.writeWithResponse(encoded);
 
-              const characteristics = await service.characteristics();
-              const characteristic = characteristics.find(c => c.uuid.toLowerCase() === 'abcd1234-ab12-cd34-ef56-1234567890ab');
-
-              if (!characteristic) throw new Error('Characteristic UUID not found');
-
-              const payload = JSON.stringify({ ssid, pass, deviceId });
-              const encoded = Buffer.from(payload).toString('base64');
-
-              await characteristic.writeWithResponse(encoded);
-              await scannedDevice.disconnect();
-
-              console.log('✅ BLE credentials sent successfully');
-              subscription.remove();
-              resolve(true);
-
-            } catch (err) {
-              console.error('❌ BLE send error:', err);
-              subscription.remove();
-              reject(new Error('BLE write failed: ' + err.message));
-            }
-          }
-        });
-
-        // Timeout after 20s
-        setTimeout(() => {
-          manager.stopDeviceScan();
-          subscription.remove();
-          reject(new Error('Timeout: BLE device not found'));
-        }, 20000);
-      }
-    }, true);
-  });
+    await device.disconnect();
+    console.log('✅ BLE credentials sent successfully');
+  } catch (err) {
+    console.error('❌ BLE error:', err);
+    throw err;
+  }
 };
+
 
 const handleDeviceSelect = async (selectedDevice) => {
   setShowDevicePicker(false);
