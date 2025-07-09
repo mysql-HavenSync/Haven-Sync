@@ -477,16 +477,12 @@ const handleDeviceSetup = async () => {
     } else {
       console.warn('⚠️  API endpoint test failed, but continuing...');
     }
-// Send credentials via BLE if password is provided
-    if (wifiPassword.trim()) {
-      try {
-        console.log('📡 Sending WiFi credentials via BLE...');
-       
-      } catch (bleError) {
-        console.warn('⚠️  BLE error (non-critical):', bleError);
-        // Don't fail the whole process if BLE fails
-      }
-    }
+// Step 1: Send credentials over BLE
+console.log('📡 Sending WiFi credentials via BLE...');
+await sendCredentialsOverBLE(deviceId, wifiSSID, wifiPassword);
+console.log('✅ BLE credentials sent. Waiting 3 seconds for device to connect...');
+await new Promise(resolve => setTimeout(resolve, 3000)); // ⏱ Wait 3 seconds
+
     // Try device registration
     console.log('📱 Attempting device registration...');
     const registrationPayload = {
