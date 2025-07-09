@@ -1,8 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DeviceStreaming">
+    <option name="defaultDeviceApplied" value="true" />
     <option name="deviceSelectionList">
       <list>
+        <PersistentDeviceSelectionData>
+          <option name="api" value="35" />
+          <option name="brand" value="motorola" />
+          <option name="codename" value="eqe" />
+          <option name="id" value="eqe" />
+          <option name="labId" value="google" />
+          <option name="manufacturer" value="Motorola" />
+          <option name="name" value="edge 50 pro" />
+          <option name="screenDensity" value="450" />
+          <option name="screenX" value="1220" />
+          <option name="screenY" value="2712" />
+          <option name="selected" value="true" />
+        </PersistentDeviceSelectionData>
         <PersistentDeviceSelectionData>
           <option name="api" value="34" />
           <option name="brand" value="Sony" />
@@ -353,18 +367,6 @@
           <option name="screenDensity" value="320" />
           <option name="screenX" value="384" />
           <option name="screenY" value="384" />
-        </PersistentDeviceSelectionData>
-        <PersistentDeviceSelectionData>
-          <option name="api" value="35" />
-          <option name="brand" value="motorola" />
-          <option name="codename" value="eqe" />
-          <option name="id" value="eqe" />
-          <option name="labId" value="google" />
-          <option name="manufacturer" value="Motorola" />
-          <option name="name" value="edge 50 pro" />
-          <option name="screenDensity" value="450" />
-          <option name="screenX" value="1220" />
-          <option name="screenY" value="2712" />
         </PersistentDeviceSelectionData>
         <PersistentDeviceSelectionData>
           <option name="api" value="33" />
@@ -831,5 +833,6 @@
         </PersistentDeviceSelectionData>
       </list>
     </option>
+    <option name="selectedCloudProject" value="device-streaming-4b84bc33" />
   </component>
 </project>

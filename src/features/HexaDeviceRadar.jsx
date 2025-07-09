@@ -395,6 +395,7 @@ export default function ManualDeviceSetup() {
 
           if (scannedDevice?.name === targetName) {
             manager.stopDeviceScan();
+            clearTimeout(timeoutHandle); 
 
             try {
               await scannedDevice.connect();
@@ -422,7 +423,7 @@ export default function ManualDeviceSetup() {
         });
 
         // Add fallback timeout
-        setTimeout(() => {
+       timeoutHandle = setTimeout(() => {
           manager.stopDeviceScan();
           Alert.alert('⏰ Timeout', 'Device not found within 20s.');
           subscription.remove(); // ✅ Or here, safely
@@ -450,7 +451,7 @@ const handleDeviceSetup = async () => {
     
     // First, test server connectivity
     console.log('🔍 Testing server connectivity...');
-    const serverTest = await fetch(`${baseUrl}/`, {
+   const serverTest = await fetch(`${baseUrl}/test`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -477,11 +478,16 @@ const handleDeviceSetup = async () => {
     } else {
       console.warn('⚠️  API endpoint test failed, but continuing...');
     }
-// Step 1: Send credentials over BLE
-console.log('📡 Sending WiFi credentials via BLE...');
-await sendCredentialsOverBLE(deviceId, wifiSSID, wifiPassword);
-console.log('✅ BLE credentials sent. Waiting 3 seconds for device to connect...');
-await new Promise(resolve => setTimeout(resolve, 3000)); // ⏱ Wait 3 seconds
+if (wifiPassword.trim()) {
+  try {
+    console.log('📡 Sending WiFi credentials via BLE...');
+    await sendCredentialsOverBLE(deviceId.trim(), wifiSSID.trim(), wifiPassword.trim());
+    console.log('✅ BLE credentials sent successfully');
+  } catch (bleError) {
+    console.error('❌ BLE Error:', bleError);
+    throw new Error('Failed to send WiFi credentials over BLE. Please try again.');
+  }
+}
 
     // Try device registration
     console.log('📱 Attempting device registration...');
