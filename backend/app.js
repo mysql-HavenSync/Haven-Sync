@@ -55,6 +55,7 @@ app._router.stack.forEach((middleware) => {
   }
 });
 
+
 // 404 handler
 app.use((req, res) => {
   console.log(`❌ 404 - Route not found: ${req.method} ${req.url}`);
