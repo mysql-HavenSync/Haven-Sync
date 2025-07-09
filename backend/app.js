@@ -53,6 +53,7 @@ app.get('/test', (req, res) => {
 
 // Use routes
 app.use('/api/devices', deviceRoutes);
+app.use('/api/auth', authRoutes); 
 console.log('📱 Device routes registered at /api/devices');
 
 // List all registered routes (safe)
