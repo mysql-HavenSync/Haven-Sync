@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
-app.use('/api/auth', authRoutes);
+
 
 
 // Debug: Log all incoming requests
@@ -25,6 +25,15 @@ app.use((req, res, next) => {
   }
   next();
 });
+let authRoutes;
+try {
+  console.log('🔍 Loading authRoutes...');
+  authRoutes = require('./routes/authRoutes');
+  console.log('🔐 Auth routes loaded successfully');
+} catch (error) {
+  console.error('❌ Failed to load authRoutes:', error.message);
+  process.exit(1);
+}
 
 // Import routes with error handling
 let deviceRoutes;
