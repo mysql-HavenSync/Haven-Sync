@@ -1,5 +1,6 @@
 // utils/BleHelper.js
 import { BleManager } from 'react-native-ble-plx';
+import { Platform, PermissionsAndroid } from 'react-native';
 
 export default class BleHelper {
   constructor() {
@@ -62,7 +63,8 @@ export default class BleHelper {
           });
         }
 
-        if (scannedDevice?.name === targetDeviceId) {
+        if (scannedDevice?.name?.toLowerCase().includes(targetDeviceId.toLowerCase()))
+ {
           console.log('✅ Found target device:', scannedDevice.name);
           foundDevice = scannedDevice;
           cleanup();

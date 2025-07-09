@@ -380,13 +380,15 @@ const sendCredentialsOverBLE = async (deviceId, ssid, pass) => {
     const service = services.find(s => s.uuid.toLowerCase() === '12345678-1234-1234-1234-123456789abc');
     if (!service) throw new Error('Service UUID not found');
 
-    const characteristics = await service.characteristics();
+   const characteristics = await device.characteristicsForService(service.uuid);
     const characteristic = characteristics.find(c => c.uuid.toLowerCase() === 'abcd1234-ab12-cd34-ef56-1234567890ab');
     if (!characteristic) throw new Error('Characteristic UUID not found');
 
     const payload = JSON.stringify({ ssid, pass, deviceId });
     const encoded = Buffer.from(payload).toString('base64');
     await characteristic.writeWithResponse(encoded);
+
+    Alert.alert('WiFi Sent', 'Credentials sent successfully. Device will now connect to your WiFi.');
 
     await device.disconnect();
     console.log('✅ BLE credentials sent successfully');
