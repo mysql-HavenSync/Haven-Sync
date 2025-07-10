@@ -10,7 +10,7 @@ function setupWebSocket(server) {
 
     ws.on('message', (msg) => {
       try {
-        const data = JSON.parse(msg);
+        const data = JSON.parse(msg); 
 
         if (data.type === 'device_register') {
           const { deviceId } = data;

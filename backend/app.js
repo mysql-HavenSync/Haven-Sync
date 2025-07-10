@@ -9,14 +9,14 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
 
 
 
-// Debug: Log all incoming requests
+
 app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.url}`);
   console.log('📋 Headers:', req.headers);
@@ -35,7 +35,7 @@ try {
   process.exit(1);
 }
 
-// Import routes with error handling
+
 let deviceRoutes;
 try {
   console.log('🔍 Loading deviceRoutes...');
@@ -46,17 +46,17 @@ try {
   process.exit(1);
 }
 
-// Basic test route
+
 app.get('/test', (req, res) => {
   res.json({ message: 'Server is running!' });
 });
 
-// Use routes
+
 app.use('/api/devices', deviceRoutes);
 app.use('/api/auth', authRoutes); 
 console.log('📱 Device routes registered at /api/devices');
 
-// List all registered routes (safe)
+
 if (app._router && app._router.stack) {
   app._router.stack.forEach((middleware) => {
     if (middleware.route) {
@@ -77,7 +77,7 @@ app.get('/', (req, res) => {
   res.send('✅ HavenSync API is running');
 });
 
-// 404 handler
+
 app.use((req, res) => {
   console.log(`❌ 404 - Route not found: ${req.method} ${req.url}`);
   res.status(404).json({ 
@@ -91,7 +91,7 @@ app.use((req, res) => {
   });
 });
 
-// Error handling middleware
+
 app.use((err, req, res, next) => {
   console.error('💥 Server error:', err);
   res.status(500).json({ 
