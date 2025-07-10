@@ -374,13 +374,11 @@ const sendCredentialsOverBLE = async (deviceId, ssid, pass) => {
 
     console.log('✅ Device ready to connect:', scannedDevice);
 
-    // ✅ Connect and get the connected device object
     const connectedDevice = await scannedDevice.connect();
-console.log('🔌 Connected device:', connectedDevice);
+    console.log('🔌 Connected device:', connectedDevice);
 
     await connectedDevice.discoverAllServicesAndCharacteristics();
     await new Promise(res => setTimeout(res, 300));
-
 
     const services = await connectedDevice.services();
     const service = services.find(s => s.uuid.toLowerCase() === '12345678-1234-1234-1234-123456789abc');
@@ -391,67 +389,49 @@ console.log('🔌 Connected device:', connectedDevice);
     if (!characteristic) throw new Error('Characteristic UUID not found');
 
     const payload = JSON.stringify({
-  ssid,
-  password: pass,
-  deviceId,
-  userId: user?.user_id, // Send current user's unique ID
-});
-console.log("📨 Sending payload to ESP:", payload);
+      ssid,
+      password: pass,
+      deviceId,
+      userId: user?.user_id
+    });
+    console.log("📨 Sending payload to ESP:", payload);
 
     const encoded = Buffer.from(payload).toString('base64');
-    await characteristic.writeWithResponse(encoded);
 
-Alert.alert('WiFi Sent', 'Credentials sent successfully. Device will now connect to your WiFi.');
+    // ✅ Safe BLE write with disconnect handling
+    try {
+      await characteristic.writeWithResponse(encoded);
+      console.log('✅ Credentials written successfully');
+    } catch (err) {
+      if (
+        err.message?.includes('write failed') ||
+        err.message?.includes('device was disconnected') ||
+        err.errorCode === 205
+      ) {
+        console.warn('⚠️ BLE write failed due to ESP reboot (expected). Continuing...');
+      } else {
+        console.error('❌ Unexpected BLE error:', err);
+        throw err;
+      }
+    }
 
-// Safe disconnect logic
-if (typeof connectedDevice.disconnect === 'function') {
-  await connectedDevice.disconnect();
-  console.log('✅ Disconnected using connectedDevice.disconnect');
-} else {
-  await manager.cancelDeviceConnection(connectedDevice.id);
-  console.log('✅ Disconnected using manager.cancelDeviceConnection');
-}
+    // Optional alert after BLE write (even if failed)
+    Alert.alert('WiFi Sent', 'Credentials sent. ESP will now connect to WiFi.');
 
-console.log('✅ BLE credentials sent successfully');
+    // Safe disconnect
+    if (typeof connectedDevice.disconnect === 'function') {
+      await connectedDevice.disconnect();
+      console.log('✅ Disconnected using connectedDevice.disconnect');
+    } else {
+      await manager.cancelDeviceConnection(connectedDevice.id);
+      console.log('✅ Disconnected using manager.cancelDeviceConnection');
+    }
+
+    console.log('✅ BLE credentials sent successfully');
 
   } catch (err) {
     console.error('❌ BLE error:', err);
     throw err;
-  }
-};
-
-const handleDeviceSelect = async (selectedDevice) => {
-  setShowDevicePicker(false);
-  manager.stopDeviceScan();
-
-  try {
-    const device = await manager.connectToDevice(selectedDevice.id);
-    await device.discoverAllServicesAndCharacteristics();
-
-    const services = await device.services();
-    const service = services.find(s => s.uuid.toLowerCase() === '12345678-1234-1234-1234-123456789abc');
-    if (!service) throw new Error('Service not found');
-
-    const characteristics = await service.characteristics();
-    const characteristic = characteristics.find(c => c.uuid.toLowerCase() === 'abcd1234-ab12-cd34-ef56-1234567890ab');
-    if (!characteristic) throw new Error('Characteristic not found');
-const payload = JSON.stringify({
-  ssid,
-  password: pass,        // Use "password" key (your ESP expects it)
-  deviceId,
-  userId: user?.user_id  // Dynamically send logged-in user's ID
-});
-await characteristic.writeWithResponse(Buffer.from(payload));
-const encoded = Buffer.from(payload).toString('base64');
-await characteristic.writeWithResponse(encoded);
-
-    await device.disconnect();
-
-    console.log('✅ Credentials sent to device:', selectedDevice.name);
-    Alert.alert('Success', `Credentials sent to ${selectedDevice.name}`);
-  } catch (error) {
-    console.error('❌ Error sending to selected device:', error.message);
-    Alert.alert('BLE Error', error.message);
   }
 };
 

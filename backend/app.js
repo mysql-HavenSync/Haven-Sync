@@ -98,10 +98,5 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🔍 Test endpoint: http://localhost:${PORT}/test`);
-  console.log(`📱 Device register endpoint: http://localhost:${PORT}/api/devices/register`);
-});
 
 module.exports = app;
