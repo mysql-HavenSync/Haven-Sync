@@ -396,6 +396,7 @@ console.log('🔌 Connected device:', connectedDevice);
   deviceId,
   userId: user?.user_id, // Send current user's unique ID
 });
+console.log("📨 Sending payload to ESP:", payload);
 
     const encoded = Buffer.from(payload).toString('base64');
     await characteristic.writeWithResponse(encoded);
