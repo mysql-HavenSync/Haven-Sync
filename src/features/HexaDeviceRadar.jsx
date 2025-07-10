@@ -438,7 +438,7 @@ const payload = JSON.stringify({
   deviceId,
   userId: user?.user_id  // Dynamically send logged-in user's ID
 });
-
+await characteristic.writeWithResponse(Buffer.from(payload));
 const encoded = Buffer.from(payload).toString('base64');
 await characteristic.writeWithResponse(encoded);
 
