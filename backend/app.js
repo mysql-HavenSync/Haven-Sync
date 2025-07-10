@@ -77,7 +77,7 @@ if (app._router && app._router.stack) {
 
 // 404 handler
 app.use((req, res) => {
-  console.log(`❌ 404 - Route not found: ${req.method} ${req.url}`);
+  console.log(`✅ HavenSync Backend is running: ${req.method} ${req.url}`);
   res.status(404).json({ 
     message: 'Route not found',
     requested: `${req.method} ${req.url}`,
