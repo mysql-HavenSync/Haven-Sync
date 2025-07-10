@@ -107,6 +107,7 @@ const deviceRegistry = {
 
 export default function ManualDeviceSetup() {
   const [setupMethod, setSetupMethod] = useState(null);
+  const user = useSelector(state => state.auth.user);
   const token = useSelector(state => state.auth.token);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [deviceId, setDeviceId] = useState('');
@@ -365,39 +366,56 @@ useEffect(() => {
 
 const sendCredentialsOverBLE = async (deviceId, ssid, pass) => {
   try {
-    const device = await ble.scanAndFindDevice(
+    const scannedDevice = await ble.scanAndFindDevice(
       deviceId,
       (found) => console.log('🔍 Found:', found),
       (progressName) => console.log('🔄 Scanning:', progressName)
     );
 
-    console.log('✅ Device ready to connect:', device);
+    console.log('✅ Device ready to connect:', scannedDevice);
 
-    await device.connect();
-    await device.discoverAllServicesAndCharacteristics();
+    // ✅ Connect and get the connected device object
+    const connectedDevice = await scannedDevice.connect();
+console.log('🔌 Connected device:', connectedDevice);
 
-    const services = await device.services();
+    await connectedDevice.discoverAllServicesAndCharacteristics();
+
+    const services = await connectedDevice.services();
     const service = services.find(s => s.uuid.toLowerCase() === '12345678-1234-1234-1234-123456789abc');
     if (!service) throw new Error('Service UUID not found');
 
-   const characteristics = await device.characteristicsForService(service.uuid);
+    const characteristics = await connectedDevice.characteristicsForService(service.uuid);
     const characteristic = characteristics.find(c => c.uuid.toLowerCase() === 'abcd1234-ab12-cd34-ef56-1234567890ab');
     if (!characteristic) throw new Error('Characteristic UUID not found');
 
-    const payload = JSON.stringify({ ssid, pass, deviceId });
+    const payload = JSON.stringify({
+  ssid,
+  password: pass,
+  deviceId,
+  userId: user?.user_id, // Send current user's unique ID
+});
+
     const encoded = Buffer.from(payload).toString('base64');
     await characteristic.writeWithResponse(encoded);
 
-    Alert.alert('WiFi Sent', 'Credentials sent successfully. Device will now connect to your WiFi.');
+Alert.alert('WiFi Sent', 'Credentials sent successfully. Device will now connect to your WiFi.');
 
-    await device.disconnect();
-    console.log('✅ BLE credentials sent successfully');
+// Safe disconnect logic
+if (typeof connectedDevice.disconnect === 'function') {
+  await connectedDevice.disconnect();
+  console.log('✅ Disconnected using connectedDevice.disconnect');
+} else {
+  await manager.cancelDeviceConnection(connectedDevice.id);
+  console.log('✅ Disconnected using manager.cancelDeviceConnection');
+}
+
+console.log('✅ BLE credentials sent successfully');
+
   } catch (err) {
     console.error('❌ BLE error:', err);
     throw err;
   }
 };
-
 
 const handleDeviceSelect = async (selectedDevice) => {
   setShowDevicePicker(false);
@@ -414,11 +432,16 @@ const handleDeviceSelect = async (selectedDevice) => {
     const characteristics = await service.characteristics();
     const characteristic = characteristics.find(c => c.uuid.toLowerCase() === 'abcd1234-ab12-cd34-ef56-1234567890ab');
     if (!characteristic) throw new Error('Characteristic not found');
+const payload = JSON.stringify({
+  ssid,
+  password: pass,        // Use "password" key (your ESP expects it)
+  deviceId,
+  userId: user?.user_id  // Dynamically send logged-in user's ID
+});
 
-    const payload = JSON.stringify({ ssid: wifiSSID, pass: wifiPassword, deviceId });
-    const encoded = Buffer.from(payload).toString('base64');
+const encoded = Buffer.from(payload).toString('base64');
+await characteristic.writeWithResponse(encoded);
 
-    await characteristic.writeWithResponse(encoded);
     await device.disconnect();
 
     console.log('✅ Credentials sent to device:', selectedDevice.name);
