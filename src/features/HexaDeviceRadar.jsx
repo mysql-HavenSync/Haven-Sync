@@ -379,6 +379,8 @@ const sendCredentialsOverBLE = async (deviceId, ssid, pass) => {
 console.log('🔌 Connected device:', connectedDevice);
 
     await connectedDevice.discoverAllServicesAndCharacteristics();
+    await new Promise(res => setTimeout(res, 300));
+
 
     const services = await connectedDevice.services();
     const service = services.find(s => s.uuid.toLowerCase() === '12345678-1234-1234-1234-123456789abc');
