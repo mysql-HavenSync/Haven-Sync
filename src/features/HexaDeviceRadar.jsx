@@ -416,7 +416,7 @@ const sendCredentialsOverBLE = async (deviceId, ssid, pass) => {
     }
 
     // Optional alert after BLE write (even if failed)
-    Alert.alert('WiFi Sent', 'Credentials sent. ESP will now connect to WiFi.');
+    Alert.alert('WiFi Sent', 'Credentials received. Device will now connect to WiFi.');
 
     // Safe disconnect
     if (typeof connectedDevice.disconnect === 'function') {
@@ -450,7 +450,7 @@ const handleDeviceSetup = async () => {
   ).start();
 
   try {
-    const baseUrl = 'https://haven-sync-production.up.railway.app';
+    const baseUrl = 'https://havensync.hexahavenintegrations.com';
     
     // First, test server connectivity
     console.log('🔍 Testing server connectivity...');

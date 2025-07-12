@@ -1,12 +1,91 @@
-import {createSlice} from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+
+// Async thunk for device control
+export const controlDevice = createAsyncThunk(
+  'switches/controlDevice',
+  async ({ deviceId, command }, { getState, rejectWithValue }) => {
+    try {
+      const { auth } = getState();
+      const response = await fetch(`https://havensync.hexahavenintegrations.com/api/devices/${deviceId}/control`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token}`,
+        },
+        body: JSON.stringify(command),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return { deviceId, command, result: data };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Async thunk for fetching device status
+export const fetchDeviceStatus = createAsyncThunk(
+  'switches/fetchDeviceStatus',
+  async (deviceId, { getState, rejectWithValue }) => {
+    try {
+      const { auth } = getState();
+      const response = await fetch(`https://havensync.hexahavenintegrations.com/api/devices/${deviceId}/status`, {
+        headers: {
+          'Authorization': `Bearer ${auth.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return { deviceId, status: data };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Async thunk for fetching all user devices
+export const fetchUserDevices = createAsyncThunk(
+  'switches/fetchUserDevices',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const { auth } = getState();
+      const response = await fetch(`https://havensync.hexahavenintegrations.com/api/devices`, {
+        headers: {
+          'Authorization': `Bearer ${auth.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.devices || [];
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 const initialState = {
-  activeDevices: [],
-  cardNames: [],
-  nextDeviceId: 1,
-  timers: {},
-  mainToggleTimer: null,
-  deviceGroups: [], // Initialize this to prevent errors
+  activeDevices: [], // Changed from 'devices' to 'activeDevices'
+  cardNames: [], // Added from version 2
+  nextDeviceId: 1, // Added from version 2
+  timers: {}, // Added from version 2
+  mainToggleTimer: null, // Added from version 2
+  deviceGroups: [], // Added from version 2
+  loading: false,
+  error: null,
+  selectedDeviceId: null,
+  wsConnected: false,
 };
 
 const switchSlice = createSlice({
@@ -41,22 +120,24 @@ const switchSlice = createSlice({
         regulators: devicePayload.regulators || [],
       };
 
-      state.activeDevices.push(newDevice);
-      state.cardNames.push({
-        id: deviceId,
-        name: devicePayload.name || `Smart Switch ${deviceId}`,
-      });
+      // Check if device already exists
+      const existingDevice = state.activeDevices.find(device => device.id === deviceId);
+      if (!existingDevice) {
+        state.activeDevices.push(newDevice);
+        state.cardNames.push({
+          id: deviceId,
+          name: devicePayload.name || `Smart Switch ${deviceId}`,
+        });
 
-      if (!devicePayload.id) {
-        state.nextDeviceId += 1;
+        if (!devicePayload.id) {
+          state.nextDeviceId += 1;
+        }
       }
     },
     
     removeDevice: (state, action) => {
       const deviceId = action.payload;
-      state.activeDevices = state.activeDevices.filter(
-        device => device.id !== deviceId,
-      );
+      state.activeDevices = state.activeDevices.filter(device => device.id !== deviceId);
       state.cardNames = state.cardNames.filter(card => card.id !== deviceId);
       
       // Clean up timers for removed device
@@ -66,116 +147,139 @@ const switchSlice = createSlice({
     },
     
     updateDevice: (state, action) => {
-      const {id, switches, regulators, isConnected, status} = action.payload;
+      const { id, switches, regulators, isConnected, status, masterTimer } = action.payload;
       const device = state.activeDevices.find(device => device.id === id);
       if (device) {
         if (switches !== undefined) device.switches = switches;
         if (regulators !== undefined) device.regulators = regulators;
         if (isConnected !== undefined) device.isConnected = isConnected;
         if (status !== undefined) device.status = status;
-        if (action.payload.masterTimer !== undefined) {
-  device.masterTimer = action.payload.masterTimer;
-}
-
+        if (masterTimer !== undefined) device.masterTimer = masterTimer;
       }
     },
     
-toggleSwitch: (state, action) => {
-  const { deviceId, switchId, switchIndex } = action.payload;
-
-  // Find the device index in the array
-  const deviceIndex = state.activeDevices.findIndex(d => d.id === deviceId);
-  if (deviceIndex === -1) return;
-
-  const device = state.activeDevices[deviceIndex];
-
-  // Map over switches to create a new switches array
-  const newSwitches = device.switches.map((sw, idx) => {
-    const shouldToggle =
-      (switchId && sw.id === switchId) ||
-      (switchIndex !== undefined && idx === switchIndex);
-
-    if (shouldToggle) {
-      return {
-        ...sw,
-        status: !sw.status,
-        isOn: sw.isOn !== undefined ? !sw.isOn : undefined,
-        state: sw.state !== undefined ? !sw.state : undefined,
-      };
-    }
-    return sw;
-  });
-
-  // Replace the device with a new object in the array (immutably)
-  state.activeDevices = [
-    ...state.activeDevices.slice(0, deviceIndex),
-    {
-      ...device,
-      switches: newSwitches,
-    },
-    ...state.activeDevices.slice(deviceIndex + 1)
-  ];
-},
-
-
-toggleSensor: (state, action) => {
-  const { deviceId, switchId, switchIndex, sensorType } = action.payload;
-  const deviceIndex = state.activeDevices.findIndex(d => d.id === deviceId);
-  if (deviceIndex === -1) return;
-
-  const device = state.activeDevices[deviceIndex];
-
-  // Map over switches to create a new switches array
-  const newSwitches = device.switches.map((sw, idx) => {
-    let shouldUpdate = false;
-    if (switchId && sw.id === switchId) shouldUpdate = true;
-    if (switchIndex !== undefined && idx === switchIndex) shouldUpdate = true;
-
-    if (shouldUpdate) {
-      // Ensure the switch is an object
-      let updatedSwitch = { ...sw };
-
-      // Convert boolean switch to object if needed
-      if (typeof sw === 'boolean') {
-        updatedSwitch = {
-          id: `${deviceId}_switch_${idx + 1}`,
-          name: `Switch ${idx + 1}`,
-          status: sw,
-          deviceId: deviceId,
-          deviceName: device.name || `Smart Switch ${deviceId}`,
-          sensor: { status: false, type: sensorType || 'motion' }
+    updateDeviceStatus: (state, action) => {
+      const { deviceId, status, signalStrength, isConnected, lastSeen } = action.payload;
+      const deviceIndex = state.activeDevices.findIndex(device => device.id === deviceId);
+      if (deviceIndex !== -1) {
+        state.activeDevices[deviceIndex] = {
+          ...state.activeDevices[deviceIndex],
+          status: status || state.activeDevices[deviceIndex].status,
+          signalStrength: signalStrength || state.activeDevices[deviceIndex].signalStrength,
+          isConnected: isConnected !== undefined ? isConnected : state.activeDevices[deviceIndex].isConnected,
+          lastSeen: lastSeen || state.activeDevices[deviceIndex].lastSeen,
         };
       }
-
-      // Initialize sensor if it doesn't exist
-      if (!updatedSwitch.sensor) {
-        updatedSwitch.sensor = { status: false, type: sensorType || 'motion' };
-      }
-
-      // Toggle sensor status
-      updatedSwitch.sensor = {
-        ...updatedSwitch.sensor,
-        status: !updatedSwitch.sensor.status,
-        type: sensorType || updatedSwitch.sensor.type
-      };
-
-      return updatedSwitch;
-    }
-    return sw;
-  });
-  
-  // Replace the device with a new object in the array (immutably)
-  state.activeDevices = [
-    ...state.activeDevices.slice(0, deviceIndex),
-    {
-      ...device,
-      switches: newSwitches,
     },
-    ...state.activeDevices.slice(deviceIndex + 1)
-  ];
-},
+    
+    updateDeviceState: (state, action) => {
+      const { deviceId, switches, regulators } = action.payload;
+      const deviceIndex = state.activeDevices.findIndex(device => device.id === deviceId);
+      if (deviceIndex !== -1) {
+        state.activeDevices[deviceIndex] = {
+          ...state.activeDevices[deviceIndex],
+          switches: switches || state.activeDevices[deviceIndex].switches,
+          regulators: regulators || state.activeDevices[deviceIndex].regulators,
+          lastUpdated: new Date().toISOString(),
+        };
+      }
+    },
+    
+    toggleSwitch: (state, action) => {
+      const { deviceId, switchId, switchIndex } = action.payload;
 
-    // NEW: Update regulator value
+      // Find the device index in the array
+      const deviceIndex = state.activeDevices.findIndex(d => d.id === deviceId);
+      if (deviceIndex === -1) return;
+
+      const device = state.activeDevices[deviceIndex];
+
+      // Map over switches to create a new switches array
+      const newSwitches = device.switches.map((sw, idx) => {
+        const shouldToggle =
+          (switchId && sw.id === switchId) ||
+          (switchIndex !== undefined && idx === switchIndex);
+
+        if (shouldToggle) {
+          return {
+            ...sw,
+            status: !sw.status,
+            isOn: sw.isOn !== undefined ? !sw.isOn : undefined,
+            state: sw.state !== undefined ? !sw.state : undefined,
+          };
+        }
+        return sw;
+      });
+
+      // Replace the device with a new object in the array (immutably)
+      state.activeDevices = [
+        ...state.activeDevices.slice(0, deviceIndex),
+        {
+          ...device,
+          switches: newSwitches,
+          lastUpdated: new Date().toISOString(),
+        },
+        ...state.activeDevices.slice(deviceIndex + 1)
+      ];
+    },
+
+    toggleSensor: (state, action) => {
+      const { deviceId, switchId, switchIndex, sensorType } = action.payload;
+      const deviceIndex = state.activeDevices.findIndex(d => d.id === deviceId);
+      if (deviceIndex === -1) return;
+
+      const device = state.activeDevices[deviceIndex];
+
+      // Map over switches to create a new switches array
+      const newSwitches = device.switches.map((sw, idx) => {
+        let shouldUpdate = false;
+        if (switchId && sw.id === switchId) shouldUpdate = true;
+        if (switchIndex !== undefined && idx === switchIndex) shouldUpdate = true;
+
+        if (shouldUpdate) {
+          // Ensure the switch is an object
+          let updatedSwitch = { ...sw };
+
+          // Convert boolean switch to object if needed
+          if (typeof sw === 'boolean') {
+            updatedSwitch = {
+              id: `${deviceId}_switch_${idx + 1}`,
+              name: `Switch ${idx + 1}`,
+              status: sw,
+              deviceId: deviceId,
+              deviceName: device.name || `Smart Switch ${deviceId}`,
+              sensor: { status: false, type: sensorType || 'motion' }
+            };
+          }
+
+          // Initialize sensor if it doesn't exist
+          if (!updatedSwitch.sensor) {
+            updatedSwitch.sensor = { status: false, type: sensorType || 'motion' };
+          }
+
+          // Toggle sensor status
+          updatedSwitch.sensor = {
+            ...updatedSwitch.sensor,
+            status: !updatedSwitch.sensor.status,
+            type: sensorType || updatedSwitch.sensor.type
+          };
+
+          return updatedSwitch;
+        }
+        return sw;
+      });
+      
+      // Replace the device with a new object in the array (immutably)
+      state.activeDevices = [
+        ...state.activeDevices.slice(0, deviceIndex),
+        {
+          ...device,
+          switches: newSwitches,
+        },
+        ...state.activeDevices.slice(deviceIndex + 1)
+      ];
+    },
+    
     updateRegulator: (state, action) => {
       const { deviceId, regulatorIndex, value } = action.payload;
       const device = state.activeDevices.find(d => d.id === deviceId);
@@ -186,10 +290,10 @@ toggleSensor: (state, action) => {
         } else {
           device.regulators[regulatorIndex] = value;
         }
+        device.lastUpdated = new Date().toISOString();
       }
     },
 
-    // NEW: Update individual switch name
     updateSwitchName: (state, action) => {
       const { deviceId, switchId, name } = action.payload;
       const device = state.activeDevices.find(d => d.id === deviceId);
@@ -202,7 +306,6 @@ toggleSensor: (state, action) => {
       }
     },
 
-    // NEW: Get all switches for a device (helper for dashboard filtering)
     getDeviceSwitches: (state, action) => {
       const { deviceId } = action.payload;
       const device = state.activeDevices.find(d => d.id === deviceId);
@@ -210,7 +313,7 @@ toggleSensor: (state, action) => {
     },
     
     updateCardName: (state, action) => {
-      const {id, name} = action.payload;
+      const { id, name } = action.payload;
       const card = state.cardNames.find(card => card.id === id);
       if (card) {
         card.name = name;
@@ -218,20 +321,20 @@ toggleSensor: (state, action) => {
     },
     
     setTimer: (state, action) => {
-      const {deviceId, switchIndex, timeLeft} = action.payload;
+      const { deviceId, switchIndex, timeLeft } = action.payload;
       if (!state.timers[deviceId]) state.timers[deviceId] = {};
       state.timers[deviceId][switchIndex] = timeLeft;
     },
     
     decrementTimer: (state, action) => {
-      const {deviceId, switchIndex} = action.payload;
+      const { deviceId, switchIndex } = action.payload;
       if (state.timers[deviceId] && state.timers[deviceId][switchIndex] > 0) {
         state.timers[deviceId][switchIndex] -= 1;
       }
     },
     
     resetTimer: (state, action) => {
-      const {deviceId, switchIndex} = action.payload;
+      const { deviceId, switchIndex } = action.payload;
       if (
         state.timers[deviceId] &&
         state.timers[deviceId][switchIndex] !== undefined
@@ -305,7 +408,6 @@ toggleSensor: (state, action) => {
 
     updateSwitchSpeed: (state, action) => {
       const { deviceId, switchIndex, speed } = action.payload;
-
       const device = state.activeDevices.find((d) => d.id === deviceId);
       if (device && device.switches[switchIndex]) {
         device.switches[switchIndex] = {
@@ -314,6 +416,96 @@ toggleSensor: (state, action) => {
         };
       }
     },
+    
+    setSelectedDevice: (state, action) => {
+      state.selectedDeviceId = action.payload;
+    },
+    
+    setWebSocketConnected: (state, action) => {
+      state.wsConnected = action.payload;
+    },
+    
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
+  
+  extraReducers: (builder) => {
+    builder
+      // Control Device
+      .addCase(controlDevice.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(controlDevice.fulfilled, (state, action) => {
+        state.loading = false;
+        const { deviceId, command } = action.payload;
+        
+        // Update local state optimistically
+        const deviceIndex = state.activeDevices.findIndex(device => device.id === deviceId);
+        if (deviceIndex !== -1) {
+          if (command.type === 'switch') {
+            state.activeDevices[deviceIndex].switches[command.index].status = command.state;
+          } else if (command.type === 'regulator') {
+            state.activeDevices[deviceIndex].regulators[command.index] = command.value;
+          }
+          state.activeDevices[deviceIndex].lastUpdated = new Date().toISOString();
+        }
+      })
+      .addCase(controlDevice.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Fetch Device Status
+      .addCase(fetchDeviceStatus.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchDeviceStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        const { deviceId, status } = action.payload;
+        const deviceIndex = state.activeDevices.findIndex(device => device.id === deviceId);
+        if (deviceIndex !== -1) {
+          state.activeDevices[deviceIndex] = { ...state.activeDevices[deviceIndex], ...status };
+        }
+      })
+      .addCase(fetchDeviceStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Fetch User Devices
+      .addCase(fetchUserDevices.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchUserDevices.fulfilled, (state, action) => {
+        state.loading = false;
+        // Merge with existing devices, keeping local state
+        const serverDevices = action.payload;
+        const mergedDevices = [...state.activeDevices];
+        
+        serverDevices.forEach(serverDevice => {
+          const existingIndex = mergedDevices.findIndex(device => device.id === serverDevice.id);
+          if (existingIndex !== -1) {
+            // Update existing device with server data, but keep local state
+            mergedDevices[existingIndex] = {
+              ...mergedDevices[existingIndex],
+              ...serverDevice,
+              switches: mergedDevices[existingIndex].switches || serverDevice.switches,
+              regulators: mergedDevices[existingIndex].regulators || serverDevice.regulators,
+            };
+          } else {
+            // Add new device from server
+            mergedDevices.push(serverDevice);
+          }
+        });
+        
+        state.activeDevices = mergedDevices;
+      })
+      .addCase(fetchUserDevices.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 
@@ -321,6 +513,13 @@ export const {
   addDevice,
   removeDevice,
   updateDevice,
+  updateDeviceStatus,
+  updateDeviceState,
+  toggleSwitch,
+  toggleSensor,
+  updateRegulator,
+  updateSwitchName,
+  getDeviceSwitches,
   updateCardName,
   setTimer,
   decrementTimer,
@@ -332,14 +531,11 @@ export const {
   createGroup,
   updateGroupName,
   addDeviceToGroup,
-  // NEW EXPORTS
-  toggleSwitch,
-  toggleSensor,  // Added this export
-  updateRegulator,
-  updateSwitchName,
-  getDeviceSwitches,
   toggleSecondaryStatus,
-  updateSwitchSpeed, // Export the new reducer
+  updateSwitchSpeed,
+  setSelectedDevice,
+  setWebSocketConnected,
+  clearError,
 } = switchSlice.actions;
 
 export default switchSlice.reducer;

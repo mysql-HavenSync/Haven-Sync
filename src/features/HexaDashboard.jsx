@@ -1,500 +1,506 @@
-// screens/Dashboard.js
-import React, { useState, useRef } from 'react';
-import {
-  SafeAreaView,
-  View,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Animated,
-  Image,
-  FlatList,
-} from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
+// src/features/HexaDashboard.jsx - Complete dashboard with device connection
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import { useSelector } from 'react-redux';
+import { useDeviceConnection } from '../hooks/useDeviceConnection';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import {
-  faHome,
-  faPlus,
-  faUser,
-  faBars,
-} from '@fortawesome/free-solid-svg-icons';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { DeviceGridCard } from '../components/DeviceNavigationDrawer';
-import { toggleSwitch, updateRegulator } from '../redux/slices/switchSlice';
-import TopSection from '../components/TopSection';
-import DeviceNavigationDrawer from '../components/DeviceNavigationDrawer';
-import DeviceGrid from '../components/DeviceGrid';
+import { faWifi, faWifiSlash, faPlug, faRefresh, faHome, faLightbulb, faFan, faThermometerHalf } from '@fortawesome/free-solid-svg-icons';
 
-const Dashboard = () => {
-  const userName = useSelector(state => state.profile.name) || 'User';
-  const darkMode = useSelector(state => state.profile.darkMode);
-  const avatar = useSelector(state => state.profile.avatar);
-  const devices = useSelector(state => state.switches.activeDevices);
-  const navigation = useNavigation();
-  const dispatch = useDispatch();
-  
-  const [activeTab, setActiveTab] = useState('home');
-  const [selectedNavItem, setSelectedNavItem] = useState({ id: 'all-devices', name: 'All Devices', type: 'all' });
-  const [filteredDevices, setFilteredDevices] = useState(devices);
-  
-  // Animation refs for profile and settings
-  const profileScaleAnim = useRef(new Animated.Value(1)).current;
-  const settingsScaleAnim = useRef(new Animated.Value(1)).current;
-
-  // Reset active tab to 'home' when screen comes into focus
-  useFocusEffect(
-    React.useCallback(() => {
-      setActiveTab('home');
-    }, [])
-  );
-
-  // Device control handlers
-  const handleToggle = (deviceId, switchIndex) => {
-    dispatch(toggleSwitch({ deviceId, switchIndex }));
-  };
-
-  const handleSpeedChange = (deviceId, regulatorIndex, value) => {
-    dispatch(updateRegulator({ deviceId, regulatorIndex, value }));
-  };
-
-  // Handle device/group selection from navigation drawer
-  const handleDeviceSelect = (device) => {
-    setSelectedNavItem(device);
-    
-    // Find the actual device object from Redux store
-    const selectedDevice = devices.find(d => d.id === device.id);
-    
-    if (selectedDevice) {
-      // Always show the device (DeviceGrid will handle extracting switches)
-      setFilteredDevices([selectedDevice]);
-    } else {
-      setFilteredDevices([]);
+const DeviceCard = ({ device, onToggleSwitch, onUpdateRegulator }) => {
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'online': return '#10B981';
+      case 'offline': return '#EF4444';
+      case 'connecting': return '#F59E0B';
+      default: return '#6B7280';
     }
   };
 
-  const handleGroupSelect = (group) => {
-    setSelectedNavItem(group);
-    const groupDevices = devices.filter(device => 
-      group.deviceIds && group.deviceIds.includes(device.id)
-    );
-    setFilteredDevices(groupDevices);
+  const getSignalStrength = (strength) => {
+    if (strength > -50) return 'excellent';
+    if (strength > -60) return 'good';
+    if (strength > -70) return 'fair';
+    return 'poor';
   };
 
-  const handleAllDevicesSelect = () => {
-    setSelectedNavItem({ id: 'all-devices', name: 'All Devices', type: 'all' });
-    setFilteredDevices(devices);
-  };
-
-  // Update filtered devices when devices change
-  React.useEffect(() => {
-    if (selectedNavItem.type === 'all' || selectedNavItem.id === 'all-devices') {
-      setFilteredDevices(devices);
-    } else if (selectedNavItem.type === 'device') {
-      const device = devices.find(d => d.id === selectedNavItem.id);
-      setFilteredDevices(device ? [device] : []);
-    } else if (selectedNavItem.type === 'group') {
-      const groupDevices = devices.filter(device => 
-        selectedNavItem.deviceIds && selectedNavItem.deviceIds.includes(device.id)
-      );
-      setFilteredDevices(groupDevices);
+  const getDeviceIcon = (type) => {
+    switch (type) {
+      case 'light': return faLightbulb;
+      case 'fan': return faFan;
+      case 'thermostat': return faThermometerHalf;
+      case 'home': return faHome;
+      default: return faPlug;
     }
-  }, [devices, selectedNavItem]);
-
-  // Animation functions
-  const animatePress = (animValue, callback) => {
-    Animated.sequence([
-      Animated.timing(animValue, {
-        toValue: 0.85,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(animValue, {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      if (callback) callback();
-    });
-  };
-
-  const handleProfilePress = () => {
-    animatePress(profileScaleAnim, () => {
-      setTimeout(() => {
-        navigation.navigate('HexaEditProfile');
-      }, 50);
-    });
-  };
-
-  const handleSettingsPress = () => {
-    animatePress(settingsScaleAnim, () => {
-      setTimeout(() => {
-        navigation.navigate('HexaSettings');
-      }, 50);
-    });
-  };
-
-  const handleAddDevicePress = () => {
-    // Don't set activeTab here since it will be reset by useFocusEffect when returning
-    navigation.navigate('HexaDeviceRadar');
-  };
-
-  // Render main content
-  const renderContent = () => {
-    return (
-      <>
-        {/* Use TopSection component if available, otherwise show title */}
-        {TopSection ? (
-          <TopSection />
-        ) : (
-          <Text style={[styles.title, darkMode && styles.titleDark]}>
-            Smart Home Dashboard
-          </Text>
-        )}
-
-        {/* Device Navigation Drawer */}
-        {DeviceNavigationDrawer ? (
-          <DeviceNavigationDrawer
-            onDeviceSelect={handleDeviceSelect}
-            onGroupSelect={handleGroupSelect}
-            onAllDevicesSelect={handleAllDevicesSelect}
-            selectedItem={selectedNavItem}
-          />
-        ) : null}
-
-        {/* Device Grid Component or Fallback */}
-        {DeviceGrid ? (
-          <DeviceGrid 
-            filteredDevices={filteredDevices}
-            selectedNavItem={selectedNavItem}
-            navigation={navigation}
-          />
-        ) : (
-          <FlatList
-            data={filteredDevices}
-            numColumns={2}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <DeviceGridCard
-                device={item}
-                onToggle={handleToggle}
-                onSpeedChange={handleSpeedChange}
-              />
-            )}
-            contentContainerStyle={styles.gridContainer}
-          />
-        )}
-      </>
-    );
   };
 
   return (
-    <SafeAreaView style={[styles.container, darkMode && styles.dark]}>
-      <View style={styles.headerRow}>
-        <View style={styles.leftSection}>
-          <Animated.View style={{ transform: [{ scale: profileScaleAnim }] }}>
-            <TouchableOpacity 
-              style={[
-                styles.profileIconContainer,
-                darkMode && styles.profileIconContainerDark
-              ]}
-              onPress={handleProfilePress}
-              activeOpacity={0.8}
-            >
-              {avatar && avatar.length > 0 ? (
-                <Image 
-                  source={{ uri: avatar }} 
-                  style={styles.profileImage}
-                  resizeMode="cover"
-                  onError={(error) => console.log('Image loading error:', error)}
-                  onLoad={() => console.log('Image loaded successfully')}
-                />
-              ) : (
-                <FontAwesomeIcon icon={faUser} size={24} color="#ffffff" />
-              )}
-            </TouchableOpacity>
-          </Animated.View>
-          <View style={styles.greetingContainer}>
-            <Text style={[styles.welcomeText, darkMode && styles.welcomeTextDark]}>
-              Hello,
-            </Text>
-            <Text style={[styles.userName, darkMode && styles.userNameDark]}>
-              {userName}
-            </Text>
+    <View style={styles.deviceCard}>
+      <View style={styles.deviceHeader}>
+        <View style={styles.deviceInfo}>
+          <FontAwesomeIcon 
+            icon={getDeviceIcon(device.type)} 
+            size={24} 
+            color="#72BCD9" 
+          />
+          <Text style={styles.deviceName}>{device.name}</Text>
+        </View>
+        <View style={styles.deviceStatus}>
+          <View style={[styles.statusDot, { backgroundColor: getStatusColor(device.status) }]} />
+          <Text style={[styles.statusText, { color: getStatusColor(device.status) }]}>
+            {device.status || 'unknown'}
+          </Text>
+        </View>
+      </View>
+
+      {device.signalStrength && (
+        <View style={styles.signalInfo}>
+          <FontAwesomeIcon 
+            icon={device.isConnected ? faWifi : faWifiSlash} 
+            size={12} 
+            color="#aaa" 
+          />
+          <Text style={styles.signalText}>
+            {device.signalStrength}dBm ({getSignalStrength(device.signalStrength)})
+          </Text>
+        </View>
+      )}
+
+      {/* Switches */}
+      {device.switches && device.switches.length > 0 && (
+        <View style={styles.controlSection}>
+          <Text style={styles.sectionTitle}>Switches</Text>
+          <View style={styles.switchGrid}>
+            {device.switches.map((isOn, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.switchButton,
+                  { backgroundColor: isOn ? '#10B981' : '#374151' }
+                ]}
+                onPress={() => onToggleSwitch(device.id, index, !isOn)}
+                disabled={device.status !== 'online'}
+              >
+                <Text style={styles.switchText}>
+                  {device.switchLabels?.[index] || `Switch ${index + 1}`}
+                </Text>
+                <Text style={styles.switchStatus}>{isOn ? 'ON' : 'OFF'}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
-        <Animated.View style={{ transform: [{ scale: settingsScaleAnim }] }}>
-          <TouchableOpacity 
-            onPress={handleSettingsPress}
-            activeOpacity={0.8}
-            style={[
-              styles.settingsIconContainer,
-              darkMode && styles.settingsIconContainerDark
-            ]}
-          >
-            <FontAwesomeIcon icon={faBars} size={22} color="#ffffff" />
-          </TouchableOpacity>
-        </Animated.View>
+      )}
+
+      {/* Regulators */}
+      {device.regulators && device.regulators.length > 0 && (
+        <View style={styles.controlSection}>
+          <Text style={styles.sectionTitle}>Regulators</Text>
+          {device.regulators.map((value, index) => (
+            <View key={index} style={styles.regulatorControl}>
+              <Text style={styles.regulatorLabel}>
+                {device.regulatorLabels?.[index] || `Regulator ${index + 1}`}
+              </Text>
+              <View style={styles.regulatorSlider}>
+                <View style={styles.sliderTrack}>
+                  <View 
+                    style={[
+                      styles.sliderFill, 
+                      { width: `${value}%` }
+                    ]} 
+                  />
+                  <View style={[
+                    styles.sliderThumb,
+                    { left: `${value}%` }
+                  ]} />
+                </View>
+                <Text style={styles.regulatorValue}>{value}%</Text>
+              </View>
+              <View style={styles.regulatorButtons}>
+                <TouchableOpacity
+                  style={styles.regulatorButton}
+                  onPress={() => onUpdateRegulator(device.id, index, Math.max(0, value - 10))}
+                  disabled={device.status !== 'online'}
+                >
+                  <Text style={styles.regulatorButtonText}>-</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.regulatorButton}
+                  onPress={() => onUpdateRegulator(device.id, index, Math.min(100, value + 10))}
+                  disabled={device.status !== 'online'}
+                >
+                  <Text style={styles.regulatorButtonText}>+</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {device.lastUpdated && (
+        <Text style={styles.lastUpdated}>
+          Last updated: {new Date(device.lastUpdated).toLocaleTimeString()}
+        </Text>
+      )}
+    </View>
+  );
+};
+
+const HexaDashboard = () => {
+  const { devices, wsConnected, controlDeviceSwitch, controlDeviceRegulator, refreshAllDevices } = useDeviceConnection();
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState(null);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refreshAllDevices();
+    setRefreshing(false);
+  };
+
+  const handleToggleSwitch = async (deviceId, switchIndex, newState) => {
+    try {
+      await controlDeviceSwitch(deviceId, switchIndex, newState);
+    } catch (error) {
+      console.error('Switch toggle error:', error);
+    }
+  };
+
+  const handleUpdateRegulator = async (deviceId, regulatorIndex, newValue) => {
+    try {
+      await controlDeviceRegulator(deviceId, regulatorIndex, newValue);
+    } catch (error) {
+      console.error('Regulator update error:', error);
+    }
+  };
+
+  const getConnectionStatusIcon = () => {
+    if (wsConnected) {
+      return <FontAwesomeIcon icon={faWifi} size={16} color="#10B981" />;
+    }
+    return <FontAwesomeIcon icon={faWifiSlash} size={16} color="#EF4444" />;
+  };
+
+  const getConnectionStatusText = () => {
+    if (wsConnected) {
+      return `Connected (${devices.filter(d => d.status === 'online').length}/${devices.length} devices online)`;
+    }
+    return 'Disconnected';
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Device Dashboard</Text>
+        <View style={styles.connectionStatus}>
+          {getConnectionStatusIcon()}
+          <Text style={[styles.connectionText, { color: wsConnected ? '#10B981' : '#EF4444' }]}>
+            {getConnectionStatusText()}
+          </Text>
+        </View>
       </View>
 
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.deviceGrid}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#72BCD9']}
+            tintColor={'#72BCD9'}
+          />
+        }
       >
-        {renderContent()}
+        {devices.length === 0 ? (
+          <View style={styles.emptyState}>
+            <FontAwesomeIcon icon={faPlug} size={48} color="#ccc" />
+            <Text style={styles.emptyStateTitle}>No Devices Found</Text>
+            <Text style={styles.emptyStateSubtitle}>
+              Pull down to refresh or add a new device
+            </Text>
+            <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
+              <FontAwesomeIcon icon={faRefresh} size={16} color="#fff" />
+              <Text style={styles.refreshButtonText}>Refresh</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            {/* Device Stats */}
+            <View style={styles.statsContainer}>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{devices.length}</Text>
+                <Text style={styles.statLabel}>Total Devices</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={[styles.statNumber, { color: '#10B981' }]}>
+                  {devices.filter(d => d.status === 'online').length}
+                </Text>
+                <Text style={styles.statLabel}>Online</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={[styles.statNumber, { color: '#EF4444' }]}>
+                  {devices.filter(d => d.status === 'offline').length}
+                </Text>
+                <Text style={styles.statLabel}>Offline</Text>
+              </View>
+            </View>
+
+            {/* Device Cards */}
+            {devices.map((device) => (
+              <DeviceCard
+                key={device.id}
+                device={device}
+                onToggleSwitch={handleToggleSwitch}
+                onUpdateRegulator={handleUpdateRegulator}
+              />
+            ))}
+          </>
+        )}
       </ScrollView>
-
-      {/* Bottom Navigation */}
-      <View style={[styles.bottomNavContainer, darkMode && styles.bottomNavContainerDark]}>
-        <View style={[styles.bottomNav, darkMode && styles.bottomNavDark]}>
-          
-          {/* Home Tab */}
-          <TouchableOpacity
-            style={[
-              styles.navTab,
-              activeTab === 'home' && styles.activeNavTab,
-              darkMode && activeTab === 'home' && styles.activeNavTabDark
-            ]}
-            onPress={() => setActiveTab('home')}
-            activeOpacity={0.8}
-          >
-            <View style={[
-              styles.navIconContainer,
-              activeTab === 'home' && styles.activeNavIconContainer
-            ]}>
-              <FontAwesomeIcon 
-                icon={faHome} 
-                size={20} 
-                color={activeTab === 'home' ? '#fff' : (darkMode ? '#888' : '#666')} 
-              />
-            </View>
-            <Text style={[
-              styles.navText,
-              activeTab === 'home' && styles.activeNavText,
-              darkMode && styles.navTextDark
-            ]}>
-              Home
-            </Text>
-          </TouchableOpacity>
-
-          {/* Add Device Tab */}
-          <TouchableOpacity
-            style={[
-              styles.navTab,
-              activeTab === 'add' && styles.activeNavTab,
-              darkMode && activeTab === 'add' && styles.activeNavTabDark
-            ]}
-            onPress={handleAddDevicePress}
-            activeOpacity={0.8}
-          >
-            <View style={[
-              styles.navIconContainer,
-              activeTab === 'add' && styles.activeNavIconContainer
-            ]}>
-              <FontAwesomeIcon 
-                icon={faPlus} 
-                size={20} 
-                color={activeTab === 'add' ? '#fff' : (darkMode ? '#888' : '#666')} 
-              />
-            </View>
-            <Text style={[
-              styles.navText,
-              activeTab === 'add' && styles.activeNavText,
-              darkMode && styles.navTextDark
-            ]}>
-              Add Device
-            </Text>
-          </TouchableOpacity>
-
-        </View>
-      </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f5f5',
   },
-  dark: {
-    backgroundColor: '#121212',
-  },
-  headerRow: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 30,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e5e5',
   },
-  leftSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  
-  // Profile icon styles
-  profileIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-    backgroundColor: '#3498db',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    overflow: 'hidden',
-  },
-  profileIconContainerDark: {
-    backgroundColor: '#2980b9',
-  },
-  profileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-  },
-  
-  greetingContainer: {
-    flex: 1,
-  },
-  welcomeText: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: '#666',
-    marginBottom: 2,
-  },
-  welcomeTextDark: {
-    color: '#aaa',
-  },
-  userName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#333',
-  },
-  userNameDark: {
-    color: '#fff',
-  },
-  
-  // Settings icon styles
-  settingsIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e74c3c',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  settingsIconContainerDark: {
-    backgroundColor: '#c0392b',
-  },
-
-  // Fallback title styles
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 20,
-    paddingHorizontal: 16,
   },
-  titleDark: {
-    color: '#ecf0f1',
-  },
-  gridContainer: {
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-
-  // Bottom Navigation Styles
-  bottomNavContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    paddingTop: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-  },
-  bottomNavContainerDark: {
-    backgroundColor: 'rgba(18, 18, 18, 0.95)',
-  },
-  
-  bottomNav: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 25,
-    flexDirection: 'row',
-    paddingVertical: 8,
-    paddingHorizontal: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.05)',
-  },
-  bottomNavDark: {
-    backgroundColor: '#2a2a2a',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  
-  navTab: {
-    flex: 1,
+  connectionStatus: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    marginHorizontal: 4,
+    gap: 8,
   },
-  
-  activeNavTab: {
-    backgroundColor: '#ff4757',
-    shadowColor: '#ff4757',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  activeNavTabDark: {
-    backgroundColor: '#ff6b7a',
-  },
-  
-  navIconContainer: {
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  
-  activeNavIconContainer: {
-    // Additional styling for active icon if needed
-  },
-  
-  navText: {
+  connectionText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
+  },
+  deviceGrid: {
+    padding: 16,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginHorizontal: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
     color: '#666',
   },
-  navTextDark: {
-    color: '#888',
+  deviceCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  
-  activeNavText: {
+  deviceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  deviceInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  deviceName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  deviceStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '500',
+    textTransform: 'capitalize',
+  },
+  signalInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  signalText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  controlSection: {
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  switchGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  switchButton: {
+    flex: 1,
+    minWidth: 100,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  switchText: {
     color: '#fff',
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  switchStatus: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  regulatorControl: {
+    marginBottom: 16,
+  },
+  regulatorLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 8,
+  },
+  regulatorSlider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 8,
+  },
+  sliderTrack: {
+    flex: 1,
+    height: 6,
+    backgroundColor: '#e5e5e5',
+    borderRadius: 3,
+    position: 'relative',
+  },
+  sliderFill: {
+    height: 6,
+    backgroundColor: '#72BCD9',
+    borderRadius: 3,
+  },
+  sliderThumb: {
+    position: 'absolute',
+    top: -6,
+    width: 18,
+    height: 18,
+    backgroundColor: '#72BCD9',
+    borderRadius: 9,
+    marginLeft: -9,
+  },
+  regulatorValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    minWidth: 40,
+    textAlign: 'center',
+  },
+  regulatorButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  regulatorButton: {
+    width: 32,
+    height: 32,
+    backgroundColor: '#72BCD9',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  regulatorButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  lastUpdated: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 12,
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#666',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  emptyStateSubtitle: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  refreshButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#72BCD9',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  refreshButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
 
-export default Dashboard;
+export default HexaDashboard;
